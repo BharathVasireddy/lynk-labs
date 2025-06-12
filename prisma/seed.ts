@@ -5,6 +5,17 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 Starting database seed...')
 
+  // Check if data already exists
+  const existingTests = await prisma.test.count()
+  const existingCategories = await prisma.category.count()
+
+  if (existingTests > 0 || existingCategories > 0) {
+    console.log('📊 Database already contains data, skipping seed...')
+    return
+  }
+
+  console.log('📝 Database is empty, proceeding with seed...')
+
   // Create categories
   const categories = await Promise.all([
     prisma.category.upsert({
@@ -200,10 +211,11 @@ async function main() {
     update: {},
     create: {
       code: 'HEALTH50',
-      description: 'Flat ₹50 off on orders above ₹1000',
+      description: 'Health checkup discount',
       discountType: 'FIXED',
       discountValue: 50,
       minOrderAmount: 1000,
+      maxDiscount: 50,
       validFrom: new Date(),
       validTo: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days from now
       usageLimit: 500,
@@ -217,7 +229,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    console.error('❌ Error during seed:', e)
+    console.error('❌ Error during database seed:', e)
     process.exit(1)
   })
   .finally(async () => {
