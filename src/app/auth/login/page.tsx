@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageCircle, Mail, CheckCircle, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { MessageCircle, Mail, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 
 export default function LoginPage() {

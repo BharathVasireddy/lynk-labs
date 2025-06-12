@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Logout endpoint
-export async function DELETE(request: NextRequest) {
+export async function DELETE(_request: NextRequest) {
   const response = NextResponse.json({
     success: true,
     message: "Logged out successfully"

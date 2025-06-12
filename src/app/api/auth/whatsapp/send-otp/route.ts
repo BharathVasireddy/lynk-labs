@@ -61,6 +61,9 @@ async function sendWhatsAppMessage(phoneNumber: string, otp: string) {
   // WhatsApp Business API integration
   const message = `Your Lynk Labs verification code is: ${otp}. This code will expire in 5 minutes. Do not share this code with anyone.`;
   
+  // Log the message for development purposes
+  console.log(`Sending WhatsApp message to ${phoneNumber}: ${message}`);
+  
   // TODO: Implement actual WhatsApp Business API call
   // Example using WhatsApp Business API
   /*

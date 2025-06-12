@@ -32,7 +32,8 @@ class OTPStore {
   // Clean up expired OTPs periodically
   cleanup(): void {
     const now = Date.now();
-    for (const [phoneNumber, data] of this.store.entries()) {
+    const entries = Array.from(this.store.entries());
+    for (const [phoneNumber, data] of entries) {
       if (now > data.expiresAt) {
         this.store.delete(phoneNumber);
       }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, ShoppingCart, Clock } from "lucide-react";
@@ -48,7 +48,7 @@ interface TestsResponse {
   };
 }
 
-export default function TestsPage() {
+function TestsPageContent() {
   const [tests, setTests] = useState<Test[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -414,5 +414,20 @@ export default function TestsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function TestsPage() {
+  return (
+    <Suspense fallback={
+      <div className="container-padding py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl lg:text-4xl font-bold mb-4">Lab Tests</h1>
+          <p className="text-lg text-muted-foreground">Loading tests...</p>
+        </div>
+      </div>
+    }>
+      <TestsPageContent />
+    </Suspense>
   );
 } 
