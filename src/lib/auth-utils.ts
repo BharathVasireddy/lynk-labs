@@ -17,7 +17,7 @@ export async function verifyAuth(request: NextRequest): Promise<AuthUser | null>
       return null;
     }
 
-    const decoded = verify(token, process.env.NEXTAUTH_SECRET!) as any;
+    const decoded = verify(token, process.env.NEXTAUTH_SECRET!) as { userId: string };
     
     if (!decoded.userId) {
       return null;

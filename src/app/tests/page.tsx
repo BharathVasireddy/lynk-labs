@@ -243,7 +243,7 @@ function TestsPageContent() {
             )}
             {searchQuery && (
               <Badge variant="secondary" className="gap-2 scale-hover">
-                Search: "{searchQuery}"
+                Search: &quot;{searchQuery}&quot;
                 <button
                   onClick={() => handleSearch("")}
                   className="ml-1 hover:bg-muted-foreground/20 rounded-full p-0.5 scale-hover"

@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build orderBy clause
-    let orderBy: any = { name: "asc" }
+    let orderBy: { [key: string]: string } = { name: "asc" }
     
     switch (sortBy) {
       case "price-low":

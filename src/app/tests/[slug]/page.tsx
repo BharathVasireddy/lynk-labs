@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Clock, FileText, ShoppingCart, Share2, Heart, CheckCircle } from "lucide-react";
@@ -53,9 +53,9 @@ export default function TestDetailPage() {
     if (slug) {
       fetchTestDetails();
     }
-  }, [slug]);
+  }, [slug, fetchTestDetails]);
 
-  const fetchTestDetails = async () => {
+  const fetchTestDetails = useCallback(async () => {
     setLoading(true);
     try {
       // Fetch test details
@@ -82,7 +82,7 @@ export default function TestDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug, router]);
 
   const calculateDiscount = (price: number, discountPrice: number | null) => {
     if (!discountPrice) return 0;
@@ -150,7 +150,7 @@ export default function TestDetailPage() {
           <div className="text-6xl mb-4">🔬</div>
           <h3 className="text-xl font-semibold mb-2">Test not found</h3>
           <p className="text-muted-foreground mb-4">
-            The test you're looking for doesn't exist or has been removed.
+            The test you&apos;re looking for doesn&apos;t exist or has been removed.
           </p>
           <Button asChild>
             <Link href="/tests">Browse All Tests</Link>
@@ -323,7 +323,7 @@ export default function TestDetailPage() {
                       <li>Stay hydrated by drinking water</li>
                       <li>Wear comfortable clothing</li>
                       <li>Bring a valid ID proof</li>
-                      <li>Inform about any medications you're taking</li>
+                      <li>Inform about any medications you&apos;re taking</li>
                     </ul>
                   </div>
                 </CardContent>

@@ -283,7 +283,7 @@ export default function LoginPage() {
                     disabled={loading}
                   />
                   <p className="text-xs text-muted-foreground">
-                    We'll send your test reports to this email address
+                                            We&apos;ll send your test reports to this email address
                   </p>
                 </div>
 
@@ -416,7 +416,7 @@ export default function LoginPage() {
                           onClick={handleSendOTP}
                           disabled={loading}
                         >
-                          Didn't receive code? Resend
+                          Didn&apos;t receive code? Resend
                         </button>
                       </div>
                     </>
@@ -527,7 +527,7 @@ export default function LoginPage() {
                       }}
                       disabled={loading}
                     >
-                      {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
+                      {isSignUp ? "Already have an account? Sign in" : "Don&apos;t have an account? Sign up"}
                     </button>
                   </div>
                 </TabsContent>
