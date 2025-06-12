@@ -29,7 +29,8 @@ export async function POST(request: NextRequest) {
     // Simulate WhatsApp Business API call
     if (process.env.NODE_ENV === "production") {
       // TODO: Implement actual WhatsApp Business API integration
-      // const whatsappResponse = await sendWhatsAppMessage(phoneNumber, otp);
+      const whatsappResponse = await sendWhatsAppMessage(phoneNumber, otp);
+      console.log("WhatsApp API response:", whatsappResponse);
     }
 
     return NextResponse.json({
