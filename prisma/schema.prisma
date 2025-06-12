@@ -1,0 +1,262 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Enums converted to String for SQLite compatibility
+// Role: CUSTOMER, ADMIN, LAB_TECHNICIAN, HOME_VISIT_AGENT
+// OrderStatus: PENDING, CONFIRMED, SAMPLE_COLLECTION_SCHEDULED, SAMPLE_COLLECTED, PROCESSING, COMPLETED, CANCELLED  
+// HomeVisitStatus: SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED
+
+model User {
+  id            String    @id @default(cuid())
+  email         String?   @unique
+  name          String?
+  phone         String?   @unique
+  password      String?
+  dateOfBirth   DateTime?
+  gender        String?
+  address       String?
+  role          String    @default("CUSTOMER")
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  orders        Order[]
+  addresses     Address[]
+  accounts      Account[]
+  sessions      Session[]
+  cartItems     CartItem[] @relation("CartItemUser")
+  homeVisits    HomeVisit[] @relation("AgentHomeVisits")
+  uploadedReports Report[] @relation("UserUploadedReports")
+  createdOrderStatusHistories OrderStatusHistory[] @relation("UserCreatedOrderStatusHistories")
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  icon        String?
+  parentId    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  tests       Test[]
+
+  @@map("categories")
+}
+
+model Test {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  description   String?
+  price         Float
+  discountPrice Float?
+  preparationInstructions String?
+  reportTime    String?
+  categoryId    String
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  category      Category @relation(fields: [categoryId], references: [id])
+  orderItems    OrderItem[]
+  cartItems     CartItem[]
+
+  @@map("tests")
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // HOME, WORK, OTHER
+  line1     String
+  line2     String?
+  city      String
+  state     String
+  pincode   String
+  landmark  String?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User @relation(fields: [userId], references: [id])
+  orders    Order[]
+
+  @@map("addresses")
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  testId    String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User @relation("CartItemUser", fields: [userId], references: [id])
+  test      Test @relation(fields: [testId], references: [id])
+
+  @@unique([userId, testId])
+  @@map("cart_items")
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String
+  orderNumber     String      @unique
+  status          String      @default("PENDING")
+  totalAmount     Float
+  discountAmount  Float       @default(0)
+  finalAmount     Float
+  addressId       String
+  paymentMethod   String?
+  paymentId       String?
+  couponCode      String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  user            User @relation(fields: [userId], references: [id])
+  address         Address @relation(fields: [addressId], references: [id])
+  orderItems      OrderItem[]
+  homeVisit       HomeVisit?
+  reports         Report[]
+  statusHistory   OrderStatusHistory[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  testId    String
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  order     Order @relation(fields: [orderId], references: [id])
+  test      Test @relation(fields: [testId], references: [id])
+
+  @@map("order_items")
+}
+
+model HomeVisit {
+  id              String            @id @default(cuid())
+  orderId         String            @unique
+  scheduledDate   DateTime
+  scheduledTime   String
+  agentId         String?
+  status          String            @default("SCHEDULED")
+  otp             String?
+  collectionTime  DateTime?
+  notes           String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Relations
+  order           Order @relation(fields: [orderId], references: [id])
+  agent           User? @relation("AgentHomeVisits", fields: [agentId], references: [id])
+
+  @@map("home_visits")
+}
+
+model Report {
+  id          String      @id @default(cuid())
+  orderId     String
+  fileName    String
+  fileUrl     String
+  fileSize    Int
+  uploadedBy  String
+  uploadedAt  DateTime    @default(now())
+  isDelivered Boolean     @default(false)
+  deliveredAt DateTime?
+
+  // Relations
+  order       Order @relation(fields: [orderId], references: [id])
+  uploader    User @relation("UserUploadedReports", fields: [uploadedBy], references: [id])
+
+  @@map("reports")
+}
+
+model OrderStatusHistory {
+  id        String      @id @default(cuid())
+  orderId   String
+  status    String
+  notes     String?
+  createdBy String?
+  createdAt DateTime    @default(now())
+
+  // Relations
+  order     Order @relation(fields: [orderId], references: [id])
+  creator   User? @relation("UserCreatedOrderStatusHistories", fields: [createdBy], references: [id])
+
+  @@map("order_status_history")
+}
+
+model Coupon {
+  id              String     @id @default(cuid())
+  code            String     @unique
+  description     String?
+  discountType    String     // PERCENTAGE, FIXED
+  discountValue   Float
+  minOrderAmount  Float?
+  maxDiscount     Float?
+  validFrom       DateTime
+  validTo         DateTime
+  usageLimit      Int?
+  usedCount       Int        @default(0)
+  isActive        Boolean    @default(true)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@map("coupons")
+} 
