@@ -38,9 +38,10 @@ export default function HomePage() {
     try {
       const response = await fetch("/api/tests?page=1&limit=6&sortBy=popular");
       const data = await response.json();
-      setPopularTests(data.tests);
+      setPopularTests(data.tests || []);
     } catch (error) {
       console.error("Error fetching popular tests:", error);
+      setPopularTests([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -231,7 +232,7 @@ export default function HomePage() {
                   <div className="h-10 bg-muted rounded"></div>
                 </div>
               ))
-            ) : (
+            ) : popularTests && popularTests.length > 0 ? (
               popularTests.map((test, index) => (
                 <div key={test.id} className="medical-card-hover p-6 group page-transition" style={{animationDelay: `${index * 0.1}s`}}>
                   <div className="mb-4">
@@ -268,6 +269,13 @@ export default function HomePage() {
                   </Button>
                 </div>
               ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-muted-foreground text-lg">No tests available at the moment.</p>
+                <Button className="mt-4" asChild>
+                  <Link href="/tests">Browse All Tests</Link>
+                </Button>
+              </div>
             )}
           </div>
           
