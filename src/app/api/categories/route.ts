@@ -6,6 +6,9 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    // Test database connection first
+    await prisma.$connect()
+    
     const categories = await prisma.category.findMany({
       where: {
         isActive: true,
@@ -39,12 +42,18 @@ export async function GET() {
       }
     })
 
-    return NextResponse.json({ categories })
+    return NextResponse.json({ 
+      categories: categories || []
+    })
   } catch (error) {
     console.error("Error fetching categories:", error)
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    )
+    
+    // Return empty array instead of error to prevent frontend crashes
+    return NextResponse.json({ 
+      categories: [],
+      error: "Unable to fetch categories at this time"
+    }, { status: 200 })
+  } finally {
+    await prisma.$disconnect()
   }
 } 

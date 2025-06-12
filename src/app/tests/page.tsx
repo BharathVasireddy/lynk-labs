@@ -93,9 +93,10 @@ function TestsPageContent() {
     try {
       const response = await fetch("/api/categories");
       const data = await response.json();
-      setCategories(data.categories);
+      setCategories(data.categories || []);
     } catch (error) {
       console.error("Error fetching categories:", error);
+      setCategories([]); // Set empty array on error
     }
   };
 
@@ -204,7 +205,7 @@ function TestsPageContent() {
             </SelectTrigger>
             <SelectContent className="animate-in fade-in-0 zoom-in-95 duration-200">
               <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((category) => (
+              {categories && categories.length > 0 && categories.map((category) => (
                 <SelectItem key={category.id} value={category.id}>
                   {category.name} ({category._count.tests})
                 </SelectItem>
@@ -232,7 +233,7 @@ function TestsPageContent() {
           <div className="flex flex-wrap gap-2 page-transition">
             {selectedCategory && (
               <Badge variant="secondary" className="gap-2 scale-hover">
-                {categories.find(c => c.id === selectedCategory)?.name}
+                {categories && categories.find(c => c.id === selectedCategory)?.name}
                 <button
                   onClick={() => handleCategoryChange("all")}
                   className="ml-1 hover:bg-muted-foreground/20 rounded-full p-0.5 scale-hover"

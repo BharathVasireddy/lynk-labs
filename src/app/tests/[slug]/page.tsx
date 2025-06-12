@@ -49,12 +49,6 @@ export default function TestDetailPage() {
   const slug = params.slug as string;
   const { addItem } = useCartStore();
 
-  useEffect(() => {
-    if (slug) {
-      fetchTestDetails();
-    }
-  }, [slug, fetchTestDetails]);
-
   const fetchTestDetails = useCallback(async () => {
     setLoading(true);
     try {
@@ -83,6 +77,12 @@ export default function TestDetailPage() {
       setLoading(false);
     }
   }, [slug, router]);
+
+  useEffect(() => {
+    if (slug) {
+      fetchTestDetails();
+    }
+  }, [slug, fetchTestDetails]);
 
   const calculateDiscount = (price: number, discountPrice: number | null) => {
     if (!discountPrice) return 0;
