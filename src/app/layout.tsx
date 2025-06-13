@@ -1,9 +1,7 @@
 import type { Metadata } from 'next'
 import { Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
-import { Header } from '@/components/layout/header'
-import { Footer } from '@/components/layout/footer'
-import { CartSidebar } from '@/components/layout/CartSidebar'
+import { ConditionalLayout } from '@/components/layout/ConditionalLayout'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/contexts/auth-context'
 
@@ -99,14 +97,9 @@ export default function RootLayout({
       </head>
       <body className={`${plusJakartaSans.className} antialiased`}>
         <AuthProvider>
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
-          </div>
-          <CartSidebar />
+          <ConditionalLayout>
+            {children}
+          </ConditionalLayout>
           <Toaster />
           <div id="modal-root" />
         </AuthProvider>

@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useCartStore } from "@/store/cart";
 import { useAuth } from "@/contexts/auth-context";
+import Image from "next/image";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -46,10 +47,12 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3 group flex-shrink-0">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md group-hover:shadow-lg scale-hover overflow-hidden">
-              <img 
-                src="/images/lynk-logo.png" 
-                alt="Lynk Labs" 
-                className="h-8 w-8 object-contain"
+              <Image
+                src="/images/logo.png"
+                alt="Lynk Labs"
+                width={32}
+                height={32}
+                className="h-8 w-8"
               />
             </div>
             <span className="font-bold text-xl text-foreground group-hover:text-primary liquid-hover whitespace-nowrap">Lynk Labs</span>

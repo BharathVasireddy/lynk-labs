@@ -1,12 +1,9 @@
 "use client";
 
-
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { ArrowRight, Shield, Clock, Home, Users, Star, CheckCircle, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-
 import { useCartStore } from "@/store/cart";
 
 interface Test {
@@ -23,15 +20,27 @@ interface Test {
   };
 }
 
-
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon: string | null;
+  _count: {
+    tests: number;
+  };
+}
 
 export default function HomePage() {
   const [popularTests, setPopularTests] = useState<Test[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const { addItem } = useCartStore();
 
   useEffect(() => {
     fetchPopularTests();
+    fetchCategories();
   }, []);
 
   const fetchPopularTests = async () => {
@@ -41,9 +50,26 @@ export default function HomePage() {
       setPopularTests(data.tests || []);
     } catch (error) {
       console.error("Error fetching popular tests:", error);
-      setPopularTests([]); // Set empty array on error
+      setPopularTests([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("/api/categories");
+      const data = await response.json();
+      // Get the top 6 categories with most tests
+      const sortedCategories = (data.categories || [])
+        .sort((a: Category, b: Category) => b._count.tests - a._count.tests)
+        .slice(0, 6);
+      setCategories(sortedCategories);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      setCategories([]);
+    } finally {
+      setCategoriesLoading(false);
     }
   };
 
@@ -184,6 +210,70 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Test Categories Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="container-padding">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-6 text-foreground">Browse Test Categories</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Explore our comprehensive range of diagnostic tests organized by health categories.
+            </p>
+          </div>
+          
+          {categoriesLoading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, index) => (
+                <div key={index} className="bg-white p-6 rounded-xl shadow-sm animate-pulse">
+                  <div className="w-12 h-12 bg-gray-200 rounded-lg mb-4"></div>
+                  <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-20"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {categories.map((category) => (
+                <Link
+                  key={category.id}
+                  href={`/tests?category=${category.id}`}
+                  className="group bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-primary/20"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="text-3xl bg-primary/10 p-3 rounded-lg group-hover:bg-primary/20 transition-colors">
+                      {category.icon || '🧪'}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+                        {category.name}
+                      </h3>
+                      <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
+                        {category.description}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-primary font-medium">
+                          {category._count.tests} tests available
+                        </span>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+          
+          <div className="text-center mt-12">
+            <Button size="lg" variant="outline" className="px-8 py-4 text-base font-semibold" asChild>
+              <Link href="/tests">
+                View All Tests
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-20 bg-background">
         <div className="container-padding">
@@ -198,14 +288,12 @@ export default function HomePage() {
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
-                <div key={index} className="medical-card-hover text-center p-6 group page-transition" style={{animationDelay: `${index * 0.1}s`}}>
-                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-primary/20 liquid-hover">
-                    <Icon className="medical-icon-lg scale-hover" />
+                <div key={index} className="text-center group">
+                  <div className="medical-icon-container mb-6 mx-auto scale-hover">
+                    <Icon className="h-8 w-8 text-primary" />
                   </div>
                   <h3 className="text-xl font-semibold mb-4 text-foreground">{feature.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {feature.description}
-                  </p>
+                  <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
                 </div>
               );
             })}
@@ -214,73 +302,79 @@ export default function HomePage() {
       </section>
 
       {/* Popular Tests Section */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-20 bg-gray-50">
         <div className="container-padding">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold mb-6 text-foreground">Popular Lab Tests</h2>
-            <p className="text-xl text-muted-foreground leading-relaxed">
-              Most booked tests with special discounts
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Most frequently booked tests by our customers for comprehensive health monitoring.
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {loading ? (
-              Array.from({ length: 6 }).map((_, index) => (
-                <div key={index} className="medical-card-hover p-6 loading-shimmer">
-                  <div className="h-6 bg-muted rounded mb-4"></div>
-                  <div className="h-4 bg-muted rounded mb-6 w-3/4"></div>
-                  <div className="h-10 bg-muted rounded"></div>
+          {loading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, index) => (
+                <div key={index} className="bg-white p-6 rounded-xl shadow-sm animate-pulse">
+                  <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-20 mb-4"></div>
+                  <div className="h-10 bg-gray-200 rounded"></div>
                 </div>
-              ))
-            ) : popularTests && popularTests.length > 0 ? (
-              popularTests.map((test, index) => (
-                <div key={test.id} className="medical-card-hover p-6 group page-transition" style={{animationDelay: `${index * 0.1}s`}}>
+              ))}
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {popularTests.map((test) => (
+                <div key={test.id} className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-primary/20">
                   <div className="mb-4">
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
-                      <Link href={`/tests/${test.slug}`} className="hover:text-primary liquid-hover">
-                        {test.name}
-                      </Link>
-                    </h3>
-                    <p className="text-sm text-muted-foreground">{test.category.name}</p>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">{test.name}</h3>
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{test.description}</p>
+                    <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">
+                      {test.category.name}
+                    </span>
                   </div>
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl font-bold text-primary liquid-hover">
-                        ₹{test.discountPrice || test.price}
+                  
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      {test.discountPrice && (
+                        <span className="text-lg font-bold text-foreground">₹{test.discountPrice}</span>
+                      )}
+                      <span className={`${test.discountPrice ? 'text-sm text-muted-foreground line-through' : 'text-lg font-bold text-foreground'}`}>
+                        ₹{test.price}
                       </span>
                       {test.discountPrice && (
-                        <span className="text-sm text-muted-foreground line-through">
-                          ₹{test.price}
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
+                          {calculateDiscount(test.price, test.discountPrice)}% OFF
                         </span>
                       )}
                     </div>
-                    {test.discountPrice && (
-                      <div className="medical-badge-success scale-hover">
-                        {calculateDiscount(test.price, test.discountPrice)}% OFF
-                      </div>
-                    )}
                   </div>
-                  <Button 
-                    className="w-full medical-button-outline"
-                    onClick={() => addToCart(test)}
-                  >
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Book Now
-                  </Button>
+                  
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1"
+                      asChild
+                    >
+                      <Link href={`/tests/${test.slug}`}>View Details</Link>
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => addToCart(test)}
+                    >
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      Add to Cart
+                    </Button>
+                  </div>
                 </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12">
-                <p className="text-muted-foreground text-lg">No tests available at the moment.</p>
-                <Button className="mt-4" asChild>
-                  <Link href="/tests">Browse All Tests</Link>
-                </Button>
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
           
           <div className="text-center mt-12">
-            <Button size="lg" className="medical-button-primary px-8 py-4 text-base font-semibold" asChild>
+            <Button size="lg" className="px-8 py-4 text-base font-semibold" asChild>
               <Link href="/tests">
                 View All Tests
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -291,20 +385,18 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-primary text-primary-foreground relative overflow-hidden">
-        <div className="container-padding text-center relative">
-          <h2 className="text-3xl lg:text-4xl font-bold mb-6 leading-tight">
-            Ready to Take Control of Your Health?
-          </h2>
-          <p className="text-xl mb-8 text-primary-foreground/90 max-w-2xl mx-auto leading-relaxed">
-            Join thousands of satisfied customers who trust Lynk Labs for their diagnostic needs.
+      <section className="py-20 bg-primary text-primary-foreground">
+        <div className="container-padding text-center">
+          <h2 className="text-3xl lg:text-4xl font-bold mb-6">Ready to Take Control of Your Health?</h2>
+          <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
+            Book your lab tests today and get accurate results delivered to your doorstep.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary" className="px-8 py-4 text-base font-semibold bg-primary-foreground text-primary hover:bg-primary-foreground/90" asChild>
-              <Link href="/tests">Book Your Test Now</Link>
+            <Button size="lg" variant="secondary" className="px-8 py-4 text-base font-semibold" asChild>
+              <Link href="/tests">Book Tests Now</Link>
             </Button>
             <Button size="lg" variant="outline" className="px-8 py-4 text-base font-semibold border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" asChild>
-              <Link href="/contact">Talk to Expert</Link>
+              <Link href="/contact">Contact Us</Link>
             </Button>
           </div>
         </div>

@@ -3,233 +3,284 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🌱 Starting database seed...')
+  console.log('🌱 Starting database seeding...')
 
-  // Check if data already exists
-  const existingTests = await prisma.test.count()
-  const existingCategories = await prisma.category.count()
+  // Create admin user
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@lynklabs.com' },
+    update: {},
+    create: {
+      email: 'admin@lynklabs.com',
+      name: 'Admin User',
+      phone: '+919876543210',
+      role: 'ADMIN',
+      isActive: true,
+    },
+  })
 
-  if (existingTests > 0 || existingCategories > 0) {
-    console.log('📊 Database already contains data, skipping seed...')
-    return
+  console.log('✅ Admin user created:', adminUser.email)
+
+  // Create test categories
+  const categories = [
+    {
+      name: 'Blood Tests',
+      slug: 'blood-tests',
+      description: 'Comprehensive blood analysis and testing',
+      icon: '🩸',
+    },
+    {
+      name: 'Urine Tests',
+      slug: 'urine-tests',
+      description: 'Urinalysis and kidney function tests',
+      icon: '🧪',
+    },
+    {
+      name: 'Cardiac Tests',
+      slug: 'cardiac-tests',
+      description: 'Heart health and cardiovascular screening',
+      icon: '❤️',
+    },
+    {
+      name: 'Diabetes Tests',
+      slug: 'diabetes-tests',
+      description: 'Blood sugar and diabetes monitoring',
+      icon: '🍯',
+    },
+    {
+      name: 'Liver Function',
+      slug: 'liver-function',
+      description: 'Liver health and function assessment',
+      icon: '🫀',
+    },
+    {
+      name: 'Thyroid Tests',
+      slug: 'thyroid-tests',
+      description: 'Thyroid hormone and function tests',
+      icon: '🦋',
+    },
+  ]
+
+  const createdCategories = []
+  for (const category of categories) {
+    const created = await prisma.category.upsert({
+      where: { slug: category.slug },
+      update: {},
+      create: category,
+    })
+    createdCategories.push(created)
+    console.log('✅ Category created:', created.name)
   }
 
-  console.log('📝 Database is empty, proceeding with seed...')
-
-  // Create categories
-  const categories = await Promise.all([
-    prisma.category.upsert({
-      where: { slug: 'blood-tests' },
-      update: {},
-      create: {
-        name: 'Blood Tests',
-        slug: 'blood-tests',
-        description: 'Comprehensive blood analysis and screening tests',
-        icon: '🩸'
-      }
-    }),
-    prisma.category.upsert({
-      where: { slug: 'diabetes' },
-      update: {},
-      create: {
-        name: 'Diabetes',
-        slug: 'diabetes',
-        description: 'Blood sugar and diabetes monitoring tests',
-        icon: '🍯'
-      }
-    }),
-    prisma.category.upsert({
-      where: { slug: 'heart-health' },
-      update: {},
-      create: {
-        name: 'Heart Health',
-        slug: 'heart-health',
-        description: 'Cardiovascular and lipid profile tests',
-        icon: '❤️'
-      }
-    }),
-    prisma.category.upsert({
-      where: { slug: 'thyroid' },
-      update: {},
-      create: {
-        name: 'Thyroid',
-        slug: 'thyroid',
-        description: 'Thyroid function and hormone tests',
-        icon: '🦋'
-      }
-    }),
-    prisma.category.upsert({
-      where: { slug: 'liver-health' },
-      update: {},
-      create: {
-        name: 'Liver Health',
-        slug: 'liver-health',
-        description: 'Liver function and health assessment tests',
-        icon: '🫀'
-      }
-    }),
-    prisma.category.upsert({
-      where: { slug: 'kidney-health' },
-      update: {},
-      create: {
-        name: 'Kidney Health',
-        slug: 'kidney-health',
-        description: 'Kidney function and urinalysis tests',
-        icon: '🫘'
-      }
-    })
-  ])
-
-  console.log('✅ Categories created')
-
-  // Create tests
+  // Create sample tests
   const tests = [
+    // Blood Tests
     {
       name: 'Complete Blood Count (CBC)',
       slug: 'complete-blood-count-cbc',
-      description: 'Comprehensive blood test that evaluates overall health and detects various disorders',
+      description: 'Comprehensive blood analysis including RBC, WBC, platelets, and hemoglobin levels',
       price: 299,
-      discountPrice: 199,
-      preparationInstructions: 'No special preparation required',
-      reportTime: '24 hours',
-      categorySlug: 'blood-tests'
+      discountPrice: 249,
+      preparationInstructions: 'No special preparation required. Can be done at any time.',
+      reportTime: '4-6 hours',
+      categorySlug: 'blood-tests',
     },
     {
       name: 'Lipid Profile',
       slug: 'lipid-profile',
-      description: 'Measures cholesterol levels and assesses cardiovascular risk',
-      price: 799,
-      discountPrice: 599,
-      preparationInstructions: '12-hour fasting required',
-      reportTime: '24 hours',
-      categorySlug: 'heart-health'
-    },
-    {
-      name: 'Thyroid Function Test (TSH, T3, T4)',
-      slug: 'thyroid-function-test',
-      description: 'Complete thyroid hormone panel to assess thyroid function',
-      price: 1199,
-      discountPrice: 899,
-      preparationInstructions: 'No special preparation required',
-      reportTime: '48 hours',
-      categorySlug: 'thyroid'
-    },
-    {
-      name: 'HbA1c (Diabetes)',
-      slug: 'hba1c-diabetes',
-      description: 'Measures average blood sugar levels over the past 2-3 months',
+      description: 'Cholesterol and triglyceride levels assessment for heart health',
       price: 599,
-      discountPrice: 449,
-      preparationInstructions: 'No fasting required',
-      reportTime: '24 hours',
-      categorySlug: 'diabetes'
+      discountPrice: 499,
+      preparationInstructions: '12-hour fasting required before the test.',
+      reportTime: '6-8 hours',
+      categorySlug: 'blood-tests',
     },
     {
-      name: 'Liver Function Test (LFT)',
-      slug: 'liver-function-test',
-      description: 'Comprehensive liver health assessment panel',
-      price: 899,
-      discountPrice: 699,
-      preparationInstructions: '8-hour fasting recommended',
-      reportTime: '24 hours',
-      categorySlug: 'liver-health'
-    },
-    {
-      name: 'Kidney Function Test (KFT)',
-      slug: 'kidney-function-test',
-      description: 'Complete kidney health and function assessment',
-      price: 849,
+      name: 'Basic Metabolic Panel',
+      slug: 'basic-metabolic-panel',
+      description: 'Essential blood chemistry tests including glucose, electrolytes, and kidney function',
+      price: 799,
       discountPrice: 649,
-      preparationInstructions: 'No special preparation required',
-      reportTime: '24 hours',
-      categorySlug: 'kidney-health'
+      preparationInstructions: '8-hour fasting recommended.',
+      reportTime: '4-6 hours',
+      categorySlug: 'blood-tests',
     },
+
+    // Urine Tests
     {
-      name: 'Fasting Blood Sugar (FBS)',
-      slug: 'fasting-blood-sugar',
-      description: 'Measures blood glucose levels after fasting',
+      name: 'Complete Urine Analysis',
+      slug: 'complete-urine-analysis',
+      description: 'Comprehensive urine examination for kidney health and infections',
       price: 199,
       discountPrice: 149,
-      preparationInstructions: '8-12 hour fasting required',
-      reportTime: '24 hours',
-      categorySlug: 'diabetes'
+      preparationInstructions: 'Collect first morning urine sample in provided container.',
+      reportTime: '2-4 hours',
+      categorySlug: 'urine-tests',
     },
     {
-      name: 'Vitamin D Test',
-      slug: 'vitamin-d-test',
-      description: 'Measures vitamin D levels in blood',
-      price: 999,
-      discountPrice: 799,
-      preparationInstructions: 'No special preparation required',
-      reportTime: '48 hours',
-      categorySlug: 'blood-tests'
-    }
+      name: 'Urine Culture & Sensitivity',
+      slug: 'urine-culture-sensitivity',
+      description: 'Bacterial culture test to identify urinary tract infections',
+      price: 399,
+      discountPrice: 329,
+      preparationInstructions: 'Clean catch midstream urine sample required.',
+      reportTime: '24-48 hours',
+      categorySlug: 'urine-tests',
+    },
+
+    // Cardiac Tests
+    {
+      name: 'Troponin I',
+      slug: 'troponin-i',
+      description: 'Heart attack marker and cardiac muscle damage assessment',
+      price: 899,
+      discountPrice: 749,
+      preparationInstructions: 'No special preparation required.',
+      reportTime: '2-4 hours',
+      categorySlug: 'cardiac-tests',
+    },
+    {
+      name: 'CK-MB',
+      slug: 'ck-mb',
+      description: 'Creatine kinase test for heart muscle damage detection',
+      price: 499,
+      discountPrice: 399,
+      preparationInstructions: 'No special preparation required.',
+      reportTime: '4-6 hours',
+      categorySlug: 'cardiac-tests',
+    },
+
+    // Diabetes Tests
+    {
+      name: 'HbA1c (Glycated Hemoglobin)',
+      slug: 'hba1c-glycated-hemoglobin',
+      description: '3-month average blood sugar level assessment',
+      price: 599,
+      discountPrice: 499,
+      preparationInstructions: 'No fasting required. Can be done at any time.',
+      reportTime: '4-6 hours',
+      categorySlug: 'diabetes-tests',
+    },
+    {
+      name: 'Fasting Blood Glucose',
+      slug: 'fasting-blood-glucose',
+      description: 'Blood sugar level measurement after overnight fasting',
+      price: 149,
+      discountPrice: 99,
+      preparationInstructions: '8-12 hour fasting required before the test.',
+      reportTime: '2-4 hours',
+      categorySlug: 'diabetes-tests',
+    },
+    {
+      name: 'Post Prandial Glucose',
+      slug: 'post-prandial-glucose',
+      description: 'Blood sugar level 2 hours after meal',
+      price: 149,
+      discountPrice: 99,
+      preparationInstructions: 'Eat normal meal, then wait exactly 2 hours before test.',
+      reportTime: '2-4 hours',
+      categorySlug: 'diabetes-tests',
+    },
+
+    // Liver Function
+    {
+      name: 'Liver Function Test (LFT)',
+      slug: 'liver-function-test-lft',
+      description: 'Comprehensive liver health assessment including enzymes and proteins',
+      price: 699,
+      discountPrice: 599,
+      preparationInstructions: '8-hour fasting recommended.',
+      reportTime: '6-8 hours',
+      categorySlug: 'liver-function',
+    },
+    {
+      name: 'Bilirubin Total & Direct',
+      slug: 'bilirubin-total-direct',
+      description: 'Liver function and bile duct health assessment',
+      price: 299,
+      discountPrice: 249,
+      preparationInstructions: 'No special preparation required.',
+      reportTime: '4-6 hours',
+      categorySlug: 'liver-function',
+    },
+
+    // Thyroid Tests
+    {
+      name: 'Thyroid Profile (T3, T4, TSH)',
+      slug: 'thyroid-profile-t3-t4-tsh',
+      description: 'Complete thyroid function assessment',
+      price: 899,
+      discountPrice: 749,
+      preparationInstructions: 'No special preparation required. Avoid biotin supplements 3 days before test.',
+      reportTime: '6-8 hours',
+      categorySlug: 'thyroid-tests',
+    },
+    {
+      name: 'TSH (Thyroid Stimulating Hormone)',
+      slug: 'tsh-thyroid-stimulating-hormone',
+      description: 'Primary thyroid function screening test',
+      price: 399,
+      discountPrice: 329,
+      preparationInstructions: 'No special preparation required.',
+      reportTime: '4-6 hours',
+      categorySlug: 'thyroid-tests',
+    },
   ]
 
+  // Create tests with category relationships
   for (const testData of tests) {
-    const category = categories.find(cat => cat.slug === testData.categorySlug)
+    const category = createdCategories.find(cat => cat.slug === testData.categorySlug)
     if (category) {
-      await prisma.test.upsert({
+      const { categorySlug, ...testCreateData } = testData
+      const test = await prisma.test.upsert({
         where: { slug: testData.slug },
         update: {},
         create: {
-          name: testData.name,
-          slug: testData.slug,
-          description: testData.description,
-          price: testData.price,
-          discountPrice: testData.discountPrice,
-          preparationInstructions: testData.preparationInstructions,
-          reportTime: testData.reportTime,
-          categoryId: category.id
-        }
+          ...testCreateData,
+          categoryId: category.id,
+        },
       })
+      console.log('✅ Test created:', test.name)
     }
   }
 
-  console.log('✅ Tests created')
+  // Create sample customer users
+  const customers = [
+    {
+      email: 'john.doe@example.com',
+      name: 'John Doe',
+      phone: '+919876543211',
+      role: 'CUSTOMER',
+    },
+    {
+      email: 'jane.smith@example.com',
+      name: 'Jane Smith',
+      phone: '+919876543212',
+      role: 'CUSTOMER',
+    },
+    {
+      email: 'mike.johnson@example.com',
+      name: 'Mike Johnson',
+      phone: '+919876543213',
+      role: 'CUSTOMER',
+    },
+  ]
 
-  // Create sample coupons
-  await prisma.coupon.upsert({
-    where: { code: 'WELCOME25' },
-    update: {},
-    create: {
-      code: 'WELCOME25',
-      description: 'Welcome discount for new users',
-      discountType: 'PERCENTAGE',
-      discountValue: 25,
-      minOrderAmount: 500,
-      maxDiscount: 500,
-      validFrom: new Date(),
-      validTo: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-      usageLimit: 1000,
-      usedCount: 0
-    }
-  })
+  for (const customer of customers) {
+    const created = await prisma.user.upsert({
+      where: { email: customer.email },
+      update: {},
+      create: customer,
+    })
+    console.log('✅ Customer created:', created.email)
+  }
 
-  await prisma.coupon.upsert({
-    where: { code: 'HEALTH50' },
-    update: {},
-    create: {
-      code: 'HEALTH50',
-      description: 'Health checkup discount',
-      discountType: 'FIXED',
-      discountValue: 50,
-      minOrderAmount: 1000,
-      maxDiscount: 50,
-      validFrom: new Date(),
-      validTo: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days from now
-      usageLimit: 500,
-      usedCount: 0
-    }
-  })
-
-  console.log('✅ Coupons created')
-  console.log('🎉 Database seed completed successfully!')
+  console.log('🎉 Database seeding completed successfully!')
+  console.log(`📊 Created: ${createdCategories.length} categories, ${tests.length} tests, ${customers.length + 1} users`)
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error during database seed:', e)
+    console.error('❌ Error during seeding:', e)
     process.exit(1)
   })
   .finally(async () => {

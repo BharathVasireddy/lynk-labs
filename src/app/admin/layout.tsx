@@ -15,12 +15,14 @@ import {
   Menu,
   X,
   Bell,
-  Search
+  Search,
+  BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/auth-context";
+import Image from "next/image";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -33,6 +35,11 @@ const sidebarItems = [
     icon: LayoutDashboard,
   },
   {
+    title: "Orders",
+    href: "/admin/orders",
+    icon: Package,
+  },
+  {
     title: "Tests Management",
     href: "/admin/tests",
     icon: TestTube,
@@ -43,11 +50,6 @@ const sidebarItems = [
     icon: Users,
   },
   {
-    title: "Orders",
-    href: "/admin/orders",
-    icon: Package,
-  },
-  {
     title: "Home Visits",
     href: "/admin/home-visits",
     icon: Calendar,
@@ -56,6 +58,11 @@ const sidebarItems = [
     title: "Reports",
     href: "/admin/reports",
     icon: FileText,
+  },
+  {
+    title: "Analytics",
+    href: "/admin/analytics",
+    icon: BarChart3,
   },
   {
     title: "Settings",
@@ -71,6 +78,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
+    // CRITICAL: Enforce admin authentication
     if (!loading && (!user || user.role !== "ADMIN")) {
       router.push("/auth/login");
       return;
@@ -82,16 +90,34 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     router.push("/");
   };
 
+  // Show loading while checking authentication
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Verifying admin access...</p>
+        </div>
       </div>
     );
   }
 
+  // Block access if not admin
   if (!user || user.role !== "ADMIN") {
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="text-red-500 text-6xl mb-4">🚫</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
+          <p className="text-gray-600 mb-6">
+            You don&apos;t have permission to access the admin panel. Please contact your administrator if you believe this is an error.
+          </p>
+          <Button asChild>
+            <Link href="/">Go to Home</Link>
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -105,9 +131,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <div className="flex items-center justify-between h-16 px-6 border-b">
             <Link href="/admin" className="flex items-center space-x-3">
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-                <img 
-                  src="/images/lynk-logo.png" 
-                  alt="Lynk Labs" 
+                <Image 
+                  src="/images/logo.png"
+                  alt="Lynk Labs"
+                  width={32}
+                  height={32}
                   className="h-6 w-6 object-contain"
                 />
               </div>
@@ -149,9 +177,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
-                  {user.name || "Admin"}
+                  {user?.name || "Admin"}
                 </p>
-                <p className="text-xs text-gray-500 truncate">{user.phone}</p>
+                <p className="text-xs text-gray-500 truncate">{user?.phone}</p>
+                <Badge variant="secondary" className="text-xs mt-1">
+                  {user?.role}
+                </Badge>
               </div>
             </div>
             <Button
