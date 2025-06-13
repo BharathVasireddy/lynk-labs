@@ -44,7 +44,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 shadow-sm">
       <div className="container-padding">
         {/* Main Header Row */}
-        <div className="flex h-20 items-center justify-between">
+        <div className="flex h-24 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center group flex-shrink-0">
             <div className="relative h-32 w-32 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
@@ -101,14 +101,14 @@ export function Header() {
             <div className="relative flex items-center">
               <Button 
                 variant="ghost" 
-                className="h-20 w-20 transition-all duration-200 rounded-xl group" 
+                className="h-24 w-24 rounded-xl group p-0" 
                 onClick={openCart}
               >
-                <ShoppingBag className="h-20 w-20 group-hover:scale-110 transition-transform duration-200" />
+                <ShoppingBag className="h-24 w-24 group-hover:scale-110 transition-transform duration-200" />
               </Button>
               {cartItemsCount > 0 && (
                 <Badge
-                  className="absolute -top-2 -right-2 h-8 w-8 rounded-full p-0 flex items-center justify-center text-sm font-bold bg-primary text-primary-foreground border-2 border-background shadow-lg animate-pulse"
+                  className="absolute top-0 right-0 h-8 w-8 rounded-full p-0 flex items-center justify-center text-sm font-bold bg-primary text-primary-foreground border-2 border-background shadow-lg animate-pulse"
                 >
                   {cartItemsCount > 99 ? '99+' : cartItemsCount}
                 </Badge>
@@ -119,8 +119,8 @@ export function Header() {
             {!loading && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-20 w-20 transition-all duration-200 rounded-xl group">
-                    <UserCircle className="h-20 w-20 group-hover:scale-110 transition-transform duration-200" />
+                  <Button variant="ghost" className="h-24 w-24 rounded-xl group p-0">
+                    <UserCircle className="h-24 w-24 group-hover:scale-110 transition-transform duration-200" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 mt-2">
@@ -156,10 +156,10 @@ export function Header() {
             {/* Mobile Menu Button */}
             <Button
               variant="ghost"
-              className="lg:hidden h-20 w-20 rounded-xl group"
+              className="lg:hidden h-24 w-24 rounded-xl group p-0"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X className="h-20 w-20 group-hover:scale-110 transition-transform duration-200" /> : <Menu className="h-20 w-20 group-hover:scale-110 transition-transform duration-200" />}
+              {isMenuOpen ? <X className="h-24 w-24 group-hover:scale-110 transition-transform duration-200" /> : <Menu className="h-24 w-24 group-hover:scale-110 transition-transform duration-200" />}
             </Button>
           </div>
         </div>
