@@ -170,7 +170,7 @@ export function CartSidebar() {
                 </Button>
                 <Button variant="outline" className="w-full" asChild>
                   <Link href="/tests" onClick={closeCart}>
-                    Continue Shopping
+                    Add More Tests
                   </Link>
                 </Button>
               </div>
