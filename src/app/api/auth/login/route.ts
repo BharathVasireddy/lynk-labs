@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
         email: user.email,
         role: user.role 
       },
-      process.env.JWT_SECRET || "fallback-secret",
+      process.env.NEXTAUTH_SECRET!,
       { expiresIn: "7d" }
     );
 
