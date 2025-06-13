@@ -107,17 +107,15 @@ export async function PUT(
       }
     });
 
-    // Create status history entry if notes provided
-    if (validatedData.notes) {
-      await prisma.orderStatusHistory.create({
-        data: {
-          orderId: params.id,
-          status: validatedData.status,
-          notes: validatedData.notes,
-          updatedBy: session.user.id,
-        }
-      });
-    }
+    // Create status history entry
+    await prisma.orderStatusHistory.create({
+      data: {
+        orderId: params.id,
+        status: validatedData.status,
+        notes: validatedData.notes || `Status updated to ${validatedData.status}`,
+        createdBy: session.user.id,
+      },
+    });
 
     // Send notification to customer about status change
     const { sendOrderNotification } = await import("@/lib/notifications");

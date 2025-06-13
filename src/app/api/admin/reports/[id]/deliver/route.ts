@@ -3,8 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
-export async function PUT(
-  request: NextRequest,
+export async function POST(
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

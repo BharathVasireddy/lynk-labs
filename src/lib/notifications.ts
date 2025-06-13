@@ -1,5 +1,40 @@
 import { prisma } from "@/lib/db";
 
+// Types for better type safety
+interface Order {
+  id: string;
+  orderNumber: string;
+  finalAmount: number;
+  user: {
+    name: string | null;
+    phone: string;
+    email: string | null;
+  };
+  orderItems: Array<{
+    test: {
+      name: string;
+    };
+  }>;
+}
+
+interface HomeVisit {
+  id: string;
+  scheduledDate: Date;
+  scheduledTime: string;
+  status: string;
+  order: {
+    orderNumber: string;
+    user: {
+      name: string | null;
+      phone: string;
+    };
+  };
+  agent?: {
+    name: string | null;
+    phone: string;
+  } | null;
+}
+
 // Notification types
 export type NotificationType = "SMS" | "EMAIL" | "WHATSAPP";
 export type NotificationEvent = 
@@ -300,15 +335,12 @@ export async function sendNotification(data: NotificationData): Promise<boolean>
     const notification = await prisma.notification.create({
       data: {
         userId: data.userId,
-        orderId: data.orderId,
-        homeVisitId: data.homeVisitId,
         type: data.type,
-        event: data.event,
-        recipient: data.recipient,
+        title: `${data.event} - ${data.type}`,
         message: data.message,
-        metadata: data.metadata || {},
         status: "PENDING",
-      }
+        metadata: data.metadata ? JSON.stringify(data.metadata) : null,
+      },
     });
 
     let success = false;
@@ -463,8 +495,7 @@ export async function sendHomeVisitNotification(
             user: true
           }
         },
-        agent: true,
-        address: true
+        agent: true
       }
     });
 
@@ -483,7 +514,6 @@ export async function sendHomeVisitNotification(
       }),
       agentName: homeVisit.agent?.name || "Agent",
       agentPhone: homeVisit.agent?.phone || "",
-      address: `${homeVisit.address.street}, ${homeVisit.address.city}, ${homeVisit.address.state} ${homeVisit.address.pincode}`,
       ...additionalData
     };
 
@@ -535,21 +565,42 @@ export async function sendHomeVisitNotification(
 }
 
 export async function sendWhatsAppMessage(to: string, message: string): Promise<boolean> {
-  // Implementation of sendWhatsAppMessage
-  return true; // Placeholder return, actual implementation needed
+  try {
+    // TODO: Implement actual WhatsApp API integration
+    console.log(`WhatsApp message to ${to}: ${message}`);
+    return true;
+  } catch (error) {
+    console.error("Error sending WhatsApp message:", error);
+    return false;
+  }
 }
 
 export async function sendOrderConfirmationWhatsApp(order: Order): Promise<boolean> {
-  // Implementation of sendOrderConfirmationWhatsApp
-  return true; // Placeholder return, actual implementation needed
+  try {
+    const message = `Order Confirmed! Your order #${order.orderNumber} for ₹${order.finalAmount} has been confirmed. We'll contact you soon for sample collection.`;
+    return await sendWhatsAppMessage(order.user.phone, message);
+  } catch (error) {
+    console.error("Error sending order confirmation WhatsApp:", error);
+    return false;
+  }
 }
 
 export async function sendHomeVisitScheduledWhatsApp(homeVisit: HomeVisit): Promise<boolean> {
-  // Implementation of sendHomeVisitScheduledWhatsApp
-  return true; // Placeholder return, actual implementation needed
+  try {
+    const message = `Home Visit Scheduled! Your sample collection for order #${homeVisit.order.orderNumber} is scheduled for ${homeVisit.scheduledDate.toLocaleDateString()} at ${homeVisit.scheduledTime}.`;
+    return await sendWhatsAppMessage(homeVisit.order.user.phone, message);
+  } catch (error) {
+    console.error("Error sending home visit scheduled WhatsApp:", error);
+    return false;
+  }
 }
 
 export async function sendReportReadyWhatsApp(order: Order): Promise<boolean> {
-  // Implementation of sendReportReadyWhatsApp
-  return true; // Placeholder return, actual implementation needed
+  try {
+    const message = `Report Ready! Your test reports for order #${order.orderNumber} are now available. Please check your account to download.`;
+    return await sendWhatsAppMessage(order.user.phone, message);
+  } catch (error) {
+    console.error("Error sending report ready WhatsApp:", error);
+    return false;
+  }
 }

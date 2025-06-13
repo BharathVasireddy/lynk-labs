@@ -6,11 +6,6 @@ import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { z } from "zod";
 
-const uploadSchema = z.object({
-  orderId: z.string(),
-  notes: z.string().optional(),
-});
-
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
