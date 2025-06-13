@@ -44,17 +44,17 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 shadow-sm">
       <div className="container-padding">
         {/* Main Header Row */}
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-14 sm:h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center group flex-shrink-0">
-            <div className="relative h-32 w-32 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+            <div className="relative h-10 w-10 sm:h-12 sm:w-12 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
               <Image
                 src="/images/lynk-logo.png"
                 alt="Lynk Labs"
-                width={128}
-                height={128}
+                width={98}
+                height={98}
                 priority
-                className="h-32 w-32 object-contain drop-shadow-sm"
+                className="h-10 w-10 sm:h-12 sm:w-12 object-contain drop-shadow-sm"
                 onError={(e) => {
                   const target = e.currentTarget as HTMLImageElement;
                   target.style.display = 'none';
@@ -62,35 +62,35 @@ export function Header() {
                   if (fallback) fallback.style.display = 'flex';
                 }}
               />
-              <div className="hidden h-32 w-32 items-center justify-center text-8xl">
+              <div className="hidden h-10 w-10 sm:h-12 sm:w-12 items-center justify-center text-2xl sm:text-3xl">
                 🧬
               </div>
             </div>
           </Link>
 
           {/* Center Search Bar - Desktop */}
-          <div className="hidden md:flex items-center flex-1 max-w-2xl mx-8">
+          <div className="hidden md:flex items-center flex-1 max-w-xl lg:max-w-2xl mx-4 lg:mx-8">
             <div className="relative w-full">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-6 w-6" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 lg:h-5 lg:w-5" />
               <Input
                 type="search"
                 placeholder="Search tests, packages..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="medical-input pl-14 pr-4 bg-muted/30 border-border/50 focus:bg-background focus:border-primary/50 h-12 w-full text-base rounded-xl"
+                className="medical-input pl-10 lg:pl-12 pr-4 bg-muted/30 border-border/50 focus:bg-background focus:border-primary/50 h-9 lg:h-10 w-full text-sm lg:text-base rounded-lg lg:rounded-xl"
               />
             </div>
           </div>
 
           {/* Right Side Actions */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 sm:space-x-2">
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-1 mr-4">
+            <nav className="hidden lg:flex items-center space-x-1 mr-2 lg:mr-4">
               {navigationItems.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="px-4 py-2 text-base font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 relative group whitespace-nowrap"
+                  className="px-3 lg:px-4 py-2 text-sm lg:text-base font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 relative group whitespace-nowrap"
                 >
                   {item.name}
                 </Link>
@@ -100,14 +100,14 @@ export function Header() {
             {/* Cart */}
             <div className="relative flex items-center">
               <button 
-                className="h-12 w-12 rounded-xl group p-0 flex items-center justify-center hover:bg-transparent focus:outline-none focus:ring-0" 
+                className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl group p-0 flex items-center justify-center hover:bg-transparent focus:outline-none focus:ring-0" 
                 onClick={openCart}
               >
-                <ShoppingBag className="h-6 w-6 group-hover:scale-110 transition-transform duration-200" />
+                <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 group-hover:scale-110 transition-transform duration-200" />
               </button>
               {cartItemsCount > 0 && (
                 <Badge
-                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs font-bold bg-primary text-primary-foreground border-2 border-background shadow-lg animate-pulse"
+                  className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full p-0 flex items-center justify-center text-xs font-bold bg-primary text-primary-foreground border-2 border-background shadow-lg animate-pulse"
                 >
                   {cartItemsCount > 99 ? '99+' : cartItemsCount}
                 </Badge>
@@ -118,8 +118,8 @@ export function Header() {
             {!loading && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="h-12 w-12 rounded-xl group p-0 flex items-center justify-center hover:bg-transparent focus:outline-none focus:ring-0">
-                    <UserCircle className="h-6 w-6 group-hover:scale-110 transition-transform duration-200" />
+                  <button className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl group p-0 flex items-center justify-center hover:bg-transparent focus:outline-none focus:ring-0">
+                    <UserCircle className="h-5 w-5 sm:h-6 sm:w-6 group-hover:scale-110 transition-transform duration-200" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 mt-2">
@@ -146,7 +146,7 @@ export function Header() {
               </DropdownMenu>
             ) : (
               <div className="hidden sm:flex items-center">
-                <Button className="medical-button-primary shadow-md h-12 px-6 rounded-xl font-medium" asChild>
+                <Button className="medical-button-primary shadow-md h-9 sm:h-10 px-4 sm:px-6 rounded-lg sm:rounded-xl font-medium text-sm sm:text-base" asChild>
                   <Link href="/auth/login">Login</Link>
                 </Button>
               </div>
@@ -154,10 +154,10 @@ export function Header() {
 
             {/* Mobile Menu Button */}
             <button
-              className="lg:hidden h-12 w-12 rounded-xl group p-0 flex items-center justify-center hover:bg-transparent focus:outline-none focus:ring-0"
+              className="lg:hidden h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl group p-0 flex items-center justify-center hover:bg-transparent focus:outline-none focus:ring-0"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X className="h-6 w-6 group-hover:scale-110 transition-transform duration-200" /> : <Menu className="h-6 w-6 group-hover:scale-110 transition-transform duration-200" />}
+              {isMenuOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6 group-hover:scale-110 transition-transform duration-200" /> : <Menu className="h-5 w-5 sm:h-6 sm:w-6 group-hover:scale-110 transition-transform duration-200" />}
             </button>
           </div>
         </div>
@@ -166,26 +166,26 @@ export function Header() {
         {isMenuOpen && (
           <div className="lg:hidden border-t bg-background/98 backdrop-blur-sm">
             {/* Mobile Search */}
-            <div className="p-4 md:hidden border-b border-border/40">
+            <div className="p-3 sm:p-4 md:hidden border-b border-border/40">
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-6 w-6" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 sm:h-5 sm:w-5" />
                 <Input
                   type="search"
                   placeholder="Search tests, packages..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="medical-input pl-14 pr-4 h-12 w-full text-base rounded-xl bg-muted/30"
+                  className="medical-input pl-10 sm:pl-12 pr-4 h-10 sm:h-11 w-full text-sm sm:text-base rounded-lg sm:rounded-xl bg-muted/30"
                 />
               </div>
             </div>
 
             {/* Mobile Navigation */}
-            <nav className="p-4 space-y-1">
+            <nav className="p-3 sm:p-4 space-y-1">
               {navigationItems.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="flex items-center px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-200"
+                  className="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base font-medium text-foreground hover:text-primary hover:bg-primary/5 rounded-lg sm:rounded-xl transition-all duration-200"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
@@ -195,8 +195,8 @@ export function Header() {
 
             {/* Mobile Auth Button */}
             {!loading && !user && (
-              <div className="p-4 border-t border-border/40 sm:hidden">
-                <Button className="w-full medical-button-primary h-12 rounded-xl font-medium text-base" asChild>
+              <div className="p-3 sm:p-4 border-t border-border/40 sm:hidden">
+                <Button className="w-full medical-button-primary h-10 sm:h-11 rounded-lg sm:rounded-xl font-medium text-sm sm:text-base" asChild>
                   <Link href="/auth/login">Login</Link>
                 </Button>
               </div>
