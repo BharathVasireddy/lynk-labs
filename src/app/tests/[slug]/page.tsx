@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Clock, FileText, ShoppingCart, Share2, Heart, CheckCircle } from "lucide-react";
+import { ArrowLeft, Clock, FileText, ShoppingCart, Share2, Heart, CheckCircle, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,7 +47,7 @@ export default function TestDetailPage() {
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
-  const { addItem } = useCartStore();
+  const { addItem, updateQuantity, getItemQuantity } = useCartStore();
 
   const fetchTestDetails = useCallback(async () => {
     setLoading(true);
@@ -397,10 +397,36 @@ export default function TestDetailPage() {
                 )}
               </div>
               
-              <Button className="w-full" size="lg" onClick={addToCart}>
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                                        Book Now
-              </Button>
+              {getItemQuantity(test.id) > 0 ? (
+                <div className="flex items-center justify-between p-3 border rounded-lg bg-primary/5">
+                  <span className="text-sm font-medium text-primary">
+                    {getItemQuantity(test.id)} {getItemQuantity(test.id) === 1 ? 'patient' : 'patients'}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => updateQuantity(test.id, getItemQuantity(test.id) - 1)}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => updateQuantity(test.id, getItemQuantity(test.id) + 1)}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button className="w-full" size="lg" onClick={addToCart}>
+                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  Book Now
+                </Button>
+              )}
               
               <div className="text-center">
                 <p className="text-xs text-muted-foreground">

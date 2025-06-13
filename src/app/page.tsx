@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { ArrowRight, Shield, Clock, Home, Users, Star, CheckCircle, ShoppingCart } from "lucide-react";
+import { ArrowRight, Shield, Clock, Home, Users, Star, CheckCircle, ShoppingCart, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/cart";
 
@@ -36,7 +36,7 @@ export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
-  const { addItem } = useCartStore();
+  const { addItem, updateQuantity, getItemQuantity } = useCartStore();
 
   useEffect(() => {
     fetchPopularTests();
@@ -368,14 +368,40 @@ export default function HomePage() {
                     >
                       <Link href={`/tests/${test.slug}`}>View Details</Link>
                     </Button>
-                    <Button
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => addToCart(test)}
-                    >
-                      <ShoppingCart className="h-4 w-4 mr-2" />
-                      Add to Cart
-                    </Button>
+                    {getItemQuantity(test.id) > 0 ? (
+                      <div className="flex-1 flex items-center justify-between p-2 border rounded-md bg-primary/5">
+                        <span className="text-xs font-medium text-primary">
+                          {getItemQuantity(test.id)} {getItemQuantity(test.id) === 1 ? 'patient' : 'patients'}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => updateQuantity(test.id, getItemQuantity(test.id) - 1)}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => updateQuantity(test.id, getItemQuantity(test.id) + 1)}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <Button
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => addToCart(test)}
+                      >
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        Add to Cart
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}

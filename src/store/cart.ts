@@ -24,6 +24,7 @@ interface CartStore {
   closeCart: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
+  getItemQuantity: (id: string) => number;
 }
 
 export const useCartStore = create<CartStore>()(
@@ -94,6 +95,11 @@ export const useCartStore = create<CartStore>()(
           const price = item.discountPrice || item.price;
           return total + (price * item.quantity);
         }, 0);
+      },
+      
+      getItemQuantity: (id) => {
+        const item = get().items.find(item => item.id === id);
+        return item ? item.quantity : 0;
       },
     }),
     {
