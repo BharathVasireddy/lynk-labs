@@ -44,7 +44,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 shadow-sm">
       <div className="container-padding">
         {/* Main Header Row */}
-        <div className="flex h-24 items-center justify-between">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center group flex-shrink-0">
             <div className="relative h-32 w-32 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
@@ -90,7 +90,7 @@ export function Header() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 relative group whitespace-nowrap"
+                  className="px-4 py-2 text-base font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 relative group whitespace-nowrap"
                 >
                   {item.name}
                 </Link>
@@ -100,14 +100,14 @@ export function Header() {
             {/* Cart */}
             <div className="relative flex items-center">
               <button 
-                className="h-24 w-24 rounded-xl group p-0 flex items-center justify-center hover:bg-transparent focus:outline-none focus:ring-0" 
+                className="h-12 w-12 rounded-xl group p-0 flex items-center justify-center hover:bg-transparent focus:outline-none focus:ring-0" 
                 onClick={openCart}
               >
-                <ShoppingBag className="h-24 w-24 group-hover:scale-110 transition-transform duration-200" />
+                <ShoppingBag className="h-6 w-6 group-hover:scale-110 transition-transform duration-200" />
               </button>
               {cartItemsCount > 0 && (
                 <Badge
-                  className="absolute top-0 right-0 h-8 w-8 rounded-full p-0 flex items-center justify-center text-sm font-bold bg-primary text-primary-foreground border-2 border-background shadow-lg animate-pulse"
+                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs font-bold bg-primary text-primary-foreground border-2 border-background shadow-lg animate-pulse"
                 >
                   {cartItemsCount > 99 ? '99+' : cartItemsCount}
                 </Badge>
@@ -118,8 +118,8 @@ export function Header() {
             {!loading && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="h-24 w-24 rounded-xl group p-0 flex items-center justify-center hover:bg-transparent focus:outline-none focus:ring-0">
-                    <UserCircle className="h-24 w-24 group-hover:scale-110 transition-transform duration-200" />
+                  <button className="h-12 w-12 rounded-xl group p-0 flex items-center justify-center hover:bg-transparent focus:outline-none focus:ring-0">
+                    <UserCircle className="h-6 w-6 group-hover:scale-110 transition-transform duration-200" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 mt-2">
@@ -154,10 +154,10 @@ export function Header() {
 
             {/* Mobile Menu Button */}
             <button
-              className="lg:hidden h-24 w-24 rounded-xl group p-0 flex items-center justify-center hover:bg-transparent focus:outline-none focus:ring-0"
+              className="lg:hidden h-12 w-12 rounded-xl group p-0 flex items-center justify-center hover:bg-transparent focus:outline-none focus:ring-0"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X className="h-24 w-24 group-hover:scale-110 transition-transform duration-200" /> : <Menu className="h-24 w-24 group-hover:scale-110 transition-transform duration-200" />}
+              {isMenuOpen ? <X className="h-6 w-6 group-hover:scale-110 transition-transform duration-200" /> : <Menu className="h-6 w-6 group-hover:scale-110 transition-transform duration-200" />}
             </button>
           </div>
         </div>
