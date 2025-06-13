@@ -44,17 +44,17 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 shadow-sm">
       <div className="container-padding">
         {/* Main Header Row */}
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-20 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center group flex-shrink-0">
-            <div className="relative h-16 w-16 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+            <div className="relative h-32 w-32 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
               <Image
                 src="/images/lynk-logo.png"
                 alt="Lynk Labs"
-                width={64}
-                height={64}
+                width={128}
+                height={128}
                 priority
-                className="h-16 w-16 object-contain drop-shadow-sm"
+                className="h-32 w-32 object-contain drop-shadow-sm"
                 onError={(e) => {
                   const target = e.currentTarget as HTMLImageElement;
                   target.style.display = 'none';
@@ -62,7 +62,7 @@ export function Header() {
                   if (fallback) fallback.style.display = 'flex';
                 }}
               />
-              <div className="hidden h-16 w-16 items-center justify-center text-4xl">
+              <div className="hidden h-32 w-32 items-center justify-center text-8xl">
                 🧬
               </div>
             </div>
@@ -98,29 +98,29 @@ export function Header() {
             </nav>
 
             {/* Cart */}
-            <div className="relative">
+            <div className="relative flex items-center">
               <Button 
                 variant="ghost" 
-                className="h-16 w-16 transition-all duration-200 rounded-xl group" 
+                className="h-20 w-20 transition-all duration-200 rounded-xl group" 
                 onClick={openCart}
               >
-                <ShoppingBag className="h-10 w-10 group-hover:scale-110 transition-transform duration-200" />
-                {cartItemsCount > 0 && (
-                  <Badge
-                    className="absolute top-1 right-1 h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs font-bold bg-primary text-primary-foreground border-2 border-background shadow-lg animate-pulse"
-                  >
-                    {cartItemsCount > 99 ? '99+' : cartItemsCount}
-                  </Badge>
-                )}
+                <ShoppingBag className="h-20 w-20 group-hover:scale-110 transition-transform duration-200" />
               </Button>
+              {cartItemsCount > 0 && (
+                <Badge
+                  className="absolute -top-2 -right-2 h-8 w-8 rounded-full p-0 flex items-center justify-center text-sm font-bold bg-primary text-primary-foreground border-2 border-background shadow-lg animate-pulse"
+                >
+                  {cartItemsCount > 99 ? '99+' : cartItemsCount}
+                </Badge>
+              )}
             </div>
 
             {/* User Menu */}
             {!loading && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-16 w-16 transition-all duration-200 rounded-xl group">
-                    <UserCircle className="h-10 w-10 group-hover:scale-110 transition-transform duration-200" />
+                  <Button variant="ghost" className="h-20 w-20 transition-all duration-200 rounded-xl group">
+                    <UserCircle className="h-20 w-20 group-hover:scale-110 transition-transform duration-200" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 mt-2">
@@ -156,10 +156,10 @@ export function Header() {
             {/* Mobile Menu Button */}
             <Button
               variant="ghost"
-              className="lg:hidden h-16 w-16 rounded-xl group"
+              className="lg:hidden h-20 w-20 rounded-xl group"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X className="h-10 w-10 group-hover:scale-110 transition-transform duration-200" /> : <Menu className="h-10 w-10 group-hover:scale-110 transition-transform duration-200" />}
+              {isMenuOpen ? <X className="h-20 w-20 group-hover:scale-110 transition-transform duration-200" /> : <Menu className="h-20 w-20 group-hover:scale-110 transition-transform duration-200" />}
             </Button>
           </div>
         </div>
