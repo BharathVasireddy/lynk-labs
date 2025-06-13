@@ -47,14 +47,14 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center group flex-shrink-0">
-            <div className="relative h-12 w-12 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+            <div className="relative h-16 w-16 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
               <Image
                 src="/images/lynk-logo.png"
                 alt="Lynk Labs"
-                width={48}
-                height={48}
+                width={64}
+                height={64}
                 priority
-                className="h-12 w-12 object-contain drop-shadow-sm"
+                className="h-16 w-16 object-contain drop-shadow-sm"
                 onError={(e) => {
                   const target = e.currentTarget as HTMLImageElement;
                   target.style.display = 'none';
@@ -62,7 +62,7 @@ export function Header() {
                   if (fallback) fallback.style.display = 'flex';
                 }}
               />
-              <div className="hidden h-12 w-12 items-center justify-center text-3xl">
+              <div className="hidden h-16 w-16 items-center justify-center text-4xl">
                 🧬
               </div>
             </div>
@@ -101,13 +101,13 @@ export function Header() {
             <div className="relative">
               <Button 
                 variant="ghost" 
-                className="h-16 w-16 hover:bg-primary/10 hover:text-primary transition-all duration-200 rounded-xl group" 
+                className="h-16 w-16 transition-all duration-200 rounded-xl group" 
                 onClick={openCart}
               >
-                <ShoppingBag className="h-8 w-8 group-hover:scale-110 transition-transform duration-200" />
+                <ShoppingBag className="h-10 w-10 group-hover:scale-110 transition-transform duration-200" />
                 {cartItemsCount > 0 && (
                   <Badge
-                    className="absolute -top-1 -right-1 h-7 w-7 rounded-full p-0 flex items-center justify-center text-sm font-bold bg-primary text-primary-foreground border-2 border-background shadow-lg animate-pulse"
+                    className="absolute top-1 right-1 h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs font-bold bg-primary text-primary-foreground border-2 border-background shadow-lg animate-pulse"
                   >
                     {cartItemsCount > 99 ? '99+' : cartItemsCount}
                   </Badge>
@@ -119,8 +119,8 @@ export function Header() {
             {!loading && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-16 w-16 hover:bg-primary/10 hover:text-primary transition-all duration-200 rounded-xl group">
-                    <UserCircle className="h-8 w-8 group-hover:scale-110 transition-transform duration-200" />
+                  <Button variant="ghost" className="h-16 w-16 transition-all duration-200 rounded-xl group">
+                    <UserCircle className="h-10 w-10 group-hover:scale-110 transition-transform duration-200" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 mt-2">
@@ -159,7 +159,7 @@ export function Header() {
               className="lg:hidden h-16 w-16 rounded-xl group"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X className="h-8 w-8 group-hover:scale-110 transition-transform duration-200" /> : <Menu className="h-8 w-8 group-hover:scale-110 transition-transform duration-200" />}
+              {isMenuOpen ? <X className="h-10 w-10 group-hover:scale-110 transition-transform duration-200" /> : <Menu className="h-10 w-10 group-hover:scale-110 transition-transform duration-200" />}
             </Button>
           </div>
         </div>
