@@ -339,7 +339,7 @@ export default function AdminTestsPage() {
                               View Details
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                              <Link href={`/admin/tests/${test.id}/edit`}>
+                              <Link href={`/admin/tests/${test.id}`}>
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit Test
                               </Link>

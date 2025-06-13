@@ -319,7 +319,7 @@ export default function AdminPackagesPage() {
                               View Details
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                              <Link href={`/admin/packages/${pkg.id}/edit`}>
+                              <Link href={`/admin/packages/${pkg.id}`}>
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit Package
                               </Link>
