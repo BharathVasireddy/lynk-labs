@@ -411,7 +411,7 @@ export default function OrdersPage() {
                   {selectedOrder.orderItems.map((item, index) => (
                     <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
                       <span>{item.test.name}</span>
-                      <span>Qty: {item.quantity} × {formatCurrency(item.price)}</span>
+                                                      <span>{item.quantity} {item.quantity === 1 ? 'patient' : 'patients'} × {formatCurrency(item.price)}</span>
                     </div>
                   ))}
                 </div>

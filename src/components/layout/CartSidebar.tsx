@@ -115,8 +115,8 @@ export function CartSidebar() {
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
-                          <span className="w-8 text-center text-sm">
-                            {item.quantity}
+                          <span className="w-12 text-center text-sm">
+                            {item.quantity} {item.quantity === 1 ? 'patient' : 'patients'}
                           </span>
                           <Button
                             variant="outline"
@@ -148,7 +148,7 @@ export function CartSidebar() {
             <div className="border-t p-4 space-y-4">
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span>Subtotal ({totalItems} items)</span>
+                  <span>Subtotal ({totalItems} {totalItems === 1 ? 'patient' : 'patients'})</span>
                   <span>₹{totalPrice}</span>
                 </div>
                 <div className="flex justify-between text-sm text-green-600">

@@ -273,7 +273,7 @@ export default function OrderDetailsPage() {
                           <Badge variant="outline" className="text-xs">
                             {item.test.category.name}
                           </Badge>
-                          <span className="text-sm text-muted-foreground">Qty: {item.quantity}</span>
+                          <span className="text-sm text-muted-foreground">{item.quantity} {item.quantity === 1 ? 'patient' : 'patients'}</span>
                         </div>
                       </div>
                       <div className="text-right">

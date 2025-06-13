@@ -300,7 +300,7 @@ export default function CheckoutPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-600" />
-                  Order Summary ({getTotalItems()} items)
+                  Order Summary ({getTotalItems()} {getTotalItems() === 1 ? 'patient' : 'patients'})
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -309,7 +309,7 @@ export default function CheckoutPage() {
                     <div className="flex-1">
                       <h4 className="font-medium">{item.name}</h4>
                       <p className="text-sm text-muted-foreground">{item.category.name}</p>
-                      <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                      <p className="text-sm text-muted-foreground">{item.quantity} {item.quantity === 1 ? 'patient' : 'patients'}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold">₹{(item.discountPrice || item.price) * item.quantity}</p>

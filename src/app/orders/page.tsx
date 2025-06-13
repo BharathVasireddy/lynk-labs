@@ -298,7 +298,7 @@ export default function OrdersPage() {
                           <div className="space-y-1">
                             {order.orderItems.slice(0, 2).map((item) => (
                               <p key={item.id} className="text-sm font-medium">
-                                {item.test.name} × {item.quantity}
+                                {item.test.name} ({item.quantity} {item.quantity === 1 ? 'patient' : 'patients'})
                               </p>
                             ))}
                             {order.orderItems.length > 2 && (

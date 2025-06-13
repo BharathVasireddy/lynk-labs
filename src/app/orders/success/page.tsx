@@ -157,7 +157,7 @@ function OrderSuccessContent() {
                       <div className="flex-1">
                         <h4 className="font-medium text-gray-900">{item.test.name}</h4>
                         <p className="text-sm text-gray-500">{item.test.category.name}</p>
-                        <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
+                        <p className="text-sm text-gray-500">{item.quantity} {item.quantity === 1 ? 'patient' : 'patients'}</p>
                       </div>
                       <div className="text-right">
                         <p className="font-medium">₹{item.price.toLocaleString()}</p>
