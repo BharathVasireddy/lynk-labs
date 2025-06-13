@@ -44,17 +44,17 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 shadow-sm">
       <div className="container-padding">
         {/* Main Header Row */}
-        <div className="flex h-14 sm:h-16 items-center justify-between">
+        <div className="flex h-16 sm:h-18 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center group flex-shrink-0">
-            <div className="relative h-10 w-10 sm:h-12 sm:w-12 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+            <div className="relative h-14 w-14 sm:h-16 sm:w-16 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
               <Image
                 src="/images/lynk-logo.png"
                 alt="Lynk Labs"
-                width={98}
-                height={98}
+                width={64}
+                height={64}
                 priority
-                className="h-10 w-10 sm:h-12 sm:w-12 object-contain drop-shadow-sm"
+                className="h-14 w-14 sm:h-16 sm:w-16 object-contain drop-shadow-sm"
                 onError={(e) => {
                   const target = e.currentTarget as HTMLImageElement;
                   target.style.display = 'none';
@@ -62,7 +62,7 @@ export function Header() {
                   if (fallback) fallback.style.display = 'flex';
                 }}
               />
-              <div className="hidden h-10 w-10 sm:h-12 sm:w-12 items-center justify-center text-2xl sm:text-3xl">
+              <div className="hidden h-14 w-14 sm:h-16 sm:w-16 items-center justify-center text-3xl sm:text-4xl">
                 🧬
               </div>
             </div>
