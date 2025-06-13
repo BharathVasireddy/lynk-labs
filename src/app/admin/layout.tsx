@@ -16,7 +16,8 @@ import {
   X,
   Bell,
   Search,
-  BarChart3
+  BarChart3,
+  Heart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +44,11 @@ const sidebarItems = [
     title: "Tests Management",
     href: "/admin/tests",
     icon: TestTube,
+  },
+  {
+    title: "Health Packages",
+    href: "/admin/packages",
+    icon: Heart,
   },
   {
     title: "Users",

@@ -107,8 +107,48 @@ model Test {
   category      Category @relation(fields: [categoryId], references: [id])
   orderItems    OrderItem[]
   cartItems     CartItem[]
+  packageTests  PackageTest[]
 
   @@map("tests")
+}
+
+model Package {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  subtitle      String?
+  description   String?
+  price         Float
+  originalPrice Float?
+  testCount     Int      @default(0)
+  reportTime    String?
+  idealFor      String?
+  features      String[] // Array of feature strings
+  isPopular     Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  packageTests  PackageTest[]
+  orderItems    OrderItem[]
+  cartItems     CartItem[]
+
+  @@map("packages")
+}
+
+model PackageTest {
+  id        String   @id @default(cuid())
+  packageId String
+  testId    String
+  createdAt DateTime @default(now())
+
+  // Relations
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  test      Test @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@unique([packageId, testId])
+  @@map("package_tests")
 }
 
 model Address {
@@ -135,16 +175,19 @@ model Address {
 model CartItem {
   id        String   @id @default(cuid())
   userId    String
-  testId    String
+  testId    String?
+  packageId String?
   quantity  Int      @default(1)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
   user      User @relation("CartItemUser", fields: [userId], references: [id])
-  test      Test @relation(fields: [testId], references: [id])
+  test      Test? @relation(fields: [testId], references: [id])
+  package   Package? @relation(fields: [packageId], references: [id])
 
   @@unique([userId, testId])
+  @@unique([userId, packageId])
   @@map("cart_items")
 }
 
@@ -177,7 +220,8 @@ model Order {
 model OrderItem {
   id        String   @id @default(cuid())
   orderId   String
-  testId    String
+  testId    String?
+  packageId String?
   quantity  Int
   price     Float
   createdAt DateTime @default(now())
@@ -185,7 +229,8 @@ model OrderItem {
 
   // Relations
   order     Order @relation(fields: [orderId], references: [id])
-  test      Test @relation(fields: [testId], references: [id])
+  test      Test? @relation(fields: [testId], references: [id])
+  package   Package? @relation(fields: [packageId], references: [id])
 
   @@map("order_items")
 }
