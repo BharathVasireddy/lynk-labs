@@ -7,28 +7,36 @@ const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    const { email, phone, password } = await request.json();
 
-    if (!email || !password) {
+    // Support both email and phone login
+    const loginIdentifier = email || phone;
+
+    if (!loginIdentifier || !password) {
       return NextResponse.json(
-        { error: "Email and password are required" },
+        { error: "Email/Phone and password are required" },
         { status: 400 }
       );
     }
 
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
+    // Find user by email or phone
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: loginIdentifier.toLowerCase() },
+          { phone: loginIdentifier }
+        ]
+      },
     });
 
     if (!user) {
       return NextResponse.json(
-        { error: "Invalid email or password" },
+        { error: "Invalid credentials" },
         { status: 401 }
       );
     }
 
-    // Check if user has a password (email-based account)
+    // Check if user has a password
     if (!user.password) {
       return NextResponse.json(
         { error: "This account uses WhatsApp login. Please use WhatsApp to sign in." },
@@ -40,7 +48,15 @@ export async function POST(request: NextRequest) {
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return NextResponse.json(
-        { error: "Invalid email or password" },
+        { error: "Invalid credentials" },
+        { status: 401 }
+      );
+    }
+
+    // Check if user is active
+    if (!user.isActive) {
+      return NextResponse.json(
+        { error: "Account is deactivated" },
         { status: 401 }
       );
     }
@@ -50,6 +66,7 @@ export async function POST(request: NextRequest) {
       { 
         userId: user.id,
         email: user.email,
+        phone: user.phone,
         role: user.role 
       },
       process.env.NEXTAUTH_SECRET!,

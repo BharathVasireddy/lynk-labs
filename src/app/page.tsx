@@ -26,7 +26,7 @@ interface Category {
   slug: string;
   description: string | null;
   icon: string | null;
-  _count: {
+  _count?: {
     tests: number;
   };
 }
@@ -45,7 +45,14 @@ export default function HomePage() {
 
   const fetchPopularTests = async () => {
     try {
-      const response = await fetch("/api/tests?page=1&limit=6&sortBy=popular");
+      // Use the new optimized POST endpoint for popular tests
+      const response = await fetch("/api/tests", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ type: "popular" }),
+      });
       const data = await response.json();
       setPopularTests(data.tests || []);
     } catch (error) {
@@ -58,11 +65,13 @@ export default function HomePage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch("/api/categories");
+      // Use optimized categories endpoint with test count
+      const response = await fetch("/api/categories?includeTestCount=true&limit=6");
       const data = await response.json();
-      // Get the top 6 categories with most tests
+      // Sort by test count and take top 6
       const sortedCategories = (data.categories || [])
-        .sort((a: Category, b: Category) => b._count.tests - a._count.tests)
+        .filter((cat: Category) => cat._count?.tests > 0)
+        .sort((a: Category, b: Category) => (b._count?.tests || 0) - (a._count?.tests || 0))
         .slice(0, 6);
       setCategories(sortedCategories);
     } catch (error) {
@@ -252,7 +261,7 @@ export default function HomePage() {
                       </p>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-primary font-medium">
-                          {category._count.tests} tests available
+                          {category._count?.tests || 0} tests available
                         </span>
                         <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                       </div>

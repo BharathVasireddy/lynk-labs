@@ -117,7 +117,7 @@ export default function TestDetailPage() {
           url: window.location.href,
         });
       } catch (error) {
-        console.log('Error sharing:', error);
+        // Share failed, but don't show error to user
       }
     } else {
       // Fallback: copy to clipboard

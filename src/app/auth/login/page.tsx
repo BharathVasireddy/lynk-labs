@@ -66,7 +66,6 @@ export default function LoginPage() {
 
       // In development, show the OTP for testing
       if (process.env.NODE_ENV === "development" && data.otp) {
-        console.log("Development OTP:", data.otp);
         setError(`Development OTP: ${data.otp}`);
       }
 

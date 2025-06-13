@@ -4,33 +4,61 @@ import { prisma } from "@/lib/db"
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+// Cache for frequently accessed data
+const cache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function getCacheKey(params: Record<string, any>): string {
+  return JSON.stringify(params);
+}
+
+function getFromCache(key: string): any | null {
+  const cached = cache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
+  }
+  cache.delete(key);
+  return null;
+}
+
+function setCache(key: string, data: any): void {
+  cache.set(key, { data, timestamp: Date.now() });
+}
+
 export async function GET(request: NextRequest) {
   try {
-    // Test database connection first
-    await prisma.$connect()
-    
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get("page") || "1")
-    const limit = parseInt(searchParams.get("limit") || "20")
+    const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50) // Cap at 50
     const search = searchParams.get("search") || ""
     const categoryId = searchParams.get("categoryId")
     const sortBy = searchParams.get("sortBy") || "name"
     
+    // Create cache key
+    const cacheKey = getCacheKey({ page, limit, search, categoryId, sortBy });
+    
+    // Check cache first
+    const cachedResult = getFromCache(cacheKey);
+    if (cachedResult) {
+      return NextResponse.json(cachedResult);
+    }
+    
     const skip = (page - 1) * limit
 
+    // Optimized where clause
     const where = {
       isActive: true,
       ...(search && {
         OR: [
-          { name: { contains: search } },
-          { description: { contains: search } }
+          { name: { contains: search, mode: 'insensitive' as const } },
+          { description: { contains: search, mode: 'insensitive' as const } }
         ]
       }),
       ...(categoryId && { categoryId })
     }
 
-    // Build orderBy clause
-    let orderBy: { [key: string]: string } = { name: "asc" }
+    // Optimized orderBy clause
+    let orderBy: any = { name: "asc" }
     
     switch (sortBy) {
       case "price-low":
@@ -40,25 +68,48 @@ export async function GET(request: NextRequest) {
         orderBy = { price: "desc" }
         break
       case "popular":
-        // For now, order by creation date (newest first)
-        // In a real app, this would be based on popularity metrics
+        // Order by order count (requires aggregation)
+        orderBy = [
+          { orderItems: { _count: "desc" } },
+          { createdAt: "desc" }
+        ]
+        break
+      case "newest":
         orderBy = { createdAt: "desc" }
         break
       default:
         orderBy = { name: "asc" }
     }
 
+    // Use Promise.all for parallel queries - much faster
     const [tests, total] = await Promise.all([
       prisma.test.findMany({
         where,
-        include: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          price: true,
+          discountPrice: true,
+          preparationInstructions: true,
+          reportTime: true,
+          isActive: true,
           category: {
             select: {
               id: true,
               name: true,
               slug: true
             }
-          }
+          },
+          // Only include order count for popular sorting
+          ...(sortBy === "popular" && {
+            _count: {
+              select: {
+                orderItems: true
+              }
+            }
+          })
         },
         orderBy,
         skip,
@@ -67,8 +118,7 @@ export async function GET(request: NextRequest) {
       prisma.test.count({ where })
     ])
 
-    // If no tests found, return empty array instead of undefined
-    return NextResponse.json({
+    const result = {
       tests: tests || [],
       pagination: {
         page,
@@ -76,7 +126,13 @@ export async function GET(request: NextRequest) {
         total: total || 0,
         pages: Math.ceil((total || 0) / limit)
       }
-    })
+    };
+
+    // Cache the result
+    setCache(cacheKey, result);
+
+    return NextResponse.json(result);
+    
   } catch (error) {
     console.error("Error fetching tests:", error)
     
@@ -91,7 +147,63 @@ export async function GET(request: NextRequest) {
       },
       error: "Unable to fetch tests at this time"
     }, { status: 200 }) // Return 200 to prevent frontend errors
-  } finally {
-    await prisma.$disconnect()
+  }
+}
+
+// Endpoint for getting popular tests (cached heavily)
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { type } = body;
+
+    if (type === "popular") {
+      const cacheKey = "popular-tests";
+      const cached = getFromCache(cacheKey);
+      
+      if (cached) {
+        return NextResponse.json(cached);
+      }
+
+      // Get most ordered tests
+      const popularTests = await prisma.test.findMany({
+        where: { isActive: true },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          price: true,
+          discountPrice: true,
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true
+            }
+          },
+          _count: {
+            select: {
+              orderItems: true
+            }
+          }
+        },
+        orderBy: {
+          orderItems: {
+            _count: "desc"
+          }
+        },
+        take: 6
+      });
+
+      const result = { tests: popularTests };
+      setCache(cacheKey, result);
+      
+      return NextResponse.json(result);
+    }
+
+    return NextResponse.json({ error: "Invalid request type" }, { status: 400 });
+    
+  } catch (error) {
+    console.error("Error in POST /api/tests:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 } 

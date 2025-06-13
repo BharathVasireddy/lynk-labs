@@ -12,7 +12,7 @@ const createOrderSchema = z.object({
   addressId: z.string(),
   scheduledDate: z.string(),
   scheduledTime: z.string(),
-  couponCode: z.string().optional(),
+  couponCode: z.string().nullable().optional(),
   paymentMethod: z.enum(["razorpay", "cod"]),
 });
 
@@ -102,16 +102,24 @@ export async function GET(request: NextRequest) {
 // POST /api/orders - Create new order
 export async function POST(request: NextRequest) {
   try {
+    console.log("📋 Order creation started");
+    
     const user = await verifyAuth(request);
     if (!user) {
+      console.log("❌ User not authenticated");
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
+    console.log(`👤 User authenticated: ${user.name} (${user.phone})`);
+
     const body = await request.json();
+    console.log("📦 Request body:", JSON.stringify(body, null, 2));
+    
     const validatedData = createOrderSchema.parse(body);
+    console.log("✅ Data validation passed");
 
     // Verify address belongs to user
     const address = await prisma.address.findFirst({
@@ -122,14 +130,19 @@ export async function POST(request: NextRequest) {
     });
 
     if (!address) {
+      console.log(`❌ Address not found: ${validatedData.addressId} for user ${user.id}`);
       return NextResponse.json(
         { error: "Invalid address" },
         { status: 400 }
       );
     }
 
+    console.log(`📍 Address verified: ${address.line1}, ${address.city}`);
+
     // Verify all tests exist and calculate total
     const testIds = validatedData.items.map(item => item.testId);
+    console.log(`🧪 Checking tests: ${testIds.join(', ')}`);
+    
     const tests = await prisma.test.findMany({
       where: {
         id: { in: testIds },
@@ -138,11 +151,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (tests.length !== testIds.length) {
+      console.log(`❌ Test mismatch: Found ${tests.length}, expected ${testIds.length}`);
       return NextResponse.json(
         { error: "Some tests are not available" },
         { status: 400 }
       );
     }
+
+    console.log(`✅ All tests verified: ${tests.map(t => t.name).join(', ')}`);
 
     // Calculate totals
     let totalAmount = 0;
@@ -163,8 +179,10 @@ export async function POST(request: NextRequest) {
     }
 
     const finalAmount = totalAmount - discountAmount;
+    console.log(`💰 Totals calculated: Total=${totalAmount}, Discount=${discountAmount}, Final=${finalAmount}`);
 
     // Create order with transaction
+    console.log("🔄 Starting database transaction...");
     const result = await prisma.$transaction(async (tx) => {
       // Create order
       const order = await tx.order.create({
@@ -181,6 +199,8 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      console.log(`📋 Order created: ${order.orderNumber}`);
+
       // Create order items
       const orderItems = await Promise.all(
         validatedData.items.map(item =>
@@ -195,6 +215,8 @@ export async function POST(request: NextRequest) {
         )
       );
 
+      console.log(`📦 Order items created: ${orderItems.length} items`);
+
       // Create home visit
       const homeVisit = await tx.homeVisit.create({
         data: {
@@ -205,6 +227,8 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      console.log(`🏠 Home visit scheduled: ${validatedData.scheduledDate} at ${validatedData.scheduledTime}`);
+
       return { order, orderItems, homeVisit };
     });
 
@@ -214,7 +238,10 @@ export async function POST(request: NextRequest) {
       // TODO: Integrate with Razorpay API
       // For now, we'll simulate the order ID
       razorpayOrderId = `order_${Date.now()}`;
+      console.log(`💳 Razorpay order ID generated: ${razorpayOrderId}`);
     }
+
+    console.log("✅ Order creation completed successfully");
 
     return NextResponse.json({
       success: true,
@@ -223,9 +250,10 @@ export async function POST(request: NextRequest) {
       razorpayOrderId,
     });
   } catch (error) {
-    console.error("Error creating order:", error);
+    console.error("❌ Error creating order:", error);
     
     if (error instanceof z.ZodError) {
+      console.log("📝 Validation errors:", error.errors);
       return NextResponse.json(
         { error: "Invalid input data", details: error.errors },
         { status: 400 }
@@ -233,7 +261,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal server error", details: error.message },
       { status: 500 }
     );
   }

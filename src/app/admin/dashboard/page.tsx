@@ -33,33 +33,25 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchDashboardStats = async () => {
+  const fetchStats = async () => {
     try {
-      console.log('Fetching dashboard stats...');
-      setLoading(true);
-      setError(null);
       const response = await fetch('/api/admin/dashboard');
-      console.log('Response status:', response.status);
       
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Dashboard data:', data);
-        setStats(data);
-      } else {
-        const errorText = await response.text();
-        console.error('Failed to fetch dashboard stats:', errorText);
-        setError(`Failed to fetch data: ${response.status}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch dashboard data');
       }
+
+      const data = await response.json();
+      setStats(data);
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
-      setError(`Network error: ${error}`);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDashboardStats();
+    fetchStats();
   }, []);
 
   if (loading) {
@@ -77,7 +69,7 @@ export default function AdminDashboard() {
         <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
         <p className="text-red-600">Error: {error}</p>
         <button 
-          onClick={fetchDashboardStats}
+          onClick={fetchStats}
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
         >
           Retry

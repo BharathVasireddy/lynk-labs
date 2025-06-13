@@ -293,6 +293,24 @@ describe('Feature Name', () => {
 3. Update API_DOCUMENTATION.md if API-related
 4. Update DEVELOPMENT_GUIDE.md if process-related
 
+## 🚀 DEPLOYMENT PROTOCOL
+
+### CRITICAL RULE: NEVER PUSH DIRECTLY TO VERCEL
+- ALWAYS use Git to push code
+- ALWAYS ensure build runs successfully locally first
+- ALWAYS test thoroughly in local environment before Git push
+- Run `npm run build` and verify no errors before committing
+- Test all functionality locally on `http://localhost:3000` (or available port)
+- Only push to Git after confirming everything works locally
+
+### Deployment Sequence:
+1. `npm run dev` - Test in development
+2. `npm run build` - Verify build succeeds
+3. `npm run start` - Test production build locally
+4. `git add .` - Stage changes
+5. `git commit -m "descriptive message"` - Commit changes
+6. `git push` - Push to repository (triggers Vercel deployment)
+
 ## ⚡ QUICK REFERENCE
 
 ### File Creation Pattern:

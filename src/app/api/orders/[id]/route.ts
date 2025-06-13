@@ -11,12 +11,20 @@ interface RouteParams {
 // GET /api/orders/[id] - Get specific order details
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const user = await verifyAuth(request);
-    if (!user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+    const { searchParams } = new URL(request.url);
+    const isSuccessView = searchParams.get("success") === "true";
+    
+    // For success view (just after order creation), allow access without auth
+    // For regular order viewing, require authentication
+    let user = null;
+    if (!isSuccessView) {
+      user = await verifyAuth(request);
+      if (!user) {
+        return NextResponse.json(
+          { error: "Unauthorized" },
+          { status: 401 }
+        );
+      }
     }
 
     const { id } = params;
@@ -59,12 +67,23 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Check if the order belongs to the authenticated user
-    if (order.userId !== user.id) {
+    // For authenticated requests, check if the order belongs to the user
+    if (user && order.userId !== user.id) {
       return NextResponse.json(
         { error: "Unauthorized access to order" },
         { status: 403 }
       );
+    }
+
+    // For success view, only allow access to very recent orders (within last 10 minutes)
+    if (isSuccessView && !user) {
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+      if (order.createdAt < tenMinutesAgo) {
+        return NextResponse.json(
+          { error: "Order access expired. Please log in to view order details." },
+          { status: 401 }
+        );
+      }
     }
 
     return NextResponse.json({

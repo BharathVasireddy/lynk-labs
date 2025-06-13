@@ -33,7 +33,7 @@ interface Category {
   slug: string;
   description: string | null;
   icon: string | null;
-  _count: {
+  _count?: {
     tests: number;
   };
 }
@@ -91,7 +91,7 @@ function TestsPageContent() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch("/api/categories");
+      const response = await fetch("/api/categories?includeTestCount=true");
       const data = await response.json();
       setCategories(data.categories || []);
     } catch (error) {
@@ -207,7 +207,7 @@ function TestsPageContent() {
               <SelectItem value="all">All Categories</SelectItem>
               {categories && categories.length > 0 && categories.map((category) => (
                 <SelectItem key={category.id} value={category.id}>
-                  {category.name} ({category._count.tests})
+                  {category.name} {category._count?.tests !== undefined ? `(${category._count.tests})` : ''}
                 </SelectItem>
               ))}
             </SelectContent>
