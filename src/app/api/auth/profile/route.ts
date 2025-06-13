@@ -6,6 +6,7 @@ import { verifyAuth } from "@/lib/auth-utils";
 const updateProfileSchema = z.object({
   name: z.string().min(1, "Name is required").optional(),
   email: z.string().email("Invalid email format").optional(),
+  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number format").optional(),
   dateOfBirth: z.string().optional(),
   gender: z.enum(["MALE", "FEMALE", "OTHER"]).optional(),
 });
@@ -41,10 +42,28 @@ export async function PUT(request: NextRequest) {
       }
     }
 
+    // Check if phone is already taken by another user
+    if (validatedData.phone) {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          phone: validatedData.phone,
+          id: { not: user.id },
+        },
+      });
+
+      if (existingUser) {
+        return NextResponse.json(
+          { error: "This phone number is already associated with another account" },
+          { status: 409 }
+        );
+      }
+    }
+
     // Prepare update data
     const updateData: {
       name?: string;
       email?: string;
+      phone?: string;
       dateOfBirth?: Date | null;
       gender?: string;
     } = {};
@@ -55,6 +74,10 @@ export async function PUT(request: NextRequest) {
     
     if (validatedData.email !== undefined) {
       updateData.email = validatedData.email.toLowerCase();
+    }
+    
+    if (validatedData.phone !== undefined) {
+      updateData.phone = validatedData.phone.trim();
     }
     
     if (validatedData.dateOfBirth !== undefined) {

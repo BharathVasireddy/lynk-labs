@@ -3,7 +3,25 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle, Clock, MapPin, Phone, Calendar, ArrowLeft, Download, Truck } from "lucide-react";
+import { 
+  CheckCircle, 
+  Clock, 
+  MapPin, 
+  Phone, 
+  Calendar, 
+  ArrowLeft, 
+  Download, 
+  Truck, 
+  Mail,
+  Home,
+  CreditCard,
+  Package,
+  User,
+  Shield,
+  FileText,
+  Share2,
+  Copy
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -141,19 +159,35 @@ export default function OrderDetailsPage() {
     );
   }
 
+  const copyOrderNumber = () => {
+    navigator.clipboard.writeText(order.orderNumber);
+  };
+
+  const shareOrder = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: `Order ${order.orderNumber} - Lynk Labs`,
+        text: `My health test order has been confirmed!`,
+        url: window.location.href,
+      });
+    } else {
+      copyOrderNumber();
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-medical-background">
+    <div className="min-h-screen medical-background">
       {/* Success Banner */}
       {isSuccess && (
-        <div className="bg-green-50 border-b border-green-200">
-          <div className="container mx-auto px-4 py-6">
+        <div className="bg-secondary border-b">
+          <div className="container-padding py-6">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
-                <CheckCircle className="h-6 w-6 text-green-600" />
+              <div className="h-12 w-12 rounded-full bg-secondary-foreground/10 flex items-center justify-center">
+                <CheckCircle className="h-6 w-6 text-secondary-foreground" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-green-800">Order Placed Successfully!</h2>
-                <p className="text-green-700">Your order #{order.orderNumber} has been confirmed.</p>
+                <h2 className="text-xl font-semibold">Order Placed Successfully!</h2>
+                <p className="text-muted-foreground">Your order #{order.orderNumber} has been confirmed.</p>
               </div>
             </div>
           </div>
@@ -161,8 +195,8 @@ export default function OrderDetailsPage() {
       )}
 
       {/* Header */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
+      <div className="bg-card border-b">
+        <div className="container-padding py-4">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
               <Link href="/orders">
@@ -177,97 +211,139 @@ export default function OrderDetailsPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container-padding py-8">
+
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Order Status */}
-            <Card>
+            {/* Order Overview */}
+            <Card className="medical-card">
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Order Status</span>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Order Information
+                  </CardTitle>
                   <Badge className={getStatusColor(order.status)}>
                     {order.status.replace("_", " ")}
                   </Badge>
-                </CardTitle>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Order Date</p>
-                    <p className="font-medium">{formatDate(order.createdAt)}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Order Number</p>
+                      <p className="font-semibold">{order.orderNumber}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Order Date</p>
+                      <p className="font-medium">{formatDate(order.createdAt)}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Payment Method</p>
-                    <p className="font-medium capitalize">{order.paymentMethod.replace("_", " ")}</p>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Payment Method</p>
+                      <p className="font-medium capitalize">{order.paymentMethod.replace("_", " ")}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Total Amount</p>
+                      <p className="font-bold text-primary">₹{order.finalAmount}</p>
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Test Items */}
-            <Card>
+            <Card className="medical-card">
               <CardHeader>
-                <CardTitle>Test Items ({order.orderItems.length})</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Test Items ({order.orderItems.length})
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {order.orderItems.map((item) => (
-                  <div key={item.id} className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h4 className="font-medium">{item.test.name}</h4>
-                      <p className="text-sm text-muted-foreground">{item.test.category.name}</p>
-                      <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+              <CardContent>
+                <div className="space-y-3">
+                  {order.orderItems.map((item, index) => (
+                    <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex-1">
+                        <h4 className="font-medium">{item.test.name}</h4>
+                        <div className="flex items-center gap-3 mt-1">
+                          <Badge variant="outline" className="text-xs">
+                            {item.test.category.name}
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">Qty: {item.quantity}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold">₹{item.price * item.quantity}</p>
+                        {item.quantity > 1 && (
+                          <p className="text-sm text-muted-foreground">₹{item.price} each</p>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold">₹{item.price * item.quantity}</p>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
                 
-                <Separator />
+                <Separator className="my-4" />
                 
-                <div className="space-y-2">
+                {/* Billing Summary */}
+                <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span>Subtotal</span>
-                    <span>₹{order.totalAmount}</span>
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="font-medium">₹{order.totalAmount}</span>
                   </div>
                   {order.discountAmount > 0 && (
                     <div className="flex justify-between text-green-600">
-                      <span>Discount</span>
-                      <span>-₹{order.discountAmount}</span>
+                      <span className="flex items-center gap-2">
+                        <span>Discount</span>
+                        {order.couponCode && (
+                          <Badge variant="secondary" className="text-xs">
+                            {order.couponCode}
+                          </Badge>
+                        )}
+                      </span>
+                      <span className="font-medium">-₹{order.discountAmount}</span>
                     </div>
                   )}
-                  <div className="flex justify-between font-semibold text-lg">
-                    <span>Total</span>
-                    <span>₹{order.finalAmount}</span>
+                  <Separator />
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>Total Amount</span>
+                    <span className="text-primary">₹{order.finalAmount}</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Home Visit Details */}
-            <Card>
+            {/* Sample Collection Details */}
+            <Card className="medical-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="h-5 w-5" />
-                  Home Visit Details
+                  Sample Collection Details
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">Scheduled Date</p>
-                    <p className="font-medium">{formatDate(order.homeVisit.scheduledDate)}</p>
+                    <p className="text-sm text-muted-foreground mb-1">Scheduled Date</p>
+                    <p className="font-semibold">{formatDate(order.homeVisit.scheduledDate)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Time Slot</p>
-                    <p className="font-medium">{order.homeVisit.scheduledTime}</p>
+                    <p className="text-sm text-muted-foreground mb-1">Time Slot</p>
+                    <p className="font-semibold">{order.homeVisit.scheduledTime}</p>
                   </div>
                 </div>
-                <div className="mt-4">
+                
+                <div className="flex items-center justify-between">
                   <Badge className={getStatusColor(order.homeVisit.status)}>
                     {order.homeVisit.status.replace("_", " ")}
                   </Badge>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Shield className="h-4 w-4" />
+                    <span>NABL Certified</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -275,44 +351,50 @@ export default function OrderDetailsPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Delivery Address */}
-            <Card>
+            {/* Collection Address */}
+            <Card className="medical-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5" />
-                  Delivery Address
+                  <Home className="h-5 w-5" />
+                  Collection Address
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <Badge variant="outline">{order.address.type}</Badge>
-                  <p className="font-medium">{order.address.line1}</p>
-                  {order.address.line2 && <p className="text-sm">{order.address.line2}</p>}
-                  <p className="text-sm">
+                  <Badge variant="secondary">
+                    {order.address.type}
+                  </Badge>
+                  <p className="font-semibold">{order.address.line1}</p>
+                  {order.address.line2 && (
+                    <p className="text-muted-foreground">{order.address.line2}</p>
+                  )}
+                  <p className="text-muted-foreground">
                     {order.address.city}, {order.address.state} - {order.address.pincode}
                   </p>
                   {order.address.landmark && (
-                    <p className="text-sm text-muted-foreground">Near: {order.address.landmark}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Near: {order.address.landmark}
+                    </p>
                   )}
                 </div>
               </CardContent>
             </Card>
 
             {/* Quick Actions */}
-            <Card>
+            <Card className="medical-card">
               <CardHeader>
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full" asChild>
-                  <Link href="/track-order">
-                    <Truck className="h-4 w-4 mr-2" />
-                    Track Order
+                <Button className="w-full medical-button-primary" asChild>
+                  <Link href="/orders">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Orders
                   </Link>
                 </Button>
                 
                 {order.reports.length > 0 && (
-                  <Button variant="outline" className="w-full" asChild>
+                  <Button variant="outline" className="w-full medical-button-outline" asChild>
                     <Link href="/reports">
                       <Download className="h-4 w-4 mr-2" />
                       Download Reports
@@ -320,34 +402,12 @@ export default function OrderDetailsPage() {
                   </Button>
                 )}
                 
-                <Button variant="outline" className="w-full" asChild>
+                <Button variant="outline" className="w-full medical-button-outline" asChild>
                   <Link href="/contact">
                     <Phone className="h-4 w-4 mr-2" />
                     Contact Support
                   </Link>
                 </Button>
-              </CardContent>
-            </Card>
-
-            {/* Need Help */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Need Help?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  If you have any questions about your order, our support team is here to help.
-                </p>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4" />
-                    <span>+91 1800-123-4567</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    <span>24/7 Support</span>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </div>

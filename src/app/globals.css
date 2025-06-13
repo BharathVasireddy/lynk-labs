@@ -198,38 +198,42 @@
 }
 
 @layer components {
-  /* Button Components */
+  /* Standardized Button Components - All buttons have consistent height of 48px */
   .btn-primary {
-    @apply inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold;
+    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-semibold;
     @apply bg-primary-600 text-white border border-transparent rounded-lg;
     @apply hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
     @apply transition-all duration-200 ease-in-out;
+    min-height: 48px;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold;
+    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-semibold;
     @apply bg-white text-primary-700 border border-primary-200 rounded-lg;
     @apply hover:bg-primary-50 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
     @apply transition-all duration-200 ease-in-out;
+    min-height: 48px;
   }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold;
+    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-semibold;
     @apply bg-transparent text-gray-700 border border-gray-300 rounded-lg;
     @apply hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
     @apply transition-all duration-200 ease-in-out;
+    min-height: 48px;
   }
 
-  /* Form Components */
+  /* Standardized Form Components - All inputs have consistent height of 48px */
   .input-field {
-    @apply block w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg;
+    @apply block w-full px-4 py-3 text-sm border border-gray-300 rounded-lg;
     @apply bg-white text-gray-900 placeholder-gray-500;
     @apply focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
     @apply disabled:bg-gray-50 disabled:text-gray-500;
     @apply transition-colors duration-200;
+    min-height: 48px;
   }
 
   .input-field-error {
@@ -237,104 +241,27 @@
   }
 
   .select-field {
-    @apply block w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg;
+    @apply block w-full px-4 py-3 text-sm border border-gray-300 rounded-lg;
     @apply bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
     @apply disabled:bg-gray-50 disabled:text-gray-500;
     @apply transition-colors duration-200;
+    min-height: 48px;
   }
 
+  /* Textarea field */
   .textarea-field {
-    @apply block w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg;
+    @apply block w-full px-4 py-3 text-sm border border-gray-300 rounded-lg;
     @apply bg-white text-gray-900 placeholder-gray-500;
     @apply focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
-    @apply resize-vertical min-h-[100px];
+    @apply disabled:bg-gray-50 disabled:text-gray-500;
     @apply transition-colors duration-200;
-  }
-
-  /* Card Components */
-  .card {
-    @apply bg-white border border-gray-200 rounded-xl shadow-sm;
-    @apply transition-shadow duration-200;
-  }
-
-  .card:hover {
-    @apply shadow-md;
-  }
-
-  .card-body {
-    @apply p-6;
-  }
-
-  .card-header {
-    @apply px-6 py-4 border-b border-gray-200;
-  }
-
-  .card-footer {
-    @apply px-6 py-4 border-t border-gray-200 bg-gray-50;
-  }
-
-  /* Test Card */
-  .test-card {
-    @apply card hover:shadow-lg hover:border-primary-200;
-    @apply transition-all duration-300;
-  }
-
-  .test-card-header {
-    @apply flex justify-between items-start p-4;
-  }
-
-  .test-card-title {
-    @apply text-lg font-semibold text-gray-900;
-  }
-
-  .test-card-price {
-    @apply text-xl font-bold text-primary-600;
-  }
-
-  .test-card-body {
-    @apply px-4 pb-4;
-  }
-
-  .test-card-description {
-    @apply text-sm text-gray-600 line-clamp-2;
-  }
-
-  .test-card-footer {
-    @apply p-4 pt-0;
-  }
-
-  /* Badge Components */
-  .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full;
-  }
-
-  .badge-success {
-    @apply bg-green-100 text-green-800;
-  }
-
-  .badge-warning {
-    @apply bg-yellow-100 text-yellow-800;
-  }
-
-  .badge-error {
-    @apply bg-red-100 text-red-800;
-  }
-
-  .badge-info {
-    @apply bg-blue-100 text-blue-800;
-  }
-
-  .badge-neutral {
-    @apply bg-gray-100 text-gray-800;
+    min-height: 96px;
+    resize: vertical;
   }
 
   /* Alert Components */
   .alert {
-    @apply flex items-start p-4 border rounded-lg;
-  }
-
-  .alert-info {
-    @apply bg-blue-50 border-blue-200 text-blue-800;
+    @apply flex items-start p-4 rounded-lg border;
   }
 
   .alert-success {
@@ -342,7 +269,7 @@
   }
 
   .alert-warning {
-    @apply bg-yellow-50 border-yellow-200 text-yellow-800;
+    @apply bg-amber-50 border-amber-200 text-amber-800;
   }
 
   .alert-error {
@@ -417,8 +344,9 @@
     @apply medical-badge bg-red-50 text-red-700 border border-red-200;
   }
   
+  /* Standardized Medical Buttons - All have consistent 48px height */
   .medical-button {
-    @apply inline-flex items-center justify-center rounded-lg text-base font-semibold px-8 py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center rounded-lg text-sm font-semibold px-6 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     transform: translateZ(0);
     backface-visibility: hidden;
@@ -439,8 +367,8 @@
   }
   
   .medical-button-primary:hover {
-    transform: translateY(-3px) translateZ(0);
-    box-shadow: 0 10px 30px rgba(52, 147, 149, 0.3);
+    transform: translateY(-2px) translateZ(0);
+    box-shadow: 0 8px 25px rgba(52, 147, 149, 0.25);
   }
   
   .medical-button-secondary {
@@ -461,11 +389,25 @@
     box-shadow: 0 8px 25px rgba(52, 147, 149, 0.25);
     border-color: hsl(var(--primary));
   }
+
+  /* Load More Button - Special styling for pagination replacement */
+  .medical-button-load-more {
+    @apply medical-button bg-gradient-to-r from-primary to-primary/90 text-primary-foreground shadow-lg;
+    @apply hover:from-primary/90 hover:to-primary;
+    min-width: 200px;
+  }
   
+  .medical-button-load-more:hover {
+    transform: translateY(-3px) translateZ(0);
+    box-shadow: 0 12px 35px rgba(52, 147, 149, 0.35);
+  }
+  
+  /* Standardized Medical Inputs - All have consistent 48px height */
   .medical-input {
-    @apply flex h-12 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50;
+    @apply flex w-full rounded-lg border border-input bg-background px-4 py-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     transform: translateZ(0);
+    min-height: 48px;
   }
   
   .medical-input:focus-visible {
@@ -478,6 +420,18 @@
   .medical-input:hover:not(:focus-visible) {
     border-color: hsl(var(--primary) / 0.3);
     box-shadow: 0 1px 4px rgba(52, 147, 149, 0.1);
+  }
+
+  /* Medical Select - Consistent with inputs */
+  .medical-select {
+    @apply medical-input;
+  }
+
+  /* Medical Textarea - Larger height but consistent styling */
+  .medical-textarea {
+    @apply medical-input;
+    min-height: 96px;
+    resize: vertical;
   }
   
   /* Loading states with smooth animations */

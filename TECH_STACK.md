@@ -216,7 +216,12 @@ Lynk Labs is built using modern, scalable technologies that ensure high performa
   - Route 53 for DNS
 
 ### **Database Hosting**
-- **Vercel Postgres** - Managed PostgreSQL (Recommended)
+- **Neon** - Serverless PostgreSQL (Currently Used)
+  - Scale-to-zero functionality
+  - Database branching for development
+  - Global edge network
+  - Automatic backups and point-in-time recovery
+- **Vercel Postgres** - Alternative managed PostgreSQL
   - Integrated with Vercel
   - Automatic scaling
   - Built-in monitoring
@@ -355,35 +360,50 @@ Lynk Labs is built using modern, scalable technologies that ensure high performa
 
 ## 📦 Package Management
 
-### **Key Dependencies**
+### **Current Dependencies** (From package.json)
 ```json
 {
-  "next": "^14.x",
-  "react": "^18.x",
-  "typescript": "^5.x",
-  "tailwindcss": "^3.x",
-  "prisma": "^5.x",
-  "@prisma/client": "^5.x",
-  "next-auth": "^4.x",
-  "zustand": "^4.x",
-  "react-hook-form": "^7.x",
-  "zod": "^3.x",
-  "stripe": "^13.x",
-  "twilio": "^4.x",
-  "@sendgrid/mail": "^7.x"
+  "next": "^14.2.0",
+  "react": "^18.3.0",
+  "typescript": "^5.4.0",
+  "tailwindcss": "^3.4.0",
+  "prisma": "^5.14.0",
+  "@prisma/client": "^5.14.0",
+  "next-auth": "^4.24.0",
+  "zustand": "^4.5.0",
+  "react-hook-form": "^7.51.0",
+  "zod": "^3.23.0",
+  "stripe": "^15.8.0",
+  "razorpay": "^2.9.6",
+  "@sendgrid/mail": "^8.1.0",
+  "bcryptjs": "^2.4.3",
+  "swr": "^2.2.0",
+  "axios": "^1.7.0",
+  "class-variance-authority": "^0.7.1",
+  "clsx": "^2.1.1",
+  "lucide-react": "^0.378.0",
+  "tailwind-merge": "^2.6.0"
 }
 ```
 
 ### **Development Dependencies**
 ```json
 {
-  "@types/node": "^20.x",
-  "@types/react": "^18.x",
-  "eslint": "^8.x",
-  "prettier": "^3.x",
-  "jest": "^29.x",
-  "@testing-library/react": "^13.x",
-  "playwright": "^1.x"
+  "@types/node": "^20.12.0",
+  "@types/react": "^18.3.0",
+  "@types/react-dom": "^18.3.0",
+  "@types/bcryptjs": "^2.4.6",
+  "eslint": "^8.57.0",
+  "eslint-config-next": "^14.2.0",
+  "prettier": "^3.2.0",
+  "prettier-plugin-tailwindcss": "^0.5.14",
+  "jest": "^29.7.0",
+  "jest-environment-jsdom": "^29.7.0",
+  "@testing-library/react": "^15.0.0",
+  "@testing-library/jest-dom": "^6.4.0",
+  "husky": "^9.0.0",
+  "lint-staged": "^15.2.0",
+  "tsx": "^4.10.0"
 }
 ```
 

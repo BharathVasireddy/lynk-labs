@@ -179,7 +179,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <p className="text-sm font-medium text-gray-900 truncate">
                   {user?.name || "Admin"}
                 </p>
-                <p className="text-xs text-gray-500 truncate">{user?.phone}</p>
+                <p className="text-xs text-gray-500 truncate">{user?.phone || user?.email}</p>
                 <Badge variant="secondary" className="text-xs mt-1">
                   {user?.role}
                 </Badge>

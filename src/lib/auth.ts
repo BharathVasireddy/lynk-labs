@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import CredentialsProvider from "next-auth/providers/credentials"
-import GoogleProvider from "next-auth/providers/google"
+import bcrypt from "bcryptjs"
 
 import { prisma } from "@/lib/db"
 
@@ -9,10 +9,6 @@ export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -30,12 +26,16 @@ export const authOptions: NextAuthOptions = {
           }
         })
 
-        if (!user) {
+        if (!user || !user.password) {
           return null
         }
 
-        // For now, we'll skip password verification since we don't have a password field
-        // This will be implemented when we add the password field to the User model
+        // Verify password
+        const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+        
+        if (!isPasswordValid) {
+          return null
+        }
         
         return {
           id: user.id,
@@ -65,6 +65,6 @@ export const authOptions: NextAuthOptions = {
     }
   },
   pages: {
-    signIn: "/auth/whatsapp",
+    signIn: "/auth/login",
   }
 } 

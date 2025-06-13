@@ -1,15 +1,19 @@
 import { prisma } from "@/lib/db";
+import { sendEmail } from "@/lib/email";
 
 // Types for better type safety
+interface User {
+  id: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
 interface Order {
   id: string;
   orderNumber: string;
   finalAmount: number;
-  user: {
-    name: string | null;
-    phone: string;
-    email: string | null;
-  };
+  user: User;
   orderItems: Array<{
     test: {
       name: string;
@@ -36,7 +40,7 @@ interface HomeVisit {
 }
 
 // Notification types
-export type NotificationType = "SMS" | "EMAIL" | "WHATSAPP";
+export type NotificationType = "EMAIL";
 export type NotificationEvent = 
   | "ORDER_CONFIRMED"
   | "SAMPLE_COLLECTION_SCHEDULED"
@@ -50,186 +54,213 @@ export type NotificationEvent =
   | "PAYMENT_FAILED";
 
 interface NotificationData {
-  userId: string;
-  orderId?: string;
-  homeVisitId?: string;
-  type: NotificationType;
-  event: NotificationEvent;
-  recipient: string; // phone/email
-  message: string;
-  metadata?: Record<string, any>;
-}
-
-interface NotificationTemplate {
-  sms: string;
-  email: {
-    subject: string;
-    html: string;
-  };
-  whatsapp: string;
+  customerName: string;
+  orderNumber: string;
+  amount?: number;
+  testsCount?: number;
+  trackingUrl?: string;
+  date?: string;
+  time?: string;
+  agentName?: string;
+  agentPhone?: string;
+  reportTime?: string;
+  reportUrl?: string;
+  ratingUrl?: string;
+  supportPhone?: string;
+  address?: string;
 }
 
 // Notification templates
-const NOTIFICATION_TEMPLATES: Record<NotificationEvent, NotificationTemplate> = {
-  ORDER_CONFIRMED: {
-    sms: "Hi {{customerName}}, your order {{orderNumber}} has been confirmed! Total: ₹{{amount}}. Track your order at {{trackingUrl}}",
-    email: {
-      subject: "Order Confirmed - {{orderNumber}}",
-      html: `
-        <h2>Order Confirmed!</h2>
-        <p>Hi {{customerName}},</p>
-        <p>Your order <strong>{{orderNumber}}</strong> has been confirmed.</p>
-        <p><strong>Total Amount:</strong> ₹{{amount}}</p>
-        <p><strong>Tests Ordered:</strong></p>
-        <ul>{{testsList}}</ul>
-        <p>Track your order: <a href="{{trackingUrl}}">{{trackingUrl}}</a></p>
-        <p>Thank you for choosing Lynk Labs!</p>
-      `
-    },
-    whatsapp: "🎉 Order Confirmed!\n\nHi {{customerName}}, your order {{orderNumber}} has been confirmed!\n\nTotal: ₹{{amount}}\nTests: {{testsCount}} test(s)\n\nTrack: {{trackingUrl}}"
+const templates: Record<string, NotificationTemplate> = {
+  orderConfirmed: {
+    email: `
+      <h2>🎉 Order Confirmed!</h2>
+      <p>Hi {{customerName}},</p>
+      <p>Your order <strong>{{orderNumber}}</strong> has been confirmed!</p>
+      <ul>
+        <li><strong>Total:</strong> ₹{{amount}}</li>
+        <li><strong>Tests:</strong> {{testsCount}} test(s)</li>
+      </ul>
+      <p><a href="{{trackingUrl}}" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Track Your Order</a></p>
+      <p>Thank you for choosing Lynk Labs!</p>
+    `
   },
   
-  SAMPLE_COLLECTION_SCHEDULED: {
-    sms: "Hi {{customerName}}, sample collection for order {{orderNumber}} is scheduled for {{date}} at {{time}}. Agent: {{agentName}} ({{agentPhone}})",
-    email: {
-      subject: "Sample Collection Scheduled - {{orderNumber}}",
-      html: `
-        <h2>Sample Collection Scheduled</h2>
-        <p>Hi {{customerName}},</p>
-        <p>Sample collection for your order <strong>{{orderNumber}}</strong> has been scheduled.</p>
-        <p><strong>Date & Time:</strong> {{date}} at {{time}}</p>
-        <p><strong>Agent:</strong> {{agentName}} ({{agentPhone}})</p>
-        <p><strong>Address:</strong> {{address}}</p>
-        <p>Please ensure you're available at the scheduled time.</p>
-      `
-    },
-    whatsapp: "📅 Sample Collection Scheduled\n\nOrder: {{orderNumber}}\nDate: {{date}} at {{time}}\nAgent: {{agentName}} ({{agentPhone}})\n\nPlease be available!"
+  sampleCollectionScheduled: {
+    email: `
+      <h2>📅 Sample Collection Scheduled</h2>
+      <p>Hi {{customerName}},</p>
+      <p>Your sample collection has been scheduled:</p>
+      <ul>
+        <li><strong>Order:</strong> {{orderNumber}}</li>
+        <li><strong>Date & Time:</strong> {{date}} at {{time}}</li>
+        <li><strong>Agent:</strong> {{agentName}} ({{agentPhone}})</li>
+      </ul>
+      <p>Please be available at the scheduled time!</p>
+    `
   },
-
-  SAMPLE_COLLECTED: {
-    sms: "Sample collected successfully for order {{orderNumber}}! Your reports will be ready in {{reportTime}}. We'll notify you once ready.",
-    email: {
-      subject: "Sample Collected - {{orderNumber}}",
-      html: `
-        <h2>Sample Collected Successfully!</h2>
-        <p>Hi {{customerName}},</p>
-        <p>Sample for order <strong>{{orderNumber}}</strong> has been collected successfully.</p>
-        <p><strong>Expected Report Time:</strong> {{reportTime}}</p>
-        <p>We'll notify you as soon as your reports are ready.</p>
-      `
-    },
-    whatsapp: "✅ Sample Collected!\n\nOrder: {{orderNumber}}\nReports expected in: {{reportTime}}\n\nWe'll notify you once ready! 📊"
+  
+  sampleCollected: {
+    email: `
+      <h2>✅ Sample Collected!</h2>
+      <p>Hi {{customerName}},</p>
+      <p>Your sample for order <strong>{{orderNumber}}</strong> has been collected successfully!</p>
+      <p>Reports are expected in: <strong>{{reportTime}}</strong></p>
+      <p>We'll notify you once your reports are ready! 📊</p>
+    `
   },
-
-  REPORT_READY: {
-    sms: "🎉 Your test reports are ready! Order {{orderNumber}}. Download: {{reportUrl}} or visit our app to view your results.",
-    email: {
-      subject: "Test Reports Ready - {{orderNumber}}",
-      html: `
-        <h2>Your Test Reports Are Ready! 🎉</h2>
-        <p>Hi {{customerName}},</p>
-        <p>Your test reports for order <strong>{{orderNumber}}</strong> are now available.</p>
-        <p><strong>Download Reports:</strong> <a href="{{reportUrl}}">Click here to download</a></p>
-        <p>You can also view your reports in our mobile app or website.</p>
-        <p>If you have any questions about your results, please consult with your healthcare provider.</p>
-      `
-    },
-    whatsapp: "📊 Reports Ready!\n\nYour test reports for order {{orderNumber}} are ready!\n\nDownload: {{reportUrl}}\n\nConsult your doctor for any questions about results."
+  
+  reportsReady: {
+    email: `
+      <h2>📊 Your Reports Are Ready!</h2>
+      <p>Hi {{customerName}},</p>
+      <p>Your test reports for order <strong>{{orderNumber}}</strong> are now ready!</p>
+      <p><a href="{{reportUrl}}" style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Download Reports</a></p>
+      <p>Please consult your doctor for any questions about the results.</p>
+    `
   },
-
-  ORDER_COMPLETED: {
-    sms: "Order {{orderNumber}} completed successfully! Thank you for choosing Lynk Labs. Rate your experience: {{ratingUrl}}",
-    email: {
-      subject: "Order Completed - {{orderNumber}}",
-      html: `
-        <h2>Order Completed Successfully! ✅</h2>
-        <p>Hi {{customerName}},</p>
-        <p>Your order <strong>{{orderNumber}}</strong> has been completed successfully.</p>
-        <p>Thank you for choosing Lynk Labs for your diagnostic needs.</p>
-        <p><strong>Rate your experience:</strong> <a href="{{ratingUrl}}">Share your feedback</a></p>
-        <p>We look forward to serving you again!</p>
-      `
-    },
-    whatsapp: "✅ Order Completed!\n\nThank you {{customerName}}! Order {{orderNumber}} is complete.\n\nRate us: {{ratingUrl}}\n\nWe appreciate your trust in Lynk Labs! 🙏"
+  
+  orderCompleted: {
+    email: `
+      <h2>✅ Order Completed!</h2>
+      <p>Hi {{customerName}},</p>
+      <p>Thank you! Your order <strong>{{orderNumber}}</strong> has been completed successfully.</p>
+      <p><a href="{{ratingUrl}}" style="background: #ffc107; color: black; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Rate Your Experience</a></p>
+      <p>We appreciate your trust in Lynk Labs! 🙏</p>
+    `
   },
-
-  ORDER_CANCELLED: {
-    sms: "Order {{orderNumber}} has been cancelled. Refund will be processed within 3-5 business days. Contact support: {{supportPhone}}",
-    email: {
-      subject: "Order Cancelled - {{orderNumber}}",
-      html: `
-        <h2>Order Cancelled</h2>
-        <p>Hi {{customerName}},</p>
-        <p>Your order <strong>{{orderNumber}}</strong> has been cancelled.</p>
-        <p><strong>Refund:</strong> Will be processed within 3-5 business days</p>
-        <p>If you have any questions, please contact our support team at {{supportPhone}}</p>
-      `
-    },
-    whatsapp: "❌ Order Cancelled\n\nOrder {{orderNumber}} cancelled.\nRefund: 3-5 business days\n\nSupport: {{supportPhone}}"
+  
+  orderCancelled: {
+    email: `
+      <h2>❌ Order Cancelled</h2>
+      <p>Hi {{customerName}},</p>
+      <p>Your order <strong>{{orderNumber}}</strong> has been cancelled.</p>
+      <p>Refund will be processed within 3-5 business days.</p>
+      <p>For any queries, contact support: {{supportPhone}}</p>
+    `
   },
-
-  HOME_VISIT_SCHEDULED: {
-    sms: "Home visit scheduled for {{date}} at {{time}}. Agent {{agentName}} will visit {{address}}. Contact: {{agentPhone}}",
-    email: {
-      subject: "Home Visit Scheduled",
-      html: `
-        <h2>Home Visit Scheduled</h2>
-        <p>Hi {{customerName}},</p>
-        <p>Your home visit has been scheduled for <strong>{{date}} at {{time}}</strong></p>
-        <p><strong>Agent:</strong> {{agentName}} ({{agentPhone}})</p>
-        <p><strong>Address:</strong> {{address}}</p>
-      `
-    },
-    whatsapp: "🏠 Home Visit Scheduled\n\nDate: {{date}} at {{time}}\nAgent: {{agentName}} ({{agentPhone}})\nAddress: {{address}}"
+  
+  homeVisitScheduled: {
+    email: `
+      <h2>🏠 Home Visit Scheduled</h2>
+      <p>Hi {{customerName}},</p>
+      <p>Your home visit has been scheduled:</p>
+      <ul>
+        <li><strong>Date & Time:</strong> {{date}} at {{time}}</li>
+        <li><strong>Agent:</strong> {{agentName}} ({{agentPhone}})</li>
+        <li><strong>Address:</strong> {{address}}</li>
+      </ul>
+    `
   },
-
-  HOME_VISIT_REMINDER: {
-    sms: "Reminder: Home visit today at {{time}}. Agent {{agentName}} will arrive soon. Contact: {{agentPhone}}",
-    email: {
-      subject: "Home Visit Reminder - Today",
-      html: `
-        <h2>Home Visit Reminder</h2>
-        <p>Hi {{customerName}},</p>
-        <p>This is a reminder that your home visit is scheduled for today at <strong>{{time}}</strong></p>
-        <p><strong>Agent:</strong> {{agentName}} ({{agentPhone}})</p>
-      `
-    },
-    whatsapp: "⏰ Reminder: Home visit today at {{time}}\nAgent: {{agentName}} ({{agentPhone}})\nPlease be available!"
+  
+  homeVisitReminder: {
+    email: `
+      <h2>⏰ Home Visit Reminder</h2>
+      <p>Hi {{customerName}},</p>
+      <p>This is a reminder that your home visit is scheduled for today at <strong>{{time}}</strong>.</p>
+      <p>Agent: {{agentName}} ({{agentPhone}})</p>
+      <p>Please be available!</p>
+    `
   },
-
-  PAYMENT_RECEIVED: {
-    sms: "Payment of ₹{{amount}} received for order {{orderNumber}}. Thank you! Your order is now confirmed.",
-    email: {
-      subject: "Payment Received - {{orderNumber}}",
-      html: `
-        <h2>Payment Received ✅</h2>
-        <p>Hi {{customerName}},</p>
-        <p>We have received your payment of <strong>₹{{amount}}</strong> for order {{orderNumber}}.</p>
-        <p>Your order is now confirmed and will be processed shortly.</p>
-      `
-    },
-    whatsapp: "💳 Payment Received!\n\n₹{{amount}} for order {{orderNumber}}\nYour order is now confirmed! ✅"
+  
+  paymentReceived: {
+    email: `
+      <h2>💳 Payment Received!</h2>
+      <p>Hi {{customerName}},</p>
+      <p>We have received your payment of <strong>₹{{amount}}</strong> for order <strong>{{orderNumber}}</strong>.</p>
+      <p>Your order is now confirmed! ✅</p>
+    `
   },
-
-  PAYMENT_FAILED: {
-    sms: "Payment failed for order {{orderNumber}}. Please retry payment or contact support: {{supportPhone}}",
-    email: {
-      subject: "Payment Failed - {{orderNumber}}",
-      html: `
-        <h2>Payment Failed ❌</h2>
-        <p>Hi {{customerName}},</p>
-        <p>Payment for order <strong>{{orderNumber}}</strong> could not be processed.</p>
-        <p>Please retry payment or contact our support team at {{supportPhone}}</p>
-      `
-    },
-    whatsapp: "❌ Payment Failed\n\nOrder: {{orderNumber}}\nPlease retry payment or contact support: {{supportPhone}}"
+  
+  paymentFailed: {
+    email: `
+      <h2>❌ Payment Failed</h2>
+      <p>Hi {{customerName}},</p>
+      <p>Payment for order <strong>{{orderNumber}}</strong> could not be processed.</p>
+      <p>Please retry payment or contact support: {{supportPhone}}</p>
+    `
   }
 };
 
-// Template rendering function
-function renderTemplate(template: string, data: Record<string, any>): string {
-  return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
-    return data[key] || match;
+// Template replacement function
+function replaceTemplate(template: string, data: NotificationData): string {
+  let result = template;
+  Object.entries(data).forEach(([key, value]) => {
+    const placeholder = `{{${key}}}`;
+    result = result.replace(new RegExp(placeholder, 'g'), String(value || ''));
+  });
+  return result;
+}
+
+// Main notification function
+export async function sendNotification(
+  type: string,
+  user: User,
+  data: NotificationData,
+  channels: NotificationType[] = ["EMAIL"]
+): Promise<{ email?: boolean }> {
+  const template = templates[type];
+  if (!template) {
+    throw new Error(`Unknown notification type: ${type}`);
+  }
+
+  const results: { email?: boolean } = {};
+
+  // Send Email
+  if (channels.includes("EMAIL") && user.email) {
+    const emailContent = replaceTemplate(template.email, data);
+    const subject = getEmailSubject(type, data);
+    results.email = await sendEmail(user.email, subject, emailContent);
+  }
+
+  return results;
+}
+
+// Helper function to get email subject
+function getEmailSubject(type: string, data: NotificationData): string {
+  const subjects: Record<string, string> = {
+    orderConfirmed: `Order Confirmed - ${data.orderNumber}`,
+    sampleCollectionScheduled: `Sample Collection Scheduled - ${data.orderNumber}`,
+    sampleCollected: `Sample Collected - ${data.orderNumber}`,
+    reportsReady: `Reports Ready - ${data.orderNumber}`,
+    orderCompleted: `Order Completed - ${data.orderNumber}`,
+    orderCancelled: `Order Cancelled - ${data.orderNumber}`,
+    homeVisitScheduled: `Home Visit Scheduled - ${data.orderNumber}`,
+    homeVisitReminder: `Home Visit Reminder - Today`,
+    paymentReceived: `Payment Received - ${data.orderNumber}`,
+    paymentFailed: `Payment Failed - ${data.orderNumber}`
+  };
+  
+  return subjects[type] || `Lynk Labs Notification`;
+}
+
+// Convenience functions for common notifications
+export async function notifyOrderConfirmed(order: Order) {
+  return sendNotification("orderConfirmed", order.user, {
+    customerName: order.user.name || "Customer",
+    orderNumber: order.orderNumber,
+    amount: order.finalAmount,
+    testsCount: 1, // TODO: Calculate actual test count
+    trackingUrl: `${process.env.APP_URL}/orders/${order.id}`
+  });
+}
+
+export async function notifyReportsReady(order: Order, reportUrl: string) {
+  return sendNotification("reportsReady", order.user, {
+    customerName: order.user.name || "Customer",
+    orderNumber: order.orderNumber,
+    reportUrl
+  });
+}
+
+export async function notifyHomeVisitScheduled(homeVisit: HomeVisit) {
+  return sendNotification("homeVisitScheduled", homeVisit.order.user, {
+    customerName: homeVisit.order.user.name || "Customer",
+    orderNumber: homeVisit.order.orderNumber,
+    date: homeVisit.scheduledDate.toLocaleDateString(),
+    time: homeVisit.scheduledTime,
+    agentName: homeVisit.agent?.name || "Agent",
+    agentPhone: homeVisit.agent?.phone || "N/A"
   });
 }
 
@@ -263,41 +294,6 @@ export async function sendSMS(phone: string, message: string): Promise<boolean> 
   }
 }
 
-// Email Service (using Resend, SendGrid, or similar)
-export async function sendEmail(
-  email: string, 
-  subject: string, 
-  html: string
-): Promise<boolean> {
-  try {
-    // TODO: Implement actual email service integration
-    console.log(`Email to ${email}: ${subject}`);
-    console.log(`HTML: ${html}`);
-    
-    // In production, integrate with Resend, SendGrid, or other email service
-    /*
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'Lynk Labs <noreply@lynklabs.com>',
-        to: [email],
-        subject: subject,
-        html: html,
-      }),
-    });
-    */
-    
-    return true;
-  } catch (error) {
-    console.error("Email sending failed:", error);
-    return false;
-  }
-}
-
 // WhatsApp Service (using WhatsApp Business API)
 export async function sendWhatsApp(phone: string, message: string): Promise<boolean> {
   try {
@@ -324,57 +320,6 @@ export async function sendWhatsApp(phone: string, message: string): Promise<bool
     return true;
   } catch (error) {
     console.error("WhatsApp sending failed:", error);
-    return false;
-  }
-}
-
-// Main notification sending function
-export async function sendNotification(data: NotificationData): Promise<boolean> {
-  try {
-    // Store notification in database
-    const notification = await prisma.notification.create({
-      data: {
-        userId: data.userId,
-        type: data.type,
-        title: `${data.event} - ${data.type}`,
-        message: data.message,
-        status: "PENDING",
-        metadata: data.metadata ? JSON.stringify(data.metadata) : null,
-      },
-    });
-
-    let success = false;
-
-    // Send notification based on type
-    switch (data.type) {
-      case "SMS":
-        success = await sendSMS(data.recipient, data.message);
-        break;
-      case "EMAIL":
-        const template = NOTIFICATION_TEMPLATES[data.event];
-        success = await sendEmail(
-          data.recipient,
-          renderTemplate(template.email.subject, data.metadata || {}),
-          renderTemplate(template.email.html, data.metadata || {})
-        );
-        break;
-      case "WHATSAPP":
-        success = await sendWhatsApp(data.recipient, data.message);
-        break;
-    }
-
-    // Update notification status
-    await prisma.notification.update({
-      where: { id: notification.id },
-      data: {
-        status: success ? "SENT" : "FAILED",
-        sentAt: success ? new Date() : null,
-      }
-    });
-
-    return success;
-  } catch (error) {
-    console.error("Notification sending failed:", error);
     return false;
   }
 }
@@ -432,47 +377,23 @@ export async function sendOrderNotification(
 
     // Send SMS notification
     if (preferences.sms && order.user.phone) {
-      const template = NOTIFICATION_TEMPLATES[event];
-      const message = renderTemplate(template.sms, templateData);
+      const template = templates[event];
+      const message = replaceTemplate(template.email, templateData);
       
-      await sendNotification({
-        userId: order.user.id,
-        orderId: order.id,
-        type: "SMS",
-        event,
-        recipient: order.user.phone,
-        message,
-        metadata: templateData
-      });
+      await sendNotification(event, order.user, templateData, ["EMAIL"]);
     }
 
     // Send Email notification
     if (preferences.email && order.user.email) {
-      await sendNotification({
-        userId: order.user.id,
-        orderId: order.id,
-        type: "EMAIL",
-        event,
-        recipient: order.user.email,
-        message: "", // Email content is handled in the email service
-        metadata: templateData
-      });
+      await sendNotification(event, order.user, templateData, ["EMAIL"]);
     }
 
     // Send WhatsApp notification
     if (preferences.whatsapp && order.user.phone) {
-      const template = NOTIFICATION_TEMPLATES[event];
-      const message = renderTemplate(template.whatsapp, templateData);
+      const template = templates[event];
+      const message = replaceTemplate(template.email, templateData);
       
-      await sendNotification({
-        userId: order.user.id,
-        orderId: order.id,
-        type: "WHATSAPP",
-        event,
-        recipient: order.user.phone,
-        message,
-        metadata: templateData
-      });
+      await sendNotification(event, order.user, templateData, ["EMAIL"]);
     }
 
   } catch (error) {
@@ -521,42 +442,11 @@ export async function sendHomeVisitNotification(
     const user = homeVisit.order.user;
     
     if (user.phone) {
-      const template = NOTIFICATION_TEMPLATES[event];
-      const smsMessage = renderTemplate(template.sms, templateData);
-      const whatsappMessage = renderTemplate(template.whatsapp, templateData);
-      
-      await Promise.all([
-        sendNotification({
-          userId: user.id,
-          homeVisitId: homeVisit.id,
-          type: "SMS",
-          event,
-          recipient: user.phone,
-          message: smsMessage,
-          metadata: templateData
-        }),
-        sendNotification({
-          userId: user.id,
-          homeVisitId: homeVisit.id,
-          type: "WHATSAPP",
-          event,
-          recipient: user.phone,
-          message: whatsappMessage,
-          metadata: templateData
-        })
-      ]);
+      await sendNotification(event, user, templateData, ["EMAIL"]);
     }
 
     if (user.email) {
-      await sendNotification({
-        userId: user.id,
-        homeVisitId: homeVisit.id,
-        type: "EMAIL",
-        event,
-        recipient: user.email,
-        message: "",
-        metadata: templateData
-      });
+      await sendNotification(event, user, templateData, ["EMAIL"]);
     }
 
   } catch (error) {

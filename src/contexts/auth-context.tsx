@@ -6,7 +6,7 @@ interface User {
   id: string;
   name: string | null;
   email: string | null;
-  phone: string;
+  phone: string | null;
   role: string;
 }
 
@@ -26,11 +26,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      const response = await fetch("/api/auth/me");
+      const response = await fetch("/api/auth/me", {
+        credentials: 'include' // Ensure cookies are included
+      });
       if (response.ok) {
         const userData = await response.json();
         setUser(userData.user);
       } else {
+        // If 401 or other error, user is not authenticated
         setUser(null);
       }
     } catch (error) {
@@ -47,12 +50,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch("/api/auth/whatsapp/verify-otp", {
-        method: "DELETE",
+      // First clear user state to prevent UI flicker
+      setUser(null);
+      
+      // Call logout API to clear server-side cookie
+      await fetch("/api/auth/logout", {
+        method: "POST",
       });
+      
+      // Force redirect to home page
+      window.location.href = "/";
     } catch (error) {
       console.error("Logout error:", error);
-    } finally {
+      // Even if API fails, clear user state and redirect
       setUser(null);
       window.location.href = "/";
     }

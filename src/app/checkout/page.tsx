@@ -42,6 +42,7 @@ export default function CheckoutPage() {
   const [discount, setDiscount] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
+  const [orderPlaced, setOrderPlaced] = useState(false);
 
   // Address form state
   const [addressForm, setAddressForm] = useState({
@@ -60,14 +61,15 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (items.length === 0) {
+    // Don't redirect to tests if order was just placed and cart is empty
+    if (items.length === 0 && !orderPlaced) {
       router.push("/tests");
       return;
     }
 
     fetchAddresses();
     generateTimeSlots();
-  }, [user, loading, items, router]);
+  }, [user, loading, items, router, orderPlaced]);
 
   const fetchAddresses = async () => {
     try {
@@ -222,6 +224,7 @@ export default function CheckoutPage() {
             });
 
             if (verifyResponse.ok) {
+              setOrderPlaced(true);
               clearCart();
               router.push(`/orders/${orderData.order.id}?success=true`);
             } else {
@@ -243,6 +246,7 @@ export default function CheckoutPage() {
         razorpay.open();
       } else {
         // Cash on delivery
+        setOrderPlaced(true);
         clearCart();
         router.push(`/orders/${orderData.order.id}?success=true`);
       }
@@ -264,7 +268,7 @@ export default function CheckoutPage() {
     );
   }
 
-  if (items.length === 0) {
+  if (items.length === 0 && !orderPlaced) {
     return null; // Will redirect
   }
 

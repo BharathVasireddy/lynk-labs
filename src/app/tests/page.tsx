@@ -1,16 +1,17 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Search, ShoppingCart, Clock } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, Filter, ShoppingCart, Clock, ChevronDown } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 
+// Types
 interface Test {
   id: string;
   name: string;
@@ -45,114 +46,110 @@ interface TestsResponse {
     limit: number;
     total: number;
     pages: number;
+    hasMore: boolean;
   };
 }
 
 function TestsPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { addItem } = useCartStore();
+  
   const [tests, setTests] = useState<Test[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [sortBy, setSortBy] = useState("name");
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [totalTests, setTotalTests] = useState(0);
 
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 12,
-    total: 0,
-    pages: 0,
-  });
-
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const { addItem } = useCartStore();
-
-  // Load initial data
-  useEffect(() => {
-    fetchCategories();
-    fetchTests();
-  }, []);
-
-  // Handle URL params
-  useEffect(() => {
-    const category = searchParams.get("category") || "";
-    const search = searchParams.get("search") || "";
-    const page = parseInt(searchParams.get("page") || "1");
-    
-    setSelectedCategory(category);
-    setSearchQuery(search);
-    setPagination(prev => ({ ...prev, page }));
-  }, [searchParams]);
-
-  // Fetch tests when filters change
-  useEffect(() => {
-    fetchTests();
-  }, [selectedCategory, searchQuery, sortBy, pagination.page]);
-
+  // Fetch categories
   const fetchCategories = async () => {
     try {
       const response = await fetch("/api/categories?includeTestCount=true");
-      const data = await response.json();
-      setCategories(data.categories || []);
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data.categories || []);
+      }
     } catch (error) {
-      console.error("Error fetching categories:", error);
-      setCategories([]); // Set empty array on error
+      console.error("Failed to fetch categories:", error);
+      setCategories([]);
     }
   };
 
-  const fetchTests = async () => {
-    setLoading(true);
+  // Fetch tests with load more functionality
+  const fetchTests = async (page: number = 1, append: boolean = false) => {
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+
     try {
       const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
+        page: page.toString(),
+        limit: "12",
         ...(searchQuery && { search: searchQuery }),
-        ...(selectedCategory && { categoryId: selectedCategory }),
-        ...(sortBy && { sortBy: sortBy }),
+        ...(selectedCategory && selectedCategory !== "all" && { category: selectedCategory }),
       });
 
       const response = await fetch(`/api/tests?${params}`);
-      const data: TestsResponse = await response.json();
-      
-      setTests(data.tests);
-      setPagination(data.pagination);
+      if (response.ok) {
+        const data: TestsResponse = await response.json();
+        
+        if (append) {
+          setTests(prev => [...prev, ...data.tests]);
+        } else {
+          setTests(data.tests);
+        }
+        
+        setHasMore(data.pagination.hasMore);
+        setTotalTests(data.pagination.total);
+        setCurrentPage(page);
+      }
     } catch (error) {
-      console.error("Error fetching tests:", error);
+      console.error("Failed to fetch tests:", error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
+  // Load more tests
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      fetchTests(currentPage + 1, true);
+    }
+  };
+
+  // Update URL without triggering navigation
   const updateURL = (params: Record<string, string>) => {
-    const newParams = new URLSearchParams(searchParams);
-    
+    const url = new URL(window.location.href);
     Object.entries(params).forEach(([key, value]) => {
       if (value) {
-        newParams.set(key, value);
+        url.searchParams.set(key, value);
       } else {
-        newParams.delete(key);
+        url.searchParams.delete(key);
       }
     });
-
-    router.push(`/tests?${newParams.toString()}`);
+    router.replace(url.pathname + url.search, { scroll: false });
   };
 
+  // Handle search
   const handleSearch = (value: string) => {
     setSearchQuery(value);
-    setPagination(prev => ({ ...prev, page: 1 }));
-    updateURL({ search: value, page: "1" });
+    setCurrentPage(1);
+    updateURL({ search: value, category: selectedCategory, page: "1" });
   };
 
+  // Handle category change
   const handleCategoryChange = (categoryId: string) => {
-    const actualCategoryId = categoryId === "all" ? "" : categoryId;
-    setSelectedCategory(actualCategoryId);
-    setPagination(prev => ({ ...prev, page: 1 }));
-    updateURL({ category: actualCategoryId, page: "1" });
-  };
-
-  const handlePageChange = (page: number) => {
-    setPagination(prev => ({ ...prev, page }));
-    updateURL({ page: page.toString() });
+    const newCategory = categoryId === "all" ? "" : categoryId;
+    setSelectedCategory(newCategory);
+    setCurrentPage(1);
+    updateURL({ search: searchQuery, category: newCategory, page: "1" });
   };
 
   const calculateDiscount = (price: number, discountPrice: number | null) => {
@@ -173,67 +170,63 @@ function TestsPageContent() {
     });
   };
 
+  // Initial load
+  useEffect(() => {
+    fetchCategories();
+    fetchTests(1, false);
+  }, [searchQuery, selectedCategory]);
+
   return (
     <div className="container-padding py-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl lg:text-4xl font-bold mb-4">Lab Tests</h1>
         <p className="text-lg text-muted-foreground">
-          Choose from our comprehensive range of diagnostic tests with home sample collection
+          Choose from our comprehensive range of diagnostic tests
         </p>
       </div>
 
-      {/* Filters */}
+      {/* Search and Filters */}
       <div className="mb-8 space-y-4">
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Search */}
-          <div className="relative flex-1 lg:max-w-md">
+          <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               type="search"
-              placeholder="Search tests..."
+              placeholder="Search tests by name, description..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
-              className="pl-10 medical-input h-12 w-full"
+              className="medical-input pl-10"
             />
           </div>
 
           {/* Category Filter */}
-          <Select value={selectedCategory || "all"} onValueChange={handleCategoryChange}>
-            <SelectTrigger className="w-full lg:w-64 h-12">
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
-            <SelectContent className="animate-in fade-in-0 zoom-in-95 duration-200">
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories && categories.length > 0 && categories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name} {category._count?.tests !== undefined ? `(${category._count.tests})` : ''}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Sort */}
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-full lg:w-48 h-12">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="animate-in fade-in-0 zoom-in-95 duration-200">
-              <SelectItem value="name">Name A-Z</SelectItem>
-              <SelectItem value="price-low">Price: Low to High</SelectItem>
-              <SelectItem value="price-high">Price: High to Low</SelectItem>
-              <SelectItem value="popular">Most Popular</SelectItem>
-            </SelectContent>
-          </Select>
-
+          <div className="lg:w-64">
+            <Select value={selectedCategory || "all"} onValueChange={handleCategoryChange}>
+              <SelectTrigger className="medical-input">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {Array.isArray(categories) && categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                    {category._count && ` (${category._count.tests})`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Active Filters */}
         {(selectedCategory || searchQuery) && (
-          <div className="flex flex-wrap gap-2 page-transition">
+          <div className="flex flex-wrap gap-2">
             {selectedCategory && (
               <Badge variant="secondary" className="gap-2 scale-hover">
-                {categories && categories.find(c => c.id === selectedCategory)?.name}
+                {Array.isArray(categories) && categories.find(c => c.id === selectedCategory)?.name}
                 <button
                   onClick={() => handleCategoryChange("all")}
                   className="ml-1 hover:bg-muted-foreground/20 rounded-full p-0.5 scale-hover"
@@ -260,7 +253,7 @@ function TestsPageContent() {
       {/* Results Count */}
       <div className="mb-6 flex justify-between items-center">
         <p className="text-muted-foreground">
-          {loading ? "Loading..." : `${pagination.total} tests found`}
+          {loading ? "Loading..." : `${totalTests} tests found`}
         </p>
       </div>
 
@@ -279,8 +272,8 @@ function TestsPageContent() {
                 <div className="h-4 bg-muted rounded w-2/3"></div>
               </CardContent>
               <div className="p-6 pt-0 mt-auto">
-                <div className="h-11 bg-muted rounded mb-2"></div>
-                <div className="h-10 bg-muted rounded"></div>
+                <div className="h-12 bg-muted rounded mb-2"></div>
+                <div className="h-12 bg-muted rounded"></div>
               </div>
             </Card>
           ))}
@@ -344,13 +337,13 @@ function TestsPageContent() {
                 {/* Actions */}
                 <div className="flex flex-col gap-2">
                   <Button 
-                    className="w-full medical-button-primary h-11 font-medium"
+                    className="w-full medical-button-primary font-medium"
                     onClick={() => addToCart(test)}
                   >
                     <ShoppingCart className="h-4 w-4 mr-2" />
                     Book Now
                   </Button>
-                  <Button variant="outline" className="w-full medical-button-outline h-10 text-sm" asChild>
+                  <Button variant="outline" className="w-full medical-button-outline text-sm" asChild>
                     <Link href={`/tests/${test.slug}`}>
                       View Details
                     </Link>
@@ -362,37 +355,36 @@ function TestsPageContent() {
         </div>
       )}
 
-      {/* Pagination */}
-      {pagination.pages > 1 && (
-        <div className="mt-8 flex justify-center">
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              disabled={pagination.page === 1}
-              onClick={() => handlePageChange(pagination.page - 1)}
-              className="medical-button-outline"
-            >
-              Previous
-            </Button>
-            
-            {Array.from({ length: pagination.pages }, (_, i) => i + 1).map((page) => (
-              <Button
-                key={page}
-                variant={page === pagination.page ? "default" : "outline"}
-                onClick={() => handlePageChange(page)}
-                className={`w-10 ${page === pagination.page ? "medical-button-primary" : "medical-button-outline"} scale-hover`}
-              >
-                {page}
-              </Button>
-            ))}
-            
-            <Button
-              variant="outline"
-              disabled={pagination.page === pagination.pages}
-              onClick={() => handlePageChange(pagination.page + 1)}
-            >
-              Next
-            </Button>
+      {/* Load More Button */}
+      {hasMore && !loading && (
+        <div className="mt-12 flex justify-center">
+          <Button
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            className="medical-button-load-more"
+            size="lg"
+          >
+            {loadingMore ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Loading More Tests...
+              </>
+            ) : (
+              <>
+                Load More Tests
+                <ChevronDown className="h-4 w-4 ml-2" />
+              </>
+            )}
+          </Button>
+        </div>
+      )}
+
+      {/* End of Results Message */}
+      {!hasMore && !loading && tests.length > 0 && (
+        <div className="mt-12 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg text-sm text-muted-foreground">
+            <span>🎉</span>
+            <span>You&apos;ve seen all {totalTests} tests!</span>
           </div>
         </div>
       )}

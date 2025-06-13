@@ -3,7 +3,22 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Calendar, MapPin, Eye, Download, Filter, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { 
+  Calendar, 
+  MapPin, 
+  Eye, 
+  Download, 
+  Filter, 
+  Search, 
+  ChevronLeft, 
+  ChevronRight,
+  Package,
+  Clock,
+  CreditCard,
+  User,
+  FileText,
+  Home
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -158,94 +173,114 @@ export default function OrdersPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen medical-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading your orders...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="min-h-screen medical-background">
+      <div className="container-padding py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Orders</h1>
-          <p className="text-gray-600">Track and manage your diagnostic test orders</p>
+          <h1 className="text-3xl lg:text-4xl font-bold mb-4">My Orders</h1>
+          <p className="text-lg text-muted-foreground">
+            Track your health test orders and sample collection
+          </p>
         </div>
 
-        {/* Filters */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Search by order number or test name..."
-                    value={searchQuery}
-                    onChange={(e) => handleSearch(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-              <div className="sm:w-48">
-                <Select value={statusFilter} onValueChange={handleStatusFilter}>
-                  <SelectTrigger>
-                    <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Orders</SelectItem>
-                    <SelectItem value="PENDING">Pending</SelectItem>
-                    <SelectItem value="CONFIRMED">Confirmed</SelectItem>
-                    <SelectItem value="SAMPLE_COLLECTED">Sample Collected</SelectItem>
-                    <SelectItem value="PROCESSING">Processing</SelectItem>
-                    <SelectItem value="COMPLETED">Completed</SelectItem>
-                    <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+        {/* Search and Filters */}
+        <div className="mb-8 space-y-4">
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Search */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                type="search"
+                placeholder="Search by order number or test name..."
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="medical-input pl-10"
+              />
             </div>
-          </CardContent>
-        </Card>
+            
+            {/* Category Filter */}
+            <div className="lg:w-64">
+              <Select value={statusFilter} onValueChange={handleStatusFilter}>
+                <SelectTrigger className="medical-select">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="All Orders" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Orders</SelectItem>
+                  <SelectItem value="PENDING">Pending</SelectItem>
+                  <SelectItem value="CONFIRMED">Confirmed</SelectItem>
+                  <SelectItem value="SAMPLE_COLLECTED">Sample Collected</SelectItem>
+                  <SelectItem value="PROCESSING">Processing</SelectItem>
+                  <SelectItem value="COMPLETED">Completed</SelectItem>
+                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
 
         {/* Orders List */}
         {isLoading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading orders...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading orders...</p>
           </div>
         ) : error ? (
-          <Card>
+          <Card className="medical-card">
             <CardContent className="text-center py-12">
               <div className="text-red-500 text-4xl mb-4">⚠️</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Orders</h3>
-              <p className="text-gray-600 mb-4">{error}</p>
-              <Button onClick={fetchOrders}>Try Again</Button>
+              <h3 className="text-lg font-semibold mb-2">Error Loading Orders</h3>
+              <p className="text-muted-foreground mb-4">{error}</p>
+              <Button onClick={fetchOrders} className="medical-button-primary">
+                Try Again
+              </Button>
             </CardContent>
           </Card>
         ) : orders.length === 0 ? (
-          <Card>
+          <Card className="medical-card">
             <CardContent className="text-center py-12">
-              <div className="text-gray-400 text-6xl mb-4">📋</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Orders Found</h3>
-              <p className="text-gray-600 mb-6">
+              <div className="text-muted-foreground text-6xl mb-4">📋</div>
+              <h3 className="text-lg font-semibold mb-2">
+                {searchQuery || statusFilter !== "all" ? "No Orders Found" : "No Orders Yet"}
+              </h3>
+              <p className="text-muted-foreground mb-6">
                 {searchQuery || statusFilter !== "all"
                   ? "No orders match your current filters."
                   : "You haven't placed any orders yet."}
               </p>
-              <Button asChild>
-                <Link href="/tests">Browse Tests</Link>
-              </Button>
+              <div className="space-y-3">
+                <Button asChild className="medical-button-primary">
+                  <Link href="/tests">Browse Tests</Link>
+                </Button>
+                {(searchQuery || statusFilter !== "all") && (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setSearchQuery("");
+                      setStatusFilter("all");
+                    }}
+                    className="medical-button-outline"
+                  >
+                    Clear Filters
+                  </Button>
+                )}
+              </div>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-4">
             {orders.map((order) => (
-              <Card key={order.id} className="hover:shadow-md transition-shadow">
+              <Card key={order.id} className="medical-card-hover">
                 <CardContent className="p-6">
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     {/* Order Info */}
@@ -259,7 +294,7 @@ export default function OrdersPage() {
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                          <p className="text-sm text-gray-500 mb-1">Tests Ordered</p>
+                          <p className="text-sm text-muted-foreground mb-1">Tests Ordered</p>
                           <div className="space-y-1">
                             {order.orderItems.slice(0, 2).map((item) => (
                               <p key={item.id} className="text-sm font-medium">
@@ -267,7 +302,7 @@ export default function OrdersPage() {
                               </p>
                             ))}
                             {order.orderItems.length > 2 && (
-                              <p className="text-sm text-gray-500">
+                              <p className="text-sm text-muted-foreground">
                                 +{order.orderItems.length - 2} more tests
                               </p>
                             )}
@@ -275,25 +310,25 @@ export default function OrdersPage() {
                         </div>
                         
                         <div>
-                          <p className="text-sm text-gray-500 mb-1">Home Visit</p>
+                          <p className="text-sm text-muted-foreground mb-1">Sample Collection</p>
                           <div className="flex items-center gap-2 text-sm">
-                            <Calendar className="h-4 w-4 text-gray-400" />
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
                             <span>
                               {formatDate(order.homeVisit.scheduledDate)} at {formatTime(order.homeVisit.scheduledTime)}
                             </span>
                           </div>
                           <div className="flex items-start gap-2 text-sm mt-1">
-                            <MapPin className="h-4 w-4 text-gray-400 mt-0.5" />
-                            <span className="text-gray-600">
+                            <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                            <span className="text-muted-foreground">
                               {order.address.line1}, {order.address.city}
                             </span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between text-sm text-gray-500">
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
                         <span>Ordered on {formatDate(order.createdAt)}</span>
-                        <span className="font-semibold text-gray-900">
+                        <span className="font-semibold text-foreground">
                           ₹{order.finalAmount.toLocaleString()}
                         </span>
                       </div>
@@ -324,7 +359,7 @@ export default function OrdersPage() {
         {/* Pagination */}
         {pagination.pages > 1 && (
           <div className="flex items-center justify-between mt-8">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Showing {((pagination.page - 1) * pagination.limit) + 1} to{" "}
               {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
               {pagination.total} orders
@@ -339,7 +374,7 @@ export default function OrdersPage() {
                 <ChevronLeft className="h-4 w-4" />
                 Previous
               </Button>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-muted-foreground">
                 Page {pagination.page} of {pagination.pages}
               </span>
               <Button

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Search, ShoppingCart, User, Menu, X, LogOut } from "lucide-react";
+import { Search, ShoppingBag, UserCircle, Menu, X, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -43,60 +43,73 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 shadow-sm">
       <div className="container-padding">
+        {/* Main Header Row */}
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-3 group flex-shrink-0">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md group-hover:shadow-lg scale-hover overflow-hidden">
+          <Link href="/" className="flex items-center group flex-shrink-0">
+            <div className="relative h-12 w-12 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
               <Image
-                src="/images/logo.png"
+                src="/images/lynk-logo.png"
                 alt="Lynk Labs"
-                width={32}
-                height={32}
-                className="h-8 w-8"
+                width={48}
+                height={48}
+                priority
+                className="h-12 w-12 object-contain drop-shadow-sm"
+                onError={(e) => {
+                  const target = e.currentTarget as HTMLImageElement;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
+                }}
               />
+              <div className="hidden h-12 w-12 items-center justify-center text-3xl">
+                🧬
+              </div>
             </div>
-            <span className="font-bold text-xl text-foreground group-hover:text-primary liquid-hover whitespace-nowrap">Lynk Labs</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-6 ml-8">
-            {navigationItems.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="text-sm font-medium text-muted-foreground hover:text-primary relative group liquid-hover whitespace-nowrap"
-              >
-                {item.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary rounded-full transition-all duration-500 ease-out group-hover:w-full"></span>
-              </Link>
-            ))}
-          </nav>
-
-          {/* Search Bar */}
-          <div className="hidden md:flex items-center space-x-4 flex-1 max-w-md mx-6">
+          {/* Center Search Bar - Desktop */}
+          <div className="hidden md:flex items-center flex-1 max-w-2xl mx-8">
             <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-6 w-6" />
               <Input
                 type="search"
                 placeholder="Search tests, packages..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="medical-input pl-10 bg-muted/30 border-border/50 focus:bg-background focus:border-primary/50 h-12 w-full"
+                className="medical-input pl-14 pr-4 bg-muted/30 border-border/50 focus:bg-background focus:border-primary/50 h-12 w-full text-base rounded-xl"
               />
             </div>
           </div>
 
           {/* Right Side Actions */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center space-x-1 mr-4">
+              {navigationItems.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 relative group whitespace-nowrap"
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </nav>
+
             {/* Cart */}
             <div className="relative">
-              <Button variant="ghost" className="h-12 w-12 hover:bg-primary/10 hover:text-primary scale-hover" onClick={openCart}>
-                <ShoppingCart className="h-5 w-5" />
+              <Button 
+                variant="ghost" 
+                className="h-16 w-16 hover:bg-primary/10 hover:text-primary transition-all duration-200 rounded-xl group" 
+                onClick={openCart}
+              >
+                <ShoppingBag className="h-8 w-8 group-hover:scale-110 transition-transform duration-200" />
                 {cartItemsCount > 0 && (
                   <Badge
-                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-primary text-primary-foreground border-0 shadow-md scale-hover animate-pulse"
+                    className="absolute -top-1 -right-1 h-7 w-7 rounded-full p-0 flex items-center justify-center text-sm font-bold bg-primary text-primary-foreground border-2 border-background shadow-lg animate-pulse"
                   >
-                    {cartItemsCount}
+                    {cartItemsCount > 99 ? '99+' : cartItemsCount}
                   </Badge>
                 )}
               </Button>
@@ -106,35 +119,35 @@ export function Header() {
             {!loading && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-12 w-12 hover:bg-primary/10 hover:text-primary scale-hover">
-                    <User className="h-5 w-5" />
+                  <Button variant="ghost" className="h-16 w-16 hover:bg-primary/10 hover:text-primary transition-all duration-200 rounded-xl group">
+                    <UserCircle className="h-8 w-8 group-hover:scale-110 transition-transform duration-200" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <div className="px-2 py-1.5">
-                    <p className="text-sm font-medium">{user.name || `User ${user.phone.slice(-4)}`}</p>
-                    <p className="text-xs text-muted-foreground">{user.phone}</p>
+                <DropdownMenuContent align="end" className="w-56 mt-2">
+                  <div className="px-3 py-2">
+                    <p className="text-sm font-medium">{user.name || `User ${user.phone?.slice(-4) || user.email?.split('@')[0] || 'Account'}`}</p>
+                    <p className="text-xs text-muted-foreground">{user.phone || user.email}</p>
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/profile">Profile</Link>
+                    <Link href="/profile" className="cursor-pointer">Profile</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/orders">My Orders</Link>
+                    <Link href="/orders" className="cursor-pointer">My Orders</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/addresses">My Addresses</Link>
+                    <Link href="/addresses" className="cursor-pointer">My Addresses</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600">
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 cursor-pointer">
                     <LogOut className="h-4 w-4 mr-2" />
                     Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="hidden md:flex items-center">
-                <Button className="medical-button-primary shadow-md h-12" asChild>
+              <div className="hidden sm:flex items-center">
+                <Button className="medical-button-primary shadow-md h-12 px-6 rounded-xl font-medium" asChild>
                   <Link href="/auth/login">Login</Link>
                 </Button>
               </div>
@@ -143,38 +156,38 @@ export function Header() {
             {/* Mobile Menu Button */}
             <Button
               variant="ghost"
-              className="lg:hidden h-12 w-12"
+              className="lg:hidden h-16 w-16 rounded-xl group"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {isMenuOpen ? <X className="h-8 w-8 group-hover:scale-110 transition-transform duration-200" /> : <Menu className="h-8 w-8 group-hover:scale-110 transition-transform duration-200" />}
             </Button>
           </div>
         </div>
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden border-t py-4">
+          <div className="lg:hidden border-t bg-background/98 backdrop-blur-sm">
             {/* Mobile Search */}
-            <div className="mb-4 md:hidden">
+            <div className="p-4 md:hidden border-b border-border/40">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-6 w-6" />
                 <Input
                   type="search"
                   placeholder="Search tests, packages..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="medical-input pl-10 h-12"
+                  className="medical-input pl-14 pr-4 h-12 w-full text-base rounded-xl bg-muted/30"
                 />
               </div>
             </div>
 
             {/* Mobile Navigation */}
-            <nav className="space-y-2">
+            <nav className="p-4 space-y-1">
               {navigationItems.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="block px-3 py-2 text-sm font-medium transition-colors hover:text-primary hover:bg-accent rounded-md"
+                  className="flex items-center px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-200"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
@@ -184,8 +197,8 @@ export function Header() {
 
             {/* Mobile Auth Button */}
             {!loading && !user && (
-              <div className="mt-4 md:hidden">
-                <Button className="w-full medical-button-primary h-12" asChild>
+              <div className="p-4 border-t border-border/40 sm:hidden">
+                <Button className="w-full medical-button-primary h-12 rounded-xl font-medium text-base" asChild>
                   <Link href="/auth/login">Login</Link>
                 </Button>
               </div>
@@ -193,42 +206,52 @@ export function Header() {
 
             {/* Mobile User Menu */}
             {!loading && user && (
-              <div className="mt-4 md:hidden space-y-2">
-                <div className="px-3 py-2 text-sm">
-                  <p className="font-medium">{user.name || `User ${user.phone.slice(-4)}`}</p>
-                  <p className="text-xs text-muted-foreground">{user.phone}</p>
+              <div className="border-t border-border/40">
+                <div className="p-4">
+                  <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-xl mb-3">
+                    <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
+                      <UserCircle className="h-7 w-7 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{user.name || `User ${user.phone?.slice(-4) || user.email?.split('@')[0] || 'Account'}`}</p>
+                      <p className="text-xs text-muted-foreground">{user.phone || user.email}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <Link
+                      href="/profile"
+                      className="flex items-center px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-200"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                    <Link
+                      href="/orders"
+                      className="flex items-center px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-200"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      My Orders
+                    </Link>
+                    <Link
+                      href="/addresses"
+                      className="flex items-center px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-200"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      My Addresses
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      className="flex items-center w-full px-4 py-3 text-base font-medium text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200"
+                    >
+                      <LogOut className="h-6 w-6 mr-3" />
+                      Sign Out
+                    </button>
+                  </div>
                 </div>
-                <Link
-                  href="/profile"
-                  className="block px-3 py-2 text-sm font-medium transition-colors hover:text-primary hover:bg-accent rounded-md"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Profile
-                </Link>
-                <Link
-                  href="/orders"
-                  className="block px-3 py-2 text-sm font-medium transition-colors hover:text-primary hover:bg-accent rounded-md"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  My Orders
-                </Link>
-                <Link
-                  href="/addresses"
-                  className="block px-3 py-2 text-sm font-medium transition-colors hover:text-primary hover:bg-accent rounded-md"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  My Addresses
-                </Link>
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setIsMenuOpen(false);
-                  }}
-                  className="block w-full text-left px-3 py-2 text-sm font-medium transition-colors text-red-600 hover:bg-red-50 rounded-md"
-                >
-                  <LogOut className="h-4 w-4 mr-2 inline" />
-                  Sign Out
-                </button>
               </div>
             )}
           </div>

@@ -4,7 +4,8 @@ import { prisma } from "@/lib/db";
 
 export interface AuthUser {
   id: string;
-  phone: string;
+  email: string | null;
+  phone: string | null;
   name: string | null;
   role: string;
 }
@@ -28,6 +29,7 @@ export async function verifyAuth(request: NextRequest): Promise<AuthUser | null>
       where: { id: decoded.userId },
       select: {
         id: true,
+        email: true,
         phone: true,
         name: true,
         role: true,
@@ -41,7 +43,8 @@ export async function verifyAuth(request: NextRequest): Promise<AuthUser | null>
 
     return {
       id: user.id,
-      phone: user.phone!,
+      email: user.email,
+      phone: user.phone,
       name: user.name,
       role: user.role,
     };

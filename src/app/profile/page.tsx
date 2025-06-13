@@ -49,6 +49,7 @@ export default function ProfilePage() {
   const [editForm, setEditForm] = useState({
     name: "",
     email: "",
+    phone: "",
     dateOfBirth: "",
     gender: "",
   });
@@ -74,6 +75,7 @@ export default function ProfilePage() {
         setEditForm({
           name: data.user.name || "",
           email: data.user.email || "",
+          phone: data.user.phone || "",
           dateOfBirth: data.user.dateOfBirth ? data.user.dateOfBirth.split('T')[0] : "",
           gender: data.user.gender || "",
         });
@@ -131,6 +133,7 @@ export default function ProfilePage() {
       setEditForm({
         name: profile.name || "",
         email: profile.email || "",
+        phone: profile.phone || "",
         dateOfBirth: profile.dateOfBirth ? profile.dateOfBirth.split('T')[0] : "",
         gender: profile.gender || "",
       });
@@ -254,11 +257,24 @@ export default function ProfilePage() {
                     {/* Phone */}
                     <div className="space-y-2">
                       <Label>Phone Number</Label>
-                      <div className="p-3 bg-muted rounded-md flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        {profile.phone}
-                        <Badge variant="secondary">Verified</Badge>
-                      </div>
+                      {isEditing ? (
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                          <Input
+                            type="tel"
+                            value={editForm.phone}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                            placeholder="Enter your phone number"
+                            className="pl-10"
+                          />
+                        </div>
+                      ) : (
+                        <div className="p-3 bg-muted rounded-md flex items-center gap-2">
+                          <Phone className="h-4 w-4 text-muted-foreground" />
+                          {profile.phone || "Not provided"}
+                          {profile.phone && <Badge variant="secondary">Verified</Badge>}
+                        </div>
+                      )}
                     </div>
 
                     {/* Date of Birth */}
@@ -298,13 +314,7 @@ export default function ProfilePage() {
                       )}
                     </div>
 
-                    {/* Account Type */}
-                    <div className="space-y-2">
-                      <Label>Account Type</Label>
-                      <div className="p-3 bg-muted rounded-md">
-                        <Badge variant="outline">{profile.role}</Badge>
-                      </div>
-                    </div>
+
                   </div>
 
                   {/* Member Since */}
