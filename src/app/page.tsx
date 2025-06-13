@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { ArrowRight, Shield, Clock, Home, Users, Star, CheckCircle, ShoppingCart, Plus, Minus } from "lucide-react";
+import { ArrowRight, Shield, Clock, Home, Users, Star, CheckCircle, ShoppingCart, Plus, Minus, Phone, Mail, MapPin, Award, Microscope, Heart, Activity, FileText, Calendar, Headphones, TrendingUp, Globe, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/cart";
 
@@ -120,6 +120,90 @@ export default function HomePage() {
       icon: Users,
       title: "Expert Care",
       description: "Experienced lab technicians and pathologists ensure accurate diagnostics."
+    }
+  ];
+
+  const whyChooseUs = [
+    {
+      icon: Award,
+      title: "NABL & ISO Certified",
+      description: "Our labs are certified by National Accreditation Board for Testing and Calibration Laboratories (NABL) and ISO 15189 standards."
+    },
+    {
+      icon: Microscope,
+      title: "Advanced Technology",
+      description: "State-of-the-art equipment and latest diagnostic technologies for precise and reliable results."
+    },
+    {
+      icon: Users,
+      title: "Expert Team",
+      description: "Qualified pathologists, lab technicians, and healthcare professionals with years of experience."
+    },
+    {
+      icon: Clock,
+      title: "Quick Turnaround",
+      description: "Fast processing with most results available within 24-48 hours of sample collection."
+    },
+    {
+      icon: Shield,
+      title: "Data Security",
+      description: "Your health data is protected with bank-level security and HIPAA compliance standards."
+    },
+    {
+      icon: Phone,
+      title: "24/7 Support",
+      description: "Round-the-clock customer support to assist you with bookings, reports, and queries."
+    }
+  ];
+
+  const testimonials = [
+    {
+      name: "Priya Sharma",
+      location: "Mumbai",
+      rating: 5,
+      comment: "Excellent service! The home collection was very convenient and the reports were accurate and delivered on time. Highly recommended!",
+      testType: "Complete Blood Count"
+    },
+    {
+      name: "Rajesh Kumar",
+      location: "Delhi",
+      rating: 5,
+      comment: "Professional staff and quick results. The online booking process was seamless and the phlebotomist was very skilled.",
+      testType: "Diabetes Panel"
+    },
+    {
+      name: "Anita Patel",
+      location: "Bangalore",
+      rating: 5,
+      comment: "Great experience with Lynk Labs. The reports were detailed and the doctor consultation helped me understand my results better.",
+      testType: "Thyroid Function Test"
+    }
+  ];
+
+  const healthPackages = [
+    {
+      name: "Basic Health Checkup",
+      price: 1999,
+      originalPrice: 2999,
+      tests: 25,
+      description: "Essential tests for overall health monitoring",
+      popular: false
+    },
+    {
+      name: "Comprehensive Health Package",
+      price: 3999,
+      originalPrice: 5999,
+      tests: 65,
+      description: "Complete health assessment with detailed analysis",
+      popular: true
+    },
+    {
+      name: "Executive Health Package",
+      price: 7999,
+      originalPrice: 11999,
+      tests: 95,
+      description: "Premium health package for busy professionals",
+      popular: false
     }
   ];
 
@@ -419,18 +503,294 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Enhanced Why Choose Us Section */}
+      <section className="py-20 bg-background">
+        <div className="container-padding">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-6 text-foreground">Why Choose Lynk Labs?</h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              We are committed to providing the highest quality diagnostic services with cutting-edge technology, 
+              expert care, and unmatched convenience for our patients.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {whyChooseUs.map((item, index) => {
+              const Icon = item.icon;
+              return (
+                <div key={index} className="medical-card p-6 text-center group hover:shadow-lg transition-all duration-300">
+                  <div className="medical-icon-container mb-6 mx-auto scale-hover">
+                    <Icon className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-4 text-foreground group-hover:text-primary transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">{item.description}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Health Packages Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="container-padding">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-6 text-foreground">Health Packages</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Comprehensive health checkup packages designed for different needs and budgets.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {healthPackages.map((pkg, index) => (
+              <div key={index} className={`medical-card p-8 text-center relative ${pkg.popular ? 'border-2 border-primary shadow-lg scale-105' : ''}`}>
+                {pkg.popular && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <span className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold">
+                      Most Popular
+                    </span>
+                  </div>
+                )}
+                
+                <h3 className="text-2xl font-bold mb-4 text-foreground">{pkg.name}</h3>
+                <div className="mb-6">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <span className="text-3xl font-bold text-primary">₹{pkg.price}</span>
+                    <span className="text-lg text-muted-foreground line-through">₹{pkg.originalPrice}</span>
+                  </div>
+                  <div className="text-sm text-green-600 font-medium">
+                    Save ₹{pkg.originalPrice - pkg.price} ({Math.round(((pkg.originalPrice - pkg.price) / pkg.originalPrice) * 100)}% OFF)
+                  </div>
+                </div>
+                
+                <div className="mb-6">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <FileText className="h-5 w-5 text-primary" />
+                    <span className="font-semibold">{pkg.tests} Tests Included</span>
+                  </div>
+                  <p className="text-muted-foreground">{pkg.description}</p>
+                </div>
+                
+                <Button 
+                  className={`w-full ${pkg.popular ? 'medical-button-primary' : 'medical-button-outline'}`}
+                  size="lg"
+                  asChild
+                >
+                  <Link href="/packages">View Details</Link>
+                </Button>
+              </div>
+            ))}
+          </div>
+          
+          <div className="text-center mt-12">
+            <Button size="lg" variant="outline" className="px-8 py-4 text-base font-semibold" asChild>
+              <Link href="/packages">
+                View All Packages
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 bg-background">
+        <div className="container-padding">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-6 text-foreground">What Our Customers Say</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Read testimonials from thousands of satisfied customers who trust Lynk Labs for their health needs.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <div key={index} className="medical-card p-6">
+                <div className="flex items-center mb-4">
+                  <div className="flex text-yellow-400 mr-2">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-current" />
+                    ))}
+                  </div>
+                  <span className="text-sm text-muted-foreground">({testimonial.rating}.0)</span>
+                </div>
+                
+                <p className="text-muted-foreground mb-6 leading-relaxed italic">
+                  "{testimonial.comment}"
+                </p>
+                
+                <div className="border-t pt-4">
+                  <div className="font-semibold text-foreground">{testimonial.name}</div>
+                  <div className="text-sm text-muted-foreground">{testimonial.location}</div>
+                  <div className="text-xs text-primary mt-1">Tested: {testimonial.testType}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="text-center mt-12">
+            <div className="flex items-center justify-center gap-2 text-muted-foreground">
+              <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+              <span className="font-semibold text-foreground">4.8/5</span>
+              <span>based on 2,500+ reviews</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="container-padding">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-6 text-foreground">How It Works</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Getting your lab tests done is simple and convenient with our 4-step process.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-4 gap-8">
+            {[
+              {
+                step: "1",
+                icon: Globe,
+                title: "Book Online",
+                description: "Choose your tests and book online or call our helpline. Select convenient time slot."
+              },
+              {
+                step: "2",
+                icon: Calendar,
+                title: "Schedule Collection",
+                description: "Our trained phlebotomist will visit your home at the scheduled time for sample collection."
+              },
+              {
+                step: "3",
+                icon: Microscope,
+                title: "Lab Processing",
+                description: "Samples are processed in our NABL accredited labs using advanced technology."
+              },
+              {
+                step: "4",
+                icon: FileText,
+                title: "Get Reports",
+                description: "Receive your reports via WhatsApp, email, or download from our secure portal."
+              }
+            ].map((step, index) => {
+              const Icon = step.icon;
+              return (
+                <div key={index} className="text-center relative">
+                  {index < 3 && (
+                    <div className="hidden md:block absolute top-12 left-full w-full h-0.5 bg-primary/20 -translate-y-1/2 z-0"></div>
+                  )}
+                  
+                  <div className="relative z-10">
+                    <div className="medical-icon-container mb-6 mx-auto scale-hover bg-primary text-primary-foreground">
+                      <Icon className="h-8 w-8" />
+                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center text-xs font-bold">
+                        {step.step}
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-semibold mb-4 text-foreground">{step.title}</h3>
+                    <p className="text-muted-foreground leading-relaxed">{step.description}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Indicators Section */}
+      <section className="py-16 bg-background">
+        <div className="container-padding">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl lg:text-3xl font-bold mb-4 text-foreground">Trusted by Healthcare Professionals</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Our certifications and partnerships ensure the highest standards of quality and reliability.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
+            {[
+              { name: "NABL Accredited", icon: Award },
+              { name: "ISO 15189 Certified", icon: Shield },
+              { name: "CAP Approved", icon: CheckCircle },
+              { name: "HIPAA Compliant", icon: Users }
+            ].map((cert, index) => {
+              const Icon = cert.icon;
+              return (
+                <div key={index} className="text-center group">
+                  <div className="medical-icon-container mb-4 mx-auto scale-hover">
+                    <Icon className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                    {cert.name}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Information Section */}
       <section className="py-20 bg-primary text-primary-foreground">
+        <div className="container-padding">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start mb-4">
+                <Phone className="h-6 w-6 mr-3" />
+                <h3 className="text-xl font-semibold">Call Us</h3>
+              </div>
+              <p className="opacity-90 mb-2">24/7 Customer Support</p>
+              <p className="text-lg font-semibold">1800-123-4567</p>
+            </div>
+            
+            <div className="text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start mb-4">
+                <Mail className="h-6 w-6 mr-3" />
+                <h3 className="text-xl font-semibold">Email Us</h3>
+              </div>
+              <p className="opacity-90 mb-2">Get Quick Response</p>
+              <p className="text-lg font-semibold">support@lynklabs.com</p>
+            </div>
+            
+            <div className="text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start mb-4">
+                <MapPin className="h-6 w-6 mr-3" />
+                <h3 className="text-xl font-semibold">Visit Us</h3>
+              </div>
+              <p className="opacity-90 mb-2">Main Laboratory</p>
+              <p className="text-lg font-semibold">Mumbai, India</p>
+            </div>
+            
+            <div className="text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start mb-4">
+                <Headphones className="h-6 w-6 mr-3" />
+                <h3 className="text-xl font-semibold">Live Chat</h3>
+              </div>
+              <p className="opacity-90 mb-2">Instant Support</p>
+              <Button variant="secondary" size="sm" className="mt-2">
+                Start Chat
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-r from-primary to-primary/90 text-primary-foreground">
         <div className="container-padding text-center">
           <h2 className="text-3xl lg:text-4xl font-bold mb-6">Ready to Take Control of Your Health?</h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
-            Book your lab tests today and get accurate results delivered to your doorstep.
+            Book your lab tests today and get accurate results delivered to your doorstep with our convenient home collection service.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary" className="px-8 py-4 text-base font-semibold" asChild>
+            <Button size="lg" variant="secondary" className="px-8 py-4 text-base font-semibold scale-hover" asChild>
               <Link href="/tests">Book Tests Now</Link>
             </Button>
-            <Button size="lg" variant="outline" className="px-8 py-4 text-base font-semibold border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" asChild>
+            <Button size="lg" variant="outline" className="px-8 py-4 text-base font-semibold border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary scale-hover" asChild>
               <Link href="/contact">Contact Us</Link>
             </Button>
           </div>
