@@ -220,7 +220,7 @@ export default function HomePage() {
       <section className="relative medical-background py-20 lg:py-32 overflow-hidden">
         <div className="container-padding relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="page-transition">
+            <div className="page-transition text-center lg:text-left">
               <div className="medical-badge-primary mb-6 inline-flex scale-hover">
                 <Shield className="w-4 h-4 mr-2" />
                 NABL Accredited Lab
@@ -229,11 +229,11 @@ export default function HomePage() {
                 Your Health,
                 <span className="text-primary block lg:inline"> Our Priority</span>
               </h1>
-              <p className="text-xl text-muted-foreground mb-8 max-w-lg leading-relaxed">
+              <p className="text-xl text-muted-foreground mb-8 max-w-lg mx-auto lg:mx-0 leading-relaxed">
                 Book lab tests online with home sample collection, get fast accurate results, 
                 and take control of your health journey with Lynk Labs.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button size="lg" className="medical-button-primary px-8 py-4 text-base font-semibold liquid-hover" asChild>
                   <Link href="/tests">
                     Book Lab Tests
@@ -246,7 +246,7 @@ export default function HomePage() {
               </div>
               
               {/* Trust Indicators */}
-              <div className="flex items-center gap-6 mt-8 pt-8 border-t">
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 mt-8 pt-8 border-t">
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
                     {[1, 2, 3, 4].map((i) => (
@@ -367,32 +367,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-background">
-        <div className="container-padding">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-6 text-foreground">Why Choose Lynk Labs?</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              We combine cutting-edge technology with expert care to deliver the best diagnostic experience.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <div key={index} className="text-center group">
-                  <div className="medical-icon-container mb-6 mx-auto scale-hover">
-                    <Icon className="h-8 w-8 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-4 text-foreground">{feature.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+
 
       {/* Popular Tests Section */}
       <section className="py-20 bg-gray-50">
@@ -418,74 +393,86 @@ export default function HomePage() {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {popularTests.map((test) => (
-                <div key={test.id} className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-primary/20">
-                  <div className="mb-4">
-                    <h3 className="text-lg font-semibold text-foreground mb-2">{test.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{test.description}</p>
-                    <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">
-                      {test.category.name}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
+                <div key={test.id} className="medical-card-hover bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-primary/20 overflow-hidden flex flex-col">
+                  <div className="p-6 pb-4">
+                    <div className="flex items-start justify-between gap-3 mb-4">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-semibold text-foreground mb-2 line-clamp-2">
+                          <Link 
+                            href={`/tests/${test.slug}`}
+                            className="hover:text-primary liquid-hover"
+                          >
+                            {test.name}
+                          </Link>
+                        </h3>
+                        <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">
+                          {test.category.name}
+                        </span>
+                      </div>
                       {test.discountPrice && (
-                        <span className="text-lg font-bold text-foreground">₹{test.discountPrice}</span>
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium flex-shrink-0">
+                          {calculateDiscount(test.price, test.discountPrice)}% OFF
+                        </span>
                       )}
-                      <span className={`${test.discountPrice ? 'text-sm text-muted-foreground line-through' : 'text-lg font-bold text-foreground'}`}>
-                        ₹{test.price}
+                    </div>
+                    
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2 leading-relaxed">
+                      {test.description}
+                    </p>
+
+                    <div className="flex items-baseline gap-2 mb-4">
+                      <span className="text-2xl font-bold text-primary">
+                        ₹{test.discountPrice || test.price}
                       </span>
                       {test.discountPrice && (
-                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
-                          {calculateDiscount(test.price, test.discountPrice)}% OFF
+                        <span className="text-sm text-muted-foreground line-through">
+                          ₹{test.price}
                         </span>
                       )}
                     </div>
                   </div>
                   
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex-1"
-                      asChild
-                    >
-                      <Link href={`/tests/${test.slug}`}>View Details</Link>
-                    </Button>
-                    {getItemQuantity(test.id) > 0 ? (
-                      <div className="flex-1 flex items-center justify-between p-2 border rounded-md bg-primary/5">
-                        <span className="text-xs font-medium text-primary">
-                          {getItemQuantity(test.id)} {getItemQuantity(test.id) === 1 ? 'patient' : 'patients'}
-                        </span>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => updateQuantity(test.id, getItemQuantity(test.id) - 1)}
-                          >
-                            <Minus className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => updateQuantity(test.id, getItemQuantity(test.id) + 1)}
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
+                  <div className="p-6 pt-0 mt-auto">
+                    <div className="flex flex-col gap-2">
+                      {getItemQuantity(test.id) > 0 ? (
+                        <div className="flex items-center justify-between p-3 border rounded-lg bg-primary/5">
+                          <span className="text-sm font-medium text-primary">
+                            {getItemQuantity(test.id)} {getItemQuantity(test.id) === 1 ? 'patient' : 'patients'}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => updateQuantity(test.id, getItemQuantity(test.id) - 1)}
+                            >
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => updateQuantity(test.id, getItemQuantity(test.id) + 1)}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <Button
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => addToCart(test)}
-                      >
-                        <ShoppingCart className="h-4 w-4 mr-2" />
-                        Add to Cart
+                      ) : (
+                        <Button 
+                          className="w-full medical-button-primary font-medium"
+                          onClick={() => addToCart(test)}
+                        >
+                          <ShoppingCart className="h-4 w-4 mr-2" />
+                          Book Now
+                        </Button>
+                      )}
+                      <Button variant="outline" className="w-full medical-button-outline text-sm" asChild>
+                        <Link href={`/tests/${test.slug}`}>
+                          View Details
+                        </Link>
                       </Button>
-                    )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -519,7 +506,7 @@ export default function HomePage() {
               const Icon = item.icon;
               return (
                 <div key={index} className="medical-card p-6 text-center group hover:shadow-lg transition-all duration-300">
-                  <div className="medical-icon-container mb-6 mx-auto scale-hover">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6 mx-auto group-hover:bg-primary/20 transition-colors scale-hover">
                     <Icon className="h-8 w-8 text-primary" />
                   </div>
                   <h3 className="text-xl font-semibold mb-4 text-foreground group-hover:text-primary transition-colors">
@@ -685,8 +672,8 @@ export default function HomePage() {
                   )}
                   
                   <div className="relative z-10">
-                    <div className="medical-icon-container mb-6 mx-auto scale-hover bg-primary text-primary-foreground">
-                      <Icon className="h-8 w-8" />
+                    <div className="relative w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-6 mx-auto scale-hover">
+                      <Icon className="h-8 w-8 text-primary-foreground" />
                       <div className="absolute -top-2 -right-2 w-6 h-6 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center text-xs font-bold">
                         {step.step}
                       </div>
@@ -721,7 +708,7 @@ export default function HomePage() {
               const Icon = cert.icon;
               return (
                 <div key={index} className="text-center group">
-                  <div className="medical-icon-container mb-4 mx-auto scale-hover">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4 mx-auto group-hover:bg-primary/20 transition-colors scale-hover">
                     <Icon className="h-6 w-6 text-primary" />
                   </div>
                   <div className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
