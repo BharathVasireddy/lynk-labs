@@ -99,13 +99,12 @@ export function Header() {
 
             {/* Cart */}
             <div className="relative flex items-center">
-              <Button 
-                variant="ghost" 
-                className="h-24 w-24 rounded-xl group p-0" 
+              <button 
+                className="h-24 w-24 rounded-xl group p-0 flex items-center justify-center hover:bg-transparent focus:outline-none focus:ring-0" 
                 onClick={openCart}
               >
                 <ShoppingBag className="h-24 w-24 group-hover:scale-110 transition-transform duration-200" />
-              </Button>
+              </button>
               {cartItemsCount > 0 && (
                 <Badge
                   className="absolute top-0 right-0 h-8 w-8 rounded-full p-0 flex items-center justify-center text-sm font-bold bg-primary text-primary-foreground border-2 border-background shadow-lg animate-pulse"
@@ -119,9 +118,9 @@ export function Header() {
             {!loading && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-24 w-24 rounded-xl group p-0">
+                  <button className="h-24 w-24 rounded-xl group p-0 flex items-center justify-center hover:bg-transparent focus:outline-none focus:ring-0">
                     <UserCircle className="h-24 w-24 group-hover:scale-110 transition-transform duration-200" />
-                  </Button>
+                  </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 mt-2">
                   <div className="px-3 py-2">
@@ -154,13 +153,12 @@ export function Header() {
             )}
 
             {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              className="lg:hidden h-24 w-24 rounded-xl group p-0"
+            <button
+              className="lg:hidden h-24 w-24 rounded-xl group p-0 flex items-center justify-center hover:bg-transparent focus:outline-none focus:ring-0"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X className="h-24 w-24 group-hover:scale-110 transition-transform duration-200" /> : <Menu className="h-24 w-24 group-hover:scale-110 transition-transform duration-200" />}
-            </Button>
+            </button>
           </div>
         </div>
 
