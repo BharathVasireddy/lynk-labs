@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Mail, AlertCircle, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -20,19 +20,27 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading: authLoading, login } = useAuth();
+  
+  const returnUrl = searchParams.get("returnUrl");
 
   // Redirect if already authenticated
   useEffect(() => {
     if (!authLoading && user) {
-      // Role-based redirect
-      if (user.role === "ADMIN") {
-        router.replace("/admin/dashboard");
+      // Check if there's a return URL
+      if (returnUrl) {
+        router.replace(returnUrl);
       } else {
-        router.replace("/profile");
+        // Role-based redirect
+        if (user.role === "ADMIN") {
+          router.replace("/admin/dashboard");
+        } else {
+          router.replace("/profile");
+        }
       }
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, returnUrl]);
 
   // Show loading while checking authentication
   if (authLoading) {
@@ -96,8 +104,10 @@ export default function LoginPage() {
         // Update auth context with user data
         login(data.user);
 
-        // Role-based redirect after registration
-        if (data.user.role === "ADMIN") {
+        // Redirect to return URL or default location
+        if (returnUrl) {
+          router.push(returnUrl);
+        } else if (data.user.role === "ADMIN") {
           router.push("/admin/dashboard");
         } else {
           router.push("/profile");
@@ -121,8 +131,10 @@ export default function LoginPage() {
         // Update auth context with user data
         login(data.user);
 
-        // Role-based redirect after login
-        if (data.user.role === "ADMIN") {
+        // Redirect to return URL or default location
+        if (returnUrl) {
+          router.push(returnUrl);
+        } else if (data.user.role === "ADMIN") {
           router.push("/admin/dashboard");
         } else {
           router.push("/profile");
@@ -291,5 +303,20 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 } 

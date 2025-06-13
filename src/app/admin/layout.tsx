@@ -80,7 +80,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   useEffect(() => {
     // CRITICAL: Enforce admin authentication
     if (!loading && (!user || user.role !== "ADMIN")) {
-      router.push("/auth/login");
+      router.push("/auth/login?returnUrl=/admin/dashboard");
       return;
     }
   }, [user, loading, router]);

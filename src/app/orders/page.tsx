@@ -109,7 +109,7 @@ export default function OrdersPage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/auth/login");
+      router.push("/auth/login?returnUrl=/orders");
       return;
     }
 

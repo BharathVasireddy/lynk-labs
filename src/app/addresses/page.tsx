@@ -56,7 +56,7 @@ export default function AddressesPage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/auth/login");
+      router.push("/auth/login?returnUrl=/addresses");
       return;
     }
 

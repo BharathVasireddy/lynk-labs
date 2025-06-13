@@ -59,7 +59,9 @@ export function middleware(request: NextRequest) {
   // Check admin routes
   if (adminRoutes.some(route => pathname.startsWith(route))) {
     if (!user) {
-      return NextResponse.redirect(new URL("/auth/login", request.url));
+      const loginUrl = new URL("/auth/login", request.url);
+      loginUrl.searchParams.set("returnUrl", pathname);
+      return NextResponse.redirect(loginUrl);
     }
     if (user.role !== "ADMIN") {
       return NextResponse.redirect(new URL("/", request.url));
@@ -70,7 +72,9 @@ export function middleware(request: NextRequest) {
   // Check other protected routes
   if (protectedRoutes.some(route => pathname.startsWith(route))) {
     if (!user) {
-      return NextResponse.redirect(new URL("/auth/login", request.url));
+      const loginUrl = new URL("/auth/login", request.url);
+      loginUrl.searchParams.set("returnUrl", pathname);
+      return NextResponse.redirect(loginUrl);
     }
     return NextResponse.next();
   }
