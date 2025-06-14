@@ -4,6 +4,7 @@ import './globals.css'
 import { ConditionalLayout } from '@/components/layout/ConditionalLayout'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/contexts/auth-context'
+import { ToastProvider } from '@/contexts/toast-context'
 
 const plusJakartaSans = Plus_Jakarta_Sans({ 
   subsets: ['latin'],
@@ -97,11 +98,13 @@ export default function RootLayout({
       </head>
       <body className={`${plusJakartaSans.className} antialiased`}>
         <AuthProvider>
-          <ConditionalLayout>
-            {children}
-          </ConditionalLayout>
-          <Toaster />
-          <div id="modal-root" />
+          <ToastProvider>
+            <ConditionalLayout>
+              {children}
+            </ConditionalLayout>
+            <Toaster />
+            <div id="modal-root" />
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>

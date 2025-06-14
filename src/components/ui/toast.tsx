@@ -4,6 +4,8 @@ import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
 import { cva, type VariantProps } from "class-variance-authority"
 import { X } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Button } from "./button"
 
 import { cn } from "@/lib/utils"
 
@@ -115,6 +117,72 @@ ToastDescription.displayName = ToastPrimitives.Description.displayName
 type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
 
 type ToastActionElement = React.ReactElement<typeof ToastAction>
+
+export interface Toast {
+  id: string;
+  message: string;
+  type?: "success" | "error" | "info";
+  duration?: number;
+}
+
+interface ToastContainerProps {
+  toasts: Toast[];
+  onRemove: (id: string) => void;
+}
+
+export function ToastItem({ toast, onRemove }: ToastProps) {
+  const [isVisible, setIsVisible] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
+
+  useEffect(() => {
+    // Trigger entrance animation
+    setTimeout(() => setIsVisible(true), 10);
+
+    // Auto remove after duration
+    const timer = setTimeout(() => {
+      setIsLeaving(true);
+      setTimeout(() => onRemove(toast.id), 300);
+    }, toast.duration || 3000);
+
+    return () => clearTimeout(timer);
+  }, [toast.id, toast.duration, onRemove]);
+
+  const handleClose = () => {
+    setIsLeaving(true);
+    setTimeout(() => onRemove(toast.id), 300);
+  };
+
+  return (
+    <div
+      className={`
+        flex items-center gap-3 p-4 bg-white border border-green-200 rounded-lg shadow-lg
+        transform transition-all duration-300 ease-out
+        ${isVisible && !isLeaving ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}
+      `}
+    >
+      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+      <p className="text-sm font-medium text-gray-900 flex-1">{toast.message}</p>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-6 w-6 text-gray-400 hover:text-gray-600"
+        onClick={handleClose}
+      >
+        <X className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
+
+export function ToastContainer({ toasts, onRemove }: ToastContainerProps) {
+  return (
+    <div className="fixed top-4 right-4 z-50 space-y-2 max-w-sm w-full">
+      {toasts.map((toast) => (
+        <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
+      ))}
+    </div>
+  );
+}
 
 export {
   type ToastProps,

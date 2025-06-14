@@ -13,6 +13,10 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+// import { ExpressCheckout } from "@/components/ui/express-checkout";
+// import { SmartFormField } from "@/components/ui/smart-form-field";
+// import { TrustIndicators, PaymentSecurityBadge } from "@/components/ui/trust-indicators";
+// import { MobileCheckoutFooter, MobileCheckoutSpacer } from "@/components/ui/mobile-checkout-footer";
 import { useCartStore } from "@/store/cart";
 import { useAuth } from "@/contexts/auth-context";
 import { toast } from "sonner";
@@ -34,7 +38,7 @@ interface Address {
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, getTotalPrice, clearCart } = useCartStore();
-  const { user, loading } = useAuth() || { user: null, loading: true };
+  const { user } = useAuth() || { user: null };
   
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
@@ -43,6 +47,7 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [isLoading, setIsLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
+
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [generalError, setGeneralError] = useState("");
@@ -60,14 +65,6 @@ export default function CheckoutPage() {
   const totalAmount = getTotalPrice();
   const discount = 0; // Calculate discount if needed
   const finalAmount = totalAmount - discount;
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!loading && !user) {
-      // Redirect to login with return URL
-      router.push('/auth/login?returnUrl=' + encodeURIComponent('/checkout'));
-    }
-  }, [user, loading, router]);
 
   useEffect(() => {
     if (items.length === 0 && !orderPlaced) {
@@ -379,23 +376,6 @@ export default function CheckoutPage() {
     };
   });
 
-  // Show loading while checking authentication
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Redirect to login if not authenticated (handled by useEffect)
-  if (!user) {
-    return null;
-  }
-
   if (items.length === 0 && !orderPlaced) {
     return null;
   }
@@ -432,7 +412,9 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Order Review */}
+
+
+            {/* Regular Checkout Steps */}
             <Card className="medical-card">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -570,134 +552,133 @@ export default function CheckoutPage() {
                     <h4 className="font-medium mb-3">
                       {addresses.length > 0 ? "Or add a new address" : "Add delivery address"}
                     </h4>
-                    <div className="grid gap-4">
+                  <div className="grid gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="line1" className="text-sm font-medium">
+                        Address Line 1 <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="line1"
+                        name="line1"
+                        placeholder="House/Flat No., Building Name"
+                        value={newAddress.line1}
+                        onChange={(e) => {
+                          setNewAddress(prev => ({ ...prev, line1: e.target.value }));
+                          if (errors.line1) {
+                            setErrors(prev => ({ ...prev, line1: "" }));
+                          }
+                        }}
+                        autoComplete="address-line1"
+                        className={errors.line1 ? "border-red-500" : ""}
+                      />
+                      {errors.line1 && (
+                        <p className="text-sm text-red-600 flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          {errors.line1}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="line2" className="text-sm font-medium">
+                        Address Line 2 <Badge variant="outline" className="ml-2 text-xs">Optional</Badge>
+                      </Label>
+                      <Input
+                        id="line2"
+                        name="line2"
+                        placeholder="Area, Landmark (Optional)"
+                        value={newAddress.line2}
+                        onChange={(e) => setNewAddress(prev => ({ ...prev, line2: e.target.value }))}
+                        autoComplete="address-line2"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="line1" className="text-sm font-medium">
-                          Address Line 1 <span className="text-red-500">*</span>
+                        <Label htmlFor="city" className="text-sm font-medium">
+                          City <span className="text-red-500">*</span>
                         </Label>
                         <Input
-                          id="line1"
-                          name="line1"
-                          placeholder="House/Flat No., Building Name"
-                          value={newAddress.line1}
+                          id="city"
+                          name="city"
+                          placeholder="Enter city"
+                          value={newAddress.city}
                           onChange={(e) => {
-                            setNewAddress(prev => ({ ...prev, line1: e.target.value }));
-                            if (errors.line1) {
-                              setErrors(prev => ({ ...prev, line1: "" }));
+                            setNewAddress(prev => ({ ...prev, city: e.target.value }));
+                            if (errors.city) {
+                              setErrors(prev => ({ ...prev, city: "" }));
                             }
                           }}
-                          autoComplete="address-line1"
-                          className={errors.line1 ? "border-red-500" : ""}
+                          autoComplete="address-level2"
+                          className={errors.city ? "border-red-500" : ""}
                         />
-                        {errors.line1 && (
+                        {errors.city && (
                           <p className="text-sm text-red-600 flex items-center gap-1">
                             <AlertCircle className="h-3 w-3" />
-                            {errors.line1}
+                            {errors.city}
                           </p>
                         )}
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="line2" className="text-sm font-medium">
-                          Address Line 2 <Badge variant="outline" className="ml-2 text-xs">Optional</Badge>
+                        <Label htmlFor="pincode" className="text-sm font-medium">
+                          Pincode <span className="text-red-500">*</span>
                         </Label>
                         <Input
-                          id="line2"
-                          name="line2"
-                          placeholder="Area, Landmark (Optional)"
-                          value={newAddress.line2}
-                          onChange={(e) => setNewAddress(prev => ({ ...prev, line2: e.target.value }))}
-                          autoComplete="address-line2"
-                        />
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="city" className="text-sm font-medium">
-                            City <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            id="city"
-                            name="city"
-                            placeholder="Enter city"
-                            value={newAddress.city}
-                            onChange={(e) => {
-                              setNewAddress(prev => ({ ...prev, city: e.target.value }));
-                              if (errors.city) {
-                                setErrors(prev => ({ ...prev, city: "" }));
-                              }
-                            }}
-                            autoComplete="address-level2"
-                            className={errors.city ? "border-red-500" : ""}
-                          />
-                          {errors.city && (
-                            <p className="text-sm text-red-600 flex items-center gap-1">
-                              <AlertCircle className="h-3 w-3" />
-                              {errors.city}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="pincode" className="text-sm font-medium">
-                            Pincode <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            id="pincode"
-                            name="pincode"
-                            placeholder="000000"
-                            value={newAddress.pincode}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/\D/g, "").slice(0, 6);
-                              setNewAddress(prev => ({ ...prev, pincode: value }));
-                              if (errors.pincode) {
-                                setErrors(prev => ({ ...prev, pincode: "" }));
-                              }
-                            }}
-                            autoComplete="postal-code"
-                            className={errors.pincode ? "border-red-500" : ""}
-                          />
-                          {errors.pincode && (
-                            <p className="text-sm text-red-600 flex items-center gap-1">
-                              <AlertCircle className="h-3 w-3" />
-                              {errors.pincode}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="state" className="text-sm font-medium">
-                          State <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                          id="state"
-                          name="state"
-                          placeholder="Enter state"
-                          value={newAddress.state}
+                          id="pincode"
+                          name="pincode"
+                          placeholder="000000"
+                          value={newAddress.pincode}
                           onChange={(e) => {
-                            setNewAddress(prev => ({ ...prev, state: e.target.value }));
-                            if (errors.state) {
-                              setErrors(prev => ({ ...prev, state: "" }));
+                            const value = e.target.value.replace(/\D/g, "").slice(0, 6);
+                            setNewAddress(prev => ({ ...prev, pincode: value }));
+                            if (errors.pincode) {
+                              setErrors(prev => ({ ...prev, pincode: "" }));
                             }
                           }}
-                          autoComplete="address-level1"
-                          className={errors.state ? "border-red-500" : ""}
+                          autoComplete="postal-code"
+                          className={errors.pincode ? "border-red-500" : ""}
                         />
-                        {errors.state && (
+                        {errors.pincode && (
                           <p className="text-sm text-red-600 flex items-center gap-1">
                             <AlertCircle className="h-3 w-3" />
-                            {errors.state}
+                            {errors.pincode}
                           </p>
                         )}
                       </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="state" className="text-sm font-medium">
+                        State <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="state"
+                        name="state"
+                        placeholder="Enter state"
+                        value={newAddress.state}
+                        onChange={(e) => {
+                          setNewAddress(prev => ({ ...prev, state: e.target.value }));
+                          if (errors.state) {
+                            setErrors(prev => ({ ...prev, state: "" }));
+                          }
+                        }}
+                        autoComplete="address-level1"
+                        className={errors.state ? "border-red-500" : ""}
+                      />
+                      {errors.state && (
+                        <p className="text-sm text-red-600 flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          {errors.state}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            {/* Schedule Section */}
+            {/* Schedule Section - Enhanced UX */}
             <Card className="medical-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -929,7 +910,7 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
-            {/* Trust Indicators */}
+            {/* Trust Indicators - Non-sticky to prevent overlap */}
             <Card className="medical-card">
               <CardContent className="p-4">
                 <div className="space-y-3">

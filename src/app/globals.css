@@ -179,21 +179,68 @@
     scroll-behavior: smooth;
   }
   
-  /* Global smooth transitions */
-  * {
-    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 200ms;
+  /* Cart sidebar smooth animation */
+  .cart-sidebar {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
-  /* Override for elements that need custom timing */
-  .medical-card,
-  .medical-card-hover,
-  .medical-button,
-  .medical-input,
-  .liquid-hover,
-  .scale-hover {
-    transition-property: all;
+  .cart-sidebar-enter {
+    transform: translateX(100%);
+  }
+  
+  .cart-sidebar-enter-active {
+    transform: translateX(0);
+  }
+  
+  .cart-overlay {
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Success bounce animation for cart button feedback */
+  @keyframes successBounce {
+    0% {
+      transform: scale(1);
+    }
+    15% {
+      transform: scale(1.1);
+    }
+    30% {
+      transform: scale(0.95);
+    }
+    45% {
+      transform: scale(1.05);
+    }
+    60% {
+      transform: scale(0.98);
+    }
+    75% {
+      transform: scale(1.02);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /* Sliding glow animation for success feedback */
+  @keyframes slideGlow {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+
+
+
+  
+  /* Override for elements that specifically need positioning transforms */
+  [data-radix-select-content],
+  [data-radix-dropdown-menu-content],
+  [data-radix-popper-content],
+  [id^="radix-"] {
+    transform: var(--radix-popper-transform-origin) !important;
   }
 }
 
@@ -204,7 +251,6 @@
     @apply bg-primary-600 text-white border border-transparent rounded-lg;
     @apply hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
-    @apply transition-all duration-200 ease-in-out;
     min-height: 48px;
   }
 
@@ -213,7 +259,6 @@
     @apply bg-white text-primary-700 border border-primary-200 rounded-lg;
     @apply hover:bg-primary-50 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
-    @apply transition-all duration-200 ease-in-out;
     min-height: 48px;
   }
 
@@ -222,7 +267,6 @@
     @apply bg-transparent text-gray-700 border border-gray-300 rounded-lg;
     @apply hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
-    @apply transition-all duration-200 ease-in-out;
     min-height: 48px;
   }
 
@@ -232,7 +276,6 @@
     @apply bg-white text-gray-900 placeholder-gray-500;
     @apply focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
     @apply disabled:bg-gray-50 disabled:text-gray-500;
-    @apply transition-colors duration-200;
     min-height: 48px;
   }
 
@@ -244,7 +287,6 @@
     @apply block w-full px-4 py-3 text-sm border border-gray-300 rounded-lg;
     @apply bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
     @apply disabled:bg-gray-50 disabled:text-gray-500;
-    @apply transition-colors duration-200;
     min-height: 48px;
   }
 
@@ -254,7 +296,6 @@
     @apply bg-white text-gray-900 placeholder-gray-500;
     @apply focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
     @apply disabled:bg-gray-50 disabled:text-gray-500;
-    @apply transition-colors duration-200;
     min-height: 96px;
     resize: vertical;
   }
@@ -304,24 +345,18 @@
   /* Healthcare-themed components with liquid animations */
   .medical-card {
     @apply bg-card border border-border rounded-xl shadow-sm;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: translateZ(0);
-    backface-visibility: hidden;
   }
   
   .medical-card:hover {
     @apply shadow-md;
-    transform: translateY(-2px) translateZ(0);
   }
   
   .medical-card-hover {
     @apply medical-card;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .medical-card-hover:hover {
     @apply border-primary/20 shadow-lg;
-    transform: translateY(-4px) scale(1.02) translateZ(0);
   }
   
   .medical-badge {
@@ -347,19 +382,15 @@
   /* Standardized Medical Buttons - All have consistent 48px height */
   .medical-button {
     @apply inline-flex items-center justify-center rounded-lg text-sm font-semibold px-6 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: translateZ(0);
-    backface-visibility: hidden;
     min-height: 48px;
   }
   
   .medical-button:hover {
-    transform: translateY(-1px) translateZ(0);
+    /* No animations */
   }
   
   .medical-button:active {
-    transform: translateY(0) scale(0.98) translateZ(0);
-    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    /* No animations */
   }
   
   .medical-button-primary {
@@ -367,8 +398,7 @@
   }
   
   .medical-button-primary:hover {
-    transform: translateY(-2px) translateZ(0);
-    box-shadow: 0 8px 25px rgba(52, 147, 149, 0.25);
+    /* No animations */
   }
   
   .medical-button-secondary {
@@ -376,8 +406,7 @@
   }
   
   .medical-button-secondary:hover {
-    transform: translateY(-2px) translateZ(0);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    /* No animations */
   }
   
   .medical-button-outline {
@@ -385,8 +414,6 @@
   }
   
   .medical-button-outline:hover {
-    transform: translateY(-2px) translateZ(0);
-    box-shadow: 0 8px 25px rgba(52, 147, 149, 0.25);
     border-color: hsl(var(--primary));
   }
 
@@ -398,28 +425,22 @@
   }
   
   .medical-button-load-more:hover {
-    transform: translateY(-3px) translateZ(0);
-    box-shadow: 0 12px 35px rgba(52, 147, 149, 0.35);
+    /* No animations */
   }
   
   /* Standardized Medical Inputs - All have consistent 48px height */
   .medical-input {
     @apply flex w-full rounded-lg border border-input bg-background px-4 py-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: translateZ(0);
     min-height: 48px;
   }
   
   .medical-input:focus-visible {
     @apply ring-2 ring-primary ring-offset-2;
     border-color: hsl(var(--primary));
-    box-shadow: 0 0 0 2px hsl(var(--ring)), 0 2px 8px rgba(52, 147, 149, 0.15);
-    transform: translateY(-1px) translateZ(0);
   }
   
   .medical-input:hover:not(:focus-visible) {
     border-color: hsl(var(--primary) / 0.3);
-    box-shadow: 0 1px 4px rgba(52, 147, 149, 0.1);
   }
 
   /* Medical Select - Consistent with inputs */
@@ -434,65 +455,36 @@
     resize: vertical;
   }
   
-  /* Loading states with smooth animations */
+  /* Loading states - NO ANIMATIONS */
   .loading-shimmer {
     @apply bg-gradient-to-r from-muted via-muted/50 to-muted bg-[length:200%_100%];
-    animation: shimmer 2s ease-in-out infinite;
   }
   
-  @keyframes shimmer {
-    0% {
-      background-position: -200% 0;
-      opacity: 0.6;
-    }
-    50% {
-      opacity: 1;
-    }
-    100% {
-      background-position: 200% 0;
-      opacity: 0.6;
-    }
-  }
-  
-  /* Smooth page transitions */
+  /* Page transitions - NO ANIMATIONS */
   .page-transition {
-    animation: pageEnter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    /* No animations */
   }
   
-  @keyframes pageEnter {
-    0% {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  /* Liquid hover effects */
+  /* Hover effects - NO ANIMATIONS */
   .liquid-hover {
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: translateZ(0);
+    /* No animations */
   }
   
   .liquid-hover:hover {
-    transform: translateY(-2px) scale(1.02) translateZ(0);
+    /* No animations */
   }
   
-  /* Smooth scale animations */
+  /* Scale effects - NO ANIMATIONS */
   .scale-hover {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: translateZ(0);
+    /* No animations */
   }
   
   .scale-hover:hover {
-    transform: scale(1.05) translateZ(0);
+    /* No animations */
   }
   
   .scale-hover:active {
-    transform: scale(0.98) translateZ(0);
-    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    /* No animations */
   }
   
     /* Healthcare-specific backgrounds */
@@ -555,44 +547,6 @@
     overflow: hidden;
   }
 
-  /* Smooth dropdown animations */
-  [data-radix-select-content] {
-    animation: none !important;
-    transform-origin: center !important;
-  }
 
-  [data-radix-select-content][data-state="open"] {
-    animation: dropdownFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  }
 
-  [data-radix-select-content][data-state="closed"] {
-    animation: dropdownFadeOut 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  }
-
-  @keyframes dropdownFadeIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95) translateY(-4px);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
-  }
-
-  @keyframes dropdownFadeOut {
-    from {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
-    to {
-      opacity: 0;
-      transform: scale(0.95) translateY(-4px);
-    }
-  }
-
-  /* Override any weird slide animations */
-  [data-radix-select-content] * {
-    transform: none !important;
-  }
-} 
+     }   

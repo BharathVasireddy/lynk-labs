@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { ArrowRight, Shield, Clock, Home, Users, Star, CheckCircle, ShoppingCart, Plus, Minus, Phone, Mail, MapPin, Award, Microscope, Heart, Activity, FileText, Calendar, Headphones, TrendingUp, Globe, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useCartStore } from "@/store/cart";
+import { BookTestButton } from "@/components/ui/book-test-button";
 
 interface Test {
   id: string;
@@ -36,7 +36,7 @@ export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
-  const { addItem, updateQuantity, getItemQuantity } = useCartStore();
+
 
   useEffect(() => {
     fetchPopularTests();
@@ -82,18 +82,7 @@ export default function HomePage() {
     }
   };
 
-  const addToCart = (test: Test) => {
-    addItem({
-      id: test.id,
-      name: test.name,
-      slug: test.slug,
-      price: test.price,
-      discountPrice: test.discountPrice,
-      category: {
-        name: test.category.name,
-      },
-    });
-  };
+
 
   const calculateDiscount = (price: number, discountPrice: number | null) => {
     if (!discountPrice) return 0;
@@ -434,39 +423,7 @@ export default function HomePage() {
                   
                   <div className="p-6 pt-0 mt-auto">
                     <div className="flex flex-col gap-2">
-                      {getItemQuantity(test.id) > 0 ? (
-                        <div className="flex items-center justify-between p-3 border rounded-lg bg-primary/5">
-                          <span className="text-sm font-medium text-primary">
-                            {getItemQuantity(test.id)} {getItemQuantity(test.id) === 1 ? 'patient' : 'patients'}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => updateQuantity(test.id, getItemQuantity(test.id) - 1)}
-                            >
-                              <Minus className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => updateQuantity(test.id, getItemQuantity(test.id) + 1)}
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <Button 
-                          className="w-full medical-button-primary font-medium"
-                          onClick={() => addToCart(test)}
-                        >
-                          <ShoppingCart className="h-4 w-4 mr-2" />
-                          Book Now
-                        </Button>
-                      )}
+                      <BookTestButton test={test} />
                       <Button variant="outline" className="w-full medical-button-outline text-sm" asChild>
                         <Link href={`/tests/${test.slug}`}>
                           View Details

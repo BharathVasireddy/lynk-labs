@@ -51,8 +51,7 @@ export const useCartStore = create<CartStore>()(
           });
         }
         
-        // Auto-open cart when item is added
-        set({ isOpen: true });
+        // Cart will only open when cart icon is clicked
       },
       
       removeItem: (id) => {

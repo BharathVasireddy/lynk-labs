@@ -228,13 +228,13 @@ module.exports = {
   				}
   			}
   		},
-  		animation: {
-  			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out',
-  			'fade-in': 'fadeIn 0.25s ease-out',
-  			'slide-up': 'slideUp 0.25s ease-out',
-  			'scale-in': 'scaleIn 0.15s ease-out'
-  		},
+  				animation: {
+			'accordion-down': 'accordion-down 0.2s ease-out',
+			'accordion-up': 'accordion-up 0.2s ease-out',
+			'fade-in': 'none',
+			'slide-up': 'none',
+			'scale-in': 'none'
+		},
   		transitionDuration: {
   			fast: '150ms',
   			normal: '250ms',

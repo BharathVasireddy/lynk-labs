@@ -14,6 +14,7 @@ const createOrderSchema = z.object({
   scheduledTime: z.string(),
   couponCode: z.string().nullable().optional(),
   paymentMethod: z.enum(["razorpay", "cod"]),
+  totalAmount: z.number().min(0).optional(),
 });
 
 // Generate unique order number
