@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { LoadingSpinner, InlineSpinner } from "@/components/ui/loading-spinner";
 import { useAuth } from "@/contexts/auth-context";
 
 interface UserProfile {
@@ -152,7 +153,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
@@ -160,10 +161,7 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Loading Profile...</h2>
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
-        </div>
+        <LoadingSpinner size="lg" text="Loading Profile..." />
       </div>
     );
   }
@@ -330,7 +328,7 @@ export default function ProfilePage() {
                       <Button onClick={handleSaveProfile} disabled={isSaving}>
                         {isSaving ? (
                           <div className="flex items-center">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            <InlineSpinner size="sm" variant="white" className="mr-2" />
                             Saving...
                           </div>
                         ) : (

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { InlineSpinner } from "@/components/ui/loading-spinner";
 import { 
   Settings, 
   Bell, 
@@ -100,7 +101,7 @@ export default function SettingsPage() {
         <Button onClick={handleSave} disabled={loading}>
           {loading ? (
             <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              <InlineSpinner size="sm" variant="white" className="mr-2" />
               Saving...
             </>
           ) : saved ? (

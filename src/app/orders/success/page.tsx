@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface OrderDetails {
   id: string;
@@ -97,10 +98,7 @@ function OrderSuccessContent() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading order details...</p>
-        </div>
+        <LoadingSpinner size="xl" text="Loading order details..." />
       </div>
     );
   }
@@ -333,10 +331,7 @@ export default function OrderSuccessPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading order details...</p>
-        </div>
+        <LoadingSpinner size="xl" text="Loading order details..." />
       </div>
     }>
       <OrderSuccessContent />

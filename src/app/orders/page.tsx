@@ -24,6 +24,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 import { useAuth } from "@/contexts/auth-context";
 
@@ -174,10 +175,7 @@ export default function OrdersPage() {
   if (loading) {
     return (
       <div className="min-h-screen medical-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading your orders...</p>
-        </div>
+        <LoadingSpinner size="xl" text="Loading your orders..." />
       </div>
     );
   }
@@ -232,8 +230,7 @@ export default function OrdersPage() {
         {/* Orders List */}
         {isLoading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading orders...</p>
+            <LoadingSpinner size="lg" text="Loading orders..." />
           </div>
         ) : error ? (
           <Card className="medical-card">

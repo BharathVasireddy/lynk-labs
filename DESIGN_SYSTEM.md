@@ -198,6 +198,61 @@ interface MobileCheckoutFooterProps {
 ```tsx
 // Standard medical information card
 <div className="bg-white rounded-lg border border-medical-border p-6 shadow-sm hover:shadow-md transition-shadow">
+
+### Error Page Pattern
+Professional error pages with helpful navigation:
+
+```tsx
+// 404 Page Structure
+<div className="min-h-screen medical-background">
+  <div className="container-padding py-12">
+    <div className="max-w-4xl mx-auto">
+      {/* Error Visual */}
+      <div className="text-center mb-12">
+        <div className="inline-flex items-center justify-center w-32 h-32 bg-primary/10 rounded-full mb-6">
+          <span className="text-6xl font-bold text-primary">404</span>
+        </div>
+        <h1 className="text-3xl lg:text-4xl font-bold text-foreground">
+          Page Not Found
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Helpful error message explaining the situation
+        </p>
+      </div>
+
+      {/* Navigation Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="medical-card medical-card-hover">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Icon className="h-5 w-5 text-primary" />
+              </div>
+              <h3 className="font-semibold text-foreground">Section Title</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Description of what users can find here
+            </p>
+            <div className="space-y-2">
+              <Link href="/path" className="block text-sm text-primary hover:text-primary/80 transition-colors">
+                → Link Text
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+#### Error Page Features
+- **Professional Visual**: Large, clear error code with medical blue styling
+- **Helpful Navigation**: Organized cards with relevant links
+- **Search Functionality**: Integrated search to help users find what they need
+- **Contact Information**: Clear support options with phone and email
+- **Accessibility**: Proper heading hierarchy and ARIA labels
+- **Mobile Responsive**: Optimized layout for all screen sizes
   <div className="flex items-start justify-between mb-4">
     <h3 className="text-lg font-semibold text-foreground">Card Title</h3>
     <Badge variant="secondary">Status</Badge>
@@ -229,15 +284,88 @@ interface MobileCheckoutFooterProps {
 ```
 
 ### Loading State Pattern
-```tsx
-// Professional loading states for medical data
-<div className="flex items-center justify-center p-8">
-  <div className="text-center">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-    <p className="text-muted-foreground">Loading medical data...</p>
-  </div>
-</div>
+
+#### LoadingSpinner Component
+Professional three-dot loading spinner with medical styling and accessibility:
+
+```typescript
+interface LoadingSpinnerProps {
+  size?: "sm" | "md" | "lg" | "xl";
+  className?: string;
+  text?: string;
+  variant?: "primary" | "white" | "muted";
+}
+
+// Usage Examples:
+// Full page loading
+<LoadingSpinner size="xl" text="Loading medical data..." />
+
+// Section loading
+<LoadingSpinner size="lg" text="Processing results..." />
+
+// Card loading
+<LoadingSpinner size="md" />
 ```
+
+#### InlineSpinner Component
+Compact three-dot spinner for buttons and inline elements:
+
+```typescript
+interface InlineSpinnerProps {
+  size?: "sm" | "md" | "lg" | "xl";
+  variant?: "primary" | "white" | "muted";
+  className?: string;
+}
+
+// Usage Examples:
+// Button loading state
+<Button disabled={loading}>
+  {loading ? (
+    <div className="flex items-center gap-2">
+      <InlineSpinner size="sm" variant="white" />
+      Processing...
+    </div>
+  ) : (
+    "Submit"
+  )}
+</Button>
+
+// Refresh button
+{refreshing ? (
+  <InlineSpinner size="sm" variant="primary" className="mr-2" />
+) : (
+  <RefreshCw className="h-4 w-4 mr-2" />
+)}
+```
+
+#### Loading State Sizes
+```css
+/* Spinner container sizes */
+sm: "w-4 h-4"    /* For buttons and inline elements */
+md: "w-6 h-6"    /* Default size for cards */
+lg: "w-8 h-8"    /* For sections and pages */
+xl: "w-12 h-12"  /* For full page loading */
+
+/* Individual dot sizes */
+sm: "w-1 h-1"    /* Small dots for buttons */
+md: "w-1.5 h-1.5" /* Medium dots for cards */
+lg: "w-2 h-2"    /* Large dots for sections */
+xl: "w-3 h-3"    /* Extra large dots for pages */
+```
+
+#### Loading State Variants
+```css
+/* Spinner variants - Three pulsing dots */
+primary: "bg-primary"           /* Default medical blue dots */
+white: "bg-white"              /* White dots for dark backgrounds */
+muted: "bg-muted-foreground"   /* Subtle gray dots */
+```
+
+#### Animation Details
+- **Pattern**: Three dots with staggered pulse animation
+- **Timing**: 1000ms duration with 200ms delays between dots
+- **Professional**: Clean, medical-grade appearance
+- **Accessible**: Proper ARIA labels and semantic markup
 
 ## 📱 Responsive Design
 

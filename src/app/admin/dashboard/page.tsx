@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { InlineSpinner } from "@/components/ui/loading-spinner";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -225,7 +226,11 @@ export default function AdminDashboard() {
             onClick={() => fetchStats(true)}
             disabled={refreshing}
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            {refreshing ? (
+              <InlineSpinner size="sm" variant="primary" className="mr-2" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-2" />
+            )}
             Refresh
           </Button>
           <Button asChild>

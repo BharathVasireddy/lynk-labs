@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { InlineSpinner } from "@/components/ui/loading-spinner";
 import { useCartStore } from "@/store/cart";
 import { useAuth } from "@/contexts/auth-context";
 import { toast } from "sonner";
@@ -919,7 +920,7 @@ export default function CheckoutPage() {
                 >
                   {isLoading || isSubmitting ? (
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <InlineSpinner size="sm" variant="white" />
                       Processing...
                     </div>
                   ) : (

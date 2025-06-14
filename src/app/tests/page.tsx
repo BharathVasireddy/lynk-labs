@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { InlineSpinner } from "@/components/ui/loading-spinner";
 import { Search, Filter, ShoppingCart, Clock, ChevronDown, Plus, Minus } from "lucide-react";
 import { BookTestButton } from "@/components/ui/book-test-button";
 
@@ -349,7 +350,7 @@ function TestsPageContent() {
           >
             {loadingMore ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                <InlineSpinner size="sm" variant="white" className="mr-2" />
                 Loading More Tests...
               </>
             ) : (
