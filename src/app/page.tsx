@@ -424,9 +424,9 @@ export default function HomePage() {
                   </div>
                   
                   <div className="p-6 pt-0 mt-auto">
-                    <div className="flex flex-col gap-2">
-                      <BookTestButton test={test} />
-                      <Button variant="outline" className="w-full medical-button-outline text-sm" asChild>
+                    <div className="flex gap-2">
+                      <BookTestButton test={test} className="flex-1" />
+                      <Button variant="outline" className="flex-1 medical-button-outline text-sm" asChild>
                         <Link href={`/tests/${test.slug}`}>
                           View Details
                         </Link>
