@@ -212,14 +212,8 @@ export default function TestDetailPage() {
                     <span className="text-lg text-muted-foreground line-through">
                       ₹{test.price}
                     </span>
-                    <div className="relative">
-                      <div className="bg-gradient-to-r from-primary to-primary/80 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm">
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs">💰</span>
-                          <span>{calculateDiscount(test.price, test.discountPrice)}% OFF</span>
-                        </div>
-                      </div>
-                      <div className="absolute -bottom-1 left-3 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-primary/80"></div>
+                    <div className="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm">
+                      {calculateDiscount(test.price, test.discountPrice)}% OFF
                     </div>
                   </>
                 )}
