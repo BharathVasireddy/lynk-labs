@@ -541,9 +541,9 @@
   .offer-badge-glare {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--primary)) 40%, rgba(255,255,255,0.3) 50%, hsl(var(--primary)) 60%, hsl(var(--primary)) 100%);
+    background: linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--primary)) 45%, rgba(255,255,255,0.15) 50%, hsl(var(--primary)) 55%, hsl(var(--primary)) 100%);
     background-size: 200% 100%;
-    animation: offerGlare 2s ease-in-out infinite;
+    animation: offerGlare 4s ease-in-out infinite;
   }
 }
 

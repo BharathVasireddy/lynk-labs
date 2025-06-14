@@ -118,13 +118,17 @@ export async function GET(request: NextRequest) {
       prisma.test.count({ where })
     ])
 
+    const totalPages = Math.ceil((total || 0) / limit);
+    const hasMore = page < totalPages;
+
     const result = {
       tests: tests || [],
       pagination: {
         page,
         limit,
         total: total || 0,
-        pages: Math.ceil((total || 0) / limit)
+        pages: totalPages,
+        hasMore
       }
     };
 
@@ -143,7 +147,8 @@ export async function GET(request: NextRequest) {
         page: 1,
         limit: 20,
         total: 0,
-        pages: 0
+        pages: 0,
+        hasMore: false
       },
       error: "Unable to fetch tests at this time"
     }, { status: 200 }) // Return 200 to prevent frontend errors

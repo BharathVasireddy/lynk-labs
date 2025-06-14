@@ -83,22 +83,22 @@ export function BookTestButton({ test, size = "default", className = "", viewDet
       <div className="flex gap-2">
         {/* Show quantity selector if item is in cart */}
         {currentQuantity > 0 ? (
-          <div className="flex-1 flex items-center justify-center gap-1 p-3 border rounded-lg bg-primary/5">
+          <div className="flex-1 flex items-center justify-center gap-1 px-2 py-2 border rounded-lg bg-primary/5 h-10">
             <Button
               variant="outline"
               size="icon"
-              className="h-8 w-8"
+              className="h-6 w-6"
               onClick={() => handleQuantityUpdate(currentQuantity - 1)}
             >
               <Minus className="h-3 w-3" />
             </Button>
-            <span className="text-sm font-medium text-primary min-w-[24px] text-center">
+            <span className="text-xs font-medium text-primary min-w-[20px] text-center">
               {currentQuantity}
             </span>
             <Button
               variant="outline"
               size="icon"
-              className="h-8 w-8"
+              className="h-6 w-6"
               onClick={() => handleQuantityUpdate(currentQuantity + 1)}
             >
               <Plus className="h-3 w-3" />
@@ -106,7 +106,7 @@ export function BookTestButton({ test, size = "default", className = "", viewDet
             <Button
               variant="outline"
               size="icon"
-              className="h-8 w-8 ml-2"
+              className="h-6 w-6 ml-1"
               asChild
             >
               <Link href="/checkout">
@@ -117,7 +117,7 @@ export function BookTestButton({ test, size = "default", className = "", viewDet
         ) : (
           /* Show initial "Book Now" button */
           <Button 
-            className="flex-1 medical-button-primary font-medium text-xs px-3"
+            className="flex-1 medical-button-primary font-medium text-xs px-3 h-10"
             size={size}
             onClick={handleAddToCart}
           >
