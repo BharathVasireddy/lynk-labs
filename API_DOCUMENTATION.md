@@ -117,6 +117,225 @@ Get current user information
 
 ---
 
+## 🛒 Checkout System API
+
+### Order Creation Endpoint
+
+#### **POST /api/orders**
+Create a new order with comprehensive validation and error handling
+
+**Authentication Required:** Yes (JWT Token)
+
+**Request Body:**
+```json
+{
+  "items": [
+    {
+      "testId": "cmbwf98g7000npxmavi1jjmxt",
+      "quantity": 1,
+      "price": 249
+    }
+  ],
+  "addressId": "cmbwfam800002oyzyvvpreisy",
+  "scheduledDate": "2024-06-15",
+  "scheduledTime": "09:00-12:00",
+  "paymentMethod": "cod",
+  "totalAmount": 249
+}
+```
+
+**Validation Rules:**
+- `items`: Required array with at least one item
+- `testId`: Must exist in database and be active
+- `quantity`: Must be positive integer
+- `price`: Must match current test price
+- `addressId`: Must belong to authenticated user
+- `scheduledDate`: Must be future date in YYYY-MM-DD format
+- `scheduledTime`: Must be valid time slot
+- `paymentMethod`: Either "cod" or "razorpay"
+- `totalAmount`: Must match calculated total
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "order": {
+    "id": "cmbwfbm9x0003oyzyvvpreisy",
+    "orderNumber": "LL2025534042",
+    "status": "PENDING",
+    "totalAmount": 249,
+    "discountAmount": 0,
+    "finalAmount": 249,
+    "paymentMethod": "cod",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "items": [
+      {
+        "id": "item_123",
+        "testId": "cmbwf98g7000npxmavi1jjmxt",
+        "quantity": 1,
+        "price": 249,
+        "test": {
+          "name": "Complete Blood Count (CBC)",
+          "slug": "complete-blood-count-cbc"
+        }
+      }
+    ],
+    "homeVisit": {
+      "id": "visit_123",
+      "scheduledDate": "2024-06-15",
+      "scheduledTime": "09:00-12:00",
+      "status": "SCHEDULED"
+    }
+  }
+}
+```
+
+**Error Responses:**
+```json
+// 401 Unauthorized
+{
+  "success": false,
+  "error": "Authentication required"
+}
+
+// 400 Bad Request - Validation Error
+{
+  "success": false,
+  "error": "Invalid test ID: cmbuy13bu000fajpn9mhpdie4"
+}
+
+// 400 Bad Request - Address Error
+{
+  "success": false,
+  "error": "Address not found or doesn't belong to user"
+}
+
+// 500 Internal Server Error
+{
+  "success": false,
+  "error": "Failed to create order. Please try again."
+}
+```
+
+### Address Management for Checkout
+
+#### **GET /api/addresses**
+Get user addresses for checkout
+
+**Authentication Required:** Yes
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "addresses": [
+    {
+      "id": "cmbwfam800002oyzyvvpreisy",
+      "type": "HOME",
+      "line1": "123 Test Street",
+      "line2": "Apt 4B",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "pincode": "400001",
+      "landmark": null,
+      "isDefault": true
+    }
+  ]
+}
+```
+
+#### **POST /api/addresses**
+Create new address during checkout
+
+**Request Body:**
+```json
+{
+  "type": "HOME",
+  "line1": "123 New Street",
+  "line2": "Apt 5C",
+  "city": "Mumbai",
+  "state": "Maharashtra",
+  "pincode": "400002",
+  "landmark": "Near City Mall"
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "address": {
+    "id": "new_address_id",
+    "type": "HOME",
+    "line1": "123 New Street",
+    "line2": "Apt 5C",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "pincode": "400002",
+    "landmark": "Near City Mall",
+    "isDefault": false,
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### Payment Integration
+
+#### **POST /api/payments/create-order**
+Create Razorpay order for online payment
+
+**Authentication Required:** Yes
+
+**Request Body:**
+```json
+{
+  "amount": 24900,
+  "currency": "INR",
+  "orderId": "cmbwfbm9x0003oyzyvvpreisy"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "razorpayOrder": {
+    "id": "order_razorpay_123",
+    "amount": 24900,
+    "currency": "INR",
+    "status": "created"
+  }
+}
+```
+
+#### **POST /api/payments/verify**
+Verify Razorpay payment after successful payment
+
+**Request Body:**
+```json
+{
+  "razorpay_order_id": "order_razorpay_123",
+  "razorpay_payment_id": "pay_razorpay_123",
+  "razorpay_signature": "signature_hash",
+  "orderId": "cmbwfbm9x0003oyzyvvpreisy"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Payment verified successfully",
+  "order": {
+    "id": "cmbwfbm9x0003oyzyvvpreisy",
+    "status": "CONFIRMED",
+    "paymentId": "pay_razorpay_123"
+  }
+}
+```
+
+---
+
 ## 👥 User Management
 
 ### User Profile Endpoints
