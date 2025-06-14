@@ -427,9 +427,9 @@ export default function HomePage() {
                     <BookTestButton 
                       test={test} 
                       viewDetailsButton={
-                        <Button variant="outline" className="flex-1 medical-button-outline text-sm" asChild>
+                        <Button variant="outline" className="flex-1 medical-button-outline text-xs px-3" asChild>
                           <Link href={`/tests/${test.slug}`}>
-                            View Details
+                            Details
                           </Link>
                         </Button>
                       }

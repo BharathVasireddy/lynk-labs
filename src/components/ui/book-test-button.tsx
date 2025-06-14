@@ -72,10 +72,10 @@ export function BookTestButton({ test, size = "default", className = "", viewDet
   // Container with success message and buttons
   return (
     <div className={className}>
-      {/* Success message */}
-      {showingAdded && (
+      {/* Success message - show when item is in cart or just added */}
+      {(currentQuantity > 0 || showingAdded) && (
         <div className="mb-2 p-2 bg-primary/10 text-primary text-center text-sm font-medium rounded-md">
-          Test added for {lastAddedQuantity} {lastAddedQuantity === 1 ? 'patient' : 'patients'}
+          Test added for {currentQuantity || lastAddedQuantity} {(currentQuantity || lastAddedQuantity) === 1 ? 'patient' : 'patients'}
         </div>
       )}
       
@@ -119,11 +119,11 @@ export function BookTestButton({ test, size = "default", className = "", viewDet
         ) : (
           /* Show initial "Book Now" button */
           <Button 
-            className="flex-1 medical-button-primary font-medium"
+            className="flex-1 medical-button-primary font-medium text-xs px-3"
             size={size}
             onClick={handleAddToCart}
           >
-            <ShoppingCart className="h-4 w-4 mr-2" />
+            <ShoppingCart className="h-3 w-3 mr-1" />
             Book Now
           </Button>
         )}
