@@ -231,6 +231,16 @@
     }
   }
 
+  /* Continuous glow animation for offer badge */
+  @keyframes offerGlow {
+    0%, 100% {
+      box-shadow: 0 0 5px rgba(59, 130, 246, 0.5), 0 0 10px rgba(59, 130, 246, 0.3), 0 0 15px rgba(59, 130, 246, 0.1);
+    }
+    50% {
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.8), 0 0 20px rgba(59, 130, 246, 0.6), 0 0 30px rgba(59, 130, 246, 0.4);
+    }
+  }
+
 
 
 
@@ -525,6 +535,11 @@
 
   .test-card-equal-height .test-card-footer {
     @apply mt-auto;
+  }
+
+  /* Offer badge with continuous glow */
+  .offer-badge-glow {
+    animation: offerGlow 2s ease-in-out infinite;
   }
 }
 

@@ -212,7 +212,7 @@ export default function TestDetailPage() {
                     <span className="text-lg text-muted-foreground line-through">
                       ₹{test.price}
                     </span>
-                    <div className="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm">
+                    <div className="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm offer-badge-glow">
                       {calculateDiscount(test.price, test.discountPrice)}% OFF
                     </div>
                   </>

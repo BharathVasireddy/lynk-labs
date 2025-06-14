@@ -85,7 +85,7 @@ export function BookTestButton({ test, size = "default", className = "", viewDet
         {currentQuantity > 0 ? (
           <div className="flex-1 flex items-center justify-between p-3 border rounded-lg bg-primary/5">
             <span className="text-sm font-medium text-primary">
-              {currentQuantity} {currentQuantity === 1 ? 'patient' : 'patients'}
+              {currentQuantity}
             </span>
             <div className="flex items-center gap-2">
               <Button
