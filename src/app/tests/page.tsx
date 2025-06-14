@@ -289,7 +289,7 @@ function TestsPageContent() {
                   </div>
                   {test.discountPrice && (
                     <div className="flex-shrink-0">
-                      <div className="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm offer-badge-glow">
+                      <div className="text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm offer-badge-glare">
                         {calculateDiscount(test.price, test.discountPrice)}% OFF
                       </div>
                     </div>

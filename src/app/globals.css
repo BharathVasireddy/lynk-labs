@@ -231,13 +231,13 @@
     }
   }
 
-  /* Continuous glow animation for offer badge */
-  @keyframes offerGlow {
-    0%, 100% {
-      box-shadow: 0 0 5px rgba(59, 130, 246, 0.5), 0 0 10px rgba(59, 130, 246, 0.3), 0 0 15px rgba(59, 130, 246, 0.1);
+  /* Continuous glare animation for offer badge */
+  @keyframes offerGlare {
+    0% {
+      background-position: -100% 0;
     }
-    50% {
-      box-shadow: 0 0 10px rgba(59, 130, 246, 0.8), 0 0 20px rgba(59, 130, 246, 0.6), 0 0 30px rgba(59, 130, 246, 0.4);
+    100% {
+      background-position: 100% 0;
     }
   }
 
@@ -537,9 +537,13 @@
     @apply mt-auto;
   }
 
-  /* Offer badge with continuous glow */
-  .offer-badge-glow {
-    animation: offerGlow 2s ease-in-out infinite;
+  /* Offer badge with continuous glare */
+  .offer-badge-glare {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--primary)) 40%, rgba(255,255,255,0.3) 50%, hsl(var(--primary)) 60%, hsl(var(--primary)) 100%);
+    background-size: 200% 100%;
+    animation: offerGlare 2s ease-in-out infinite;
   }
 }
 

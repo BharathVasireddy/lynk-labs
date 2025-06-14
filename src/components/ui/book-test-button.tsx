@@ -83,38 +83,36 @@ export function BookTestButton({ test, size = "default", className = "", viewDet
       <div className="flex gap-2">
         {/* Show quantity selector if item is in cart */}
         {currentQuantity > 0 ? (
-          <div className="flex-1 flex items-center justify-between p-3 border rounded-lg bg-primary/5">
-            <span className="text-sm font-medium text-primary">
+          <div className="flex-1 flex items-center justify-center gap-1 p-3 border rounded-lg bg-primary/5">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => handleQuantityUpdate(currentQuantity - 1)}
+            >
+              <Minus className="h-3 w-3" />
+            </Button>
+            <span className="text-sm font-medium text-primary min-w-[24px] text-center">
               {currentQuantity}
             </span>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => handleQuantityUpdate(currentQuantity - 1)}
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => handleQuantityUpdate(currentQuantity + 1)}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8 ml-1"
-                asChild
-              >
-                <Link href="/checkout">
-                  <ShoppingCart className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => handleQuantityUpdate(currentQuantity + 1)}
+            >
+              <Plus className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 ml-2"
+              asChild
+            >
+              <Link href="/checkout">
+                <ShoppingCart className="h-3 w-3" />
+              </Link>
+            </Button>
           </div>
         ) : (
           /* Show initial "Book Now" button */
