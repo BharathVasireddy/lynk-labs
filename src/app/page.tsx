@@ -424,14 +424,16 @@ export default function HomePage() {
                   </div>
                   
                   <div className="p-6 pt-0 mt-auto">
-                    <div className="flex gap-2">
-                      <BookTestButton test={test} className="flex-1" />
-                      <Button variant="outline" className="flex-1 medical-button-outline text-sm" asChild>
-                        <Link href={`/tests/${test.slug}`}>
-                          View Details
-                        </Link>
-                      </Button>
-                    </div>
+                    <BookTestButton 
+                      test={test} 
+                      viewDetailsButton={
+                        <Button variant="outline" className="flex-1 medical-button-outline text-sm" asChild>
+                          <Link href={`/tests/${test.slug}`}>
+                            View Details
+                          </Link>
+                        </Button>
+                      }
+                    />
                   </div>
                 </div>
               ))}

@@ -21,9 +21,10 @@ interface BookTestButtonProps {
   test: Test;
   size?: "default" | "sm" | "lg";
   className?: string;
+  viewDetailsButton?: React.ReactNode;
 }
 
-export function BookTestButton({ test, size = "default", className = "" }: BookTestButtonProps) {
+export function BookTestButton({ test, size = "default", className = "", viewDetailsButton }: BookTestButtonProps) {
   const { addItem, updateQuantity, getItemQuantity } = useCartStore();
   const [showingAdded, setShowingAdded] = useState(false);
   const [lastAddedQuantity, setLastAddedQuantity] = useState(1);
@@ -68,75 +69,68 @@ export function BookTestButton({ test, size = "default", className = "" }: BookT
     }, 1500);
   };
 
-  // Show "added" message
-  if (showingAdded) {
-    return (
-      <div 
-        className={`w-full font-medium relative overflow-hidden rounded-md flex items-center justify-center text-primary-foreground ${className}`}
-        style={{ 
-          backgroundColor: 'hsl(var(--primary))',
-          height: size === 'lg' ? '44px' : size === 'sm' ? '36px' : '40px',
-          padding: '0 24px',
-          fontSize: size === 'lg' ? '16px' : size === 'sm' ? '14px' : '14px',
-          fontWeight: '500'
-        }}
-      >
-        <span className="relative z-10 text-primary-foreground font-medium">
-          Test added for {lastAddedQuantity} {lastAddedQuantity === 1 ? 'patient' : 'patients'}
-        </span>
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[slideGlow_1.5s_ease-in-out] pointer-events-none"></div>
-      </div>
-    );
-  }
-
-  // Show quantity selector if item is in cart
-  if (currentQuantity > 0) {
-    return (
-      <div className="flex items-center justify-between p-3 border rounded-lg bg-primary/5">
-        <span className="text-sm font-medium text-primary">
-          {currentQuantity} {currentQuantity === 1 ? 'patient' : 'patients'}
-        </span>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => handleQuantityUpdate(currentQuantity - 1)}
-          >
-            <Minus className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => handleQuantityUpdate(currentQuantity + 1)}
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8 ml-1"
-            asChild
-          >
-            <Link href="/checkout">
-              <ShoppingCart className="h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Show initial "Book Now" button
+  // Container with success message and buttons
   return (
-    <Button 
-      className={`w-full medical-button-primary font-medium ${className}`}
-      size={size}
-      onClick={handleAddToCart}
-    >
-      <ShoppingCart className="h-4 w-4 mr-2" />
-      Book Now
-    </Button>
+    <div className={className}>
+      {/* Success message */}
+      {showingAdded && (
+        <div className="mb-2 p-2 bg-primary/10 text-primary text-center text-sm font-medium rounded-md">
+          Test added for {lastAddedQuantity} {lastAddedQuantity === 1 ? 'patient' : 'patients'}
+        </div>
+      )}
+      
+      {/* Buttons container */}
+      <div className="flex gap-2">
+        {/* Show quantity selector if item is in cart */}
+        {currentQuantity > 0 ? (
+          <div className="flex-1 flex items-center justify-between p-3 border rounded-lg bg-primary/5">
+            <span className="text-sm font-medium text-primary">
+              {currentQuantity} {currentQuantity === 1 ? 'patient' : 'patients'}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => handleQuantityUpdate(currentQuantity - 1)}
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => handleQuantityUpdate(currentQuantity + 1)}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 ml-1"
+                asChild
+              >
+                <Link href="/checkout">
+                  <ShoppingCart className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        ) : (
+          /* Show initial "Book Now" button */
+          <Button 
+            className="flex-1 medical-button-primary font-medium"
+            size={size}
+            onClick={handleAddToCart}
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            Book Now
+          </Button>
+        )}
+        
+        {/* View Details Button */}
+        {viewDetailsButton}
+      </div>
+    </div>
   );
 } 
