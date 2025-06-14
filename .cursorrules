@@ -22,6 +22,192 @@
 - Always include try-catch blocks for async operations
 - Always validate input data before processing
 
+## 🚀 ENTERPRISE DEPLOYMENT PROTOCOL
+
+### CRITICAL DEPLOYMENT RULES - PRODUCTION SAFETY
+
+#### 🔴 MANDATORY PRE-DEPLOYMENT CHECKLIST
+Before ANY code changes that will go to production:
+
+1. **LOCAL TESTING REQUIREMENTS**
+   ```bash
+   # MANDATORY: Run these commands in sequence
+   npm run dev          # Test in development mode
+   npm run build        # Verify build succeeds with NO errors
+   npm run start        # Test production build locally
+   curl http://localhost:3000  # Verify production server responds
+   ```
+
+2. **CODE QUALITY GATES**
+   - ✅ ALL TypeScript errors MUST be resolved
+   - ✅ ALL console.error() statements MUST be removed or handled
+   - ✅ ALL TODO comments MUST be addressed or documented
+   - ✅ ALL new features MUST have error boundaries
+   - ✅ ALL API endpoints MUST have proper error handling
+
+3. **DATABASE SAFETY CHECKS**
+   ```bash
+   # MANDATORY: Verify database operations
+   npx prisma validate    # Validate schema
+   npx prisma generate    # Generate client
+   # Test database connections in local production build
+   ```
+
+4. **SECURITY VALIDATION**
+   - ✅ NO sensitive data in console.log statements
+   - ✅ NO hardcoded API keys or secrets
+   - ✅ ALL environment variables properly configured
+   - ✅ ALL user inputs properly validated and sanitized
+
+#### 🟡 DEPLOYMENT SEQUENCE (STRICTLY ENFORCED)
+```bash
+# Step 1: Development Testing
+npm run dev
+# ✅ Manually test ALL affected features
+# ✅ Test user flows end-to-end
+# ✅ Verify responsive design on mobile/desktop
+
+# Step 2: Production Build Testing
+npm run build
+# ✅ Build MUST complete with 0 errors
+# ✅ Warnings are acceptable, errors are NOT
+
+# Step 3: Production Runtime Testing
+npm run start
+# ✅ Server MUST start without errors
+# ✅ Test critical paths: auth, payments, orders
+# ✅ Verify database connections work
+
+# Step 4: Git Deployment (ONLY after above steps pass)
+git add .
+git commit -m "type: descriptive message with testing confirmation"
+git push origin main
+```
+
+#### 🔴 FORBIDDEN DEPLOYMENT PRACTICES
+- ❌ NEVER push code that hasn't been tested locally in production mode
+- ❌ NEVER push code with TypeScript errors
+- ❌ NEVER push code with failing builds
+- ❌ NEVER push code without testing critical user flows
+- ❌ NEVER push database schema changes without migration testing
+- ❌ NEVER push code with console.error() in production paths
+- ❌ NEVER push code that breaks existing API contracts
+
+#### 🟢 SAFE DEPLOYMENT PRACTICES
+- ✅ ALWAYS test the complete user journey locally
+- ✅ ALWAYS verify payment flows work in development
+- ✅ ALWAYS test authentication and authorization
+- ✅ ALWAYS verify database operations complete successfully
+- ✅ ALWAYS test error scenarios and edge cases
+- ✅ ALWAYS verify mobile responsiveness
+- ✅ ALWAYS check that existing features still work
+
+#### 🚨 EMERGENCY ROLLBACK PROTOCOL
+If production breaks after deployment:
+
+1. **IMMEDIATE ACTIONS**
+   ```bash
+   # Get last working commit hash
+   git log --oneline -10
+   
+   # Create emergency rollback
+   git revert HEAD --no-edit
+   git push origin main
+   ```
+
+2. **INCIDENT DOCUMENTATION**
+   - Document what broke and why
+   - Update .cursorrules with prevention measures
+   - Add the failure scenario to testing checklist
+
+#### 📊 PRODUCTION MONITORING REQUIREMENTS
+After each deployment:
+
+1. **Immediate Verification (within 5 minutes)**
+   - ✅ Homepage loads correctly
+   - ✅ User authentication works
+   - ✅ Test booking flow works
+   - ✅ Payment processing works
+   - ✅ Database queries respond
+
+2. **Extended Monitoring (within 30 minutes)**
+   - ✅ Check error logs for new issues
+   - ✅ Verify all API endpoints respond correctly
+   - ✅ Test mobile responsiveness
+   - ✅ Verify email notifications work
+
+#### 🔧 FEATURE FLAG REQUIREMENTS
+For major changes:
+
+1. **Use Feature Flags for Risky Changes**
+   ```typescript
+   // Example: Gradual rollout pattern
+   const isNewFeatureEnabled = process.env.ENABLE_NEW_FEATURE === 'true';
+   
+   if (isNewFeatureEnabled) {
+     // New feature code
+   } else {
+     // Existing stable code
+   }
+   ```
+
+2. **Database Migration Safety**
+   ```bash
+   # ALWAYS test migrations locally first
+   npx prisma migrate dev
+   # Verify data integrity after migration
+   # Test rollback scenarios
+   ```
+
+#### 📝 COMMIT MESSAGE STANDARDS
+```bash
+# Format: type: description [testing-status]
+git commit -m "feat: add payment gateway integration [tested-locally-prod]"
+git commit -m "fix: resolve order creation bug [verified-user-flow]"
+git commit -m "refactor: optimize database queries [performance-tested]"
+
+# Required testing confirmations:
+# [tested-locally-prod] - Tested in local production build
+# [verified-user-flow] - Complete user journey tested
+# [performance-tested] - Performance impact verified
+# [security-reviewed] - Security implications checked
+```
+
+#### 🛡️ BREAKING CHANGE PROTOCOL
+For changes that might break existing functionality:
+
+1. **MANDATORY IMPACT ASSESSMENT**
+   - List all affected components/pages
+   - Identify all affected user workflows
+   - Document potential breaking changes
+   - Create rollback plan before deployment
+
+2. **STAGED DEPLOYMENT APPROACH**
+   ```bash
+   # Phase 1: Deploy with feature flag OFF
+   git commit -m "feat: add new feature [feature-flag-disabled]"
+   
+   # Phase 2: Enable for testing (after production verification)
+   git commit -m "config: enable new feature flag [gradual-rollout]"
+   ```
+
+#### 🔍 CODE REVIEW REQUIREMENTS
+Before pushing to main:
+
+1. **Self-Review Checklist**
+   - ✅ Code follows existing patterns
+   - ✅ No hardcoded values
+   - ✅ Proper error handling
+   - ✅ TypeScript types are correct
+   - ✅ No unused imports or variables
+   - ✅ Comments explain complex logic
+
+2. **Testing Documentation**
+   - Document what was tested
+   - Include screenshots for UI changes
+   - List edge cases covered
+   - Confirm mobile testing completed
+
 ## 🏗 TECH STACK REQUIREMENTS
 
 ### Frontend (Next.js 14)
@@ -332,11 +518,11 @@ types/[type-name].d.ts
 
 ### Commit Message Format:
 ```
-feat: add new test booking feature
-fix: resolve payment gateway integration
-docs: update API documentation
-style: improve responsive design
-refactor: optimize database queries
+feat: add new test booking feature [tested-locally-prod]
+fix: resolve payment gateway integration [verified-user-flow]
+docs: update API documentation [no-testing-required]
+style: improve responsive design [mobile-tested]
+refactor: optimize database queries [performance-verified]
 ```
 
 ## 🎯 REMEMBER:
@@ -344,4 +530,5 @@ refactor: optimize database queries
 - NEVER BREAK EXISTING FUNCTIONALITY
 - ALWAYS FOLLOW THE DOCUMENTATION
 - ASK FOR CLARIFICATION WHEN UNSURE
-- UPDATE DOCUMENTATION WHEN ADDING NEW FEATURES 
+- UPDATE DOCUMENTATION WHEN ADDING NEW FEATURES
+- PRODUCTION SAFETY IS PARAMOUNT - TEST EVERYTHING LOCALLY FIRST 

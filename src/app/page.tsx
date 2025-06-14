@@ -386,7 +386,7 @@ export default function HomePage() {
                   <div className="p-6 pb-4">
                     <div className="flex items-start justify-between gap-3 mb-4">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold text-foreground mb-2 line-clamp-2">
+                        <h3 className="text-lg font-semibold text-foreground mb-2">
                           <Link 
                             href={`/tests/${test.slug}`}
                             className="hover:text-primary liquid-hover"
@@ -399,9 +399,17 @@ export default function HomePage() {
                         </span>
                       </div>
                       {test.discountPrice && (
-                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium flex-shrink-0">
-                          {calculateDiscount(test.price, test.discountPrice)}% OFF
-                        </span>
+                        <div className="flex-shrink-0">
+                          <div className="relative">
+                            <div className="bg-gradient-to-r from-primary to-primary/80 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm">
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs">💰</span>
+                                <span>{calculateDiscount(test.price, test.discountPrice)}% OFF</span>
+                              </div>
+                            </div>
+                            <div className="absolute -bottom-1 left-3 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-primary/80"></div>
+                          </div>
+                        </div>
                       )}
                     </div>
                     

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Search, ShoppingBag, UserCircle, Menu, X, LogOut, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, ShoppingBag, UserCircle, Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,6 +25,7 @@ export function Header() {
 
   const { getTotalItems, openCart } = useCartStore();
   const { user, loading, logout } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
@@ -38,6 +40,23 @@ export function Header() {
 
   const handleLogout = async () => {
     await logout();
+  };
+
+  const handleSearch = (query: string) => {
+    if (query.trim()) {
+      router.push(`/tests?search=${encodeURIComponent(query.trim())}`);
+      setIsMenuOpen(false); // Close mobile menu if open
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch(searchQuery);
+    }
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
 
   return (
@@ -76,7 +95,8 @@ export function Header() {
                 type="search"
                 placeholder="Search tests, packages..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
+                onKeyDown={handleSearchKeyDown}
                 className="medical-input pl-10 lg:pl-12 pr-4 bg-muted/30 border-border/50 focus:bg-background focus:border-primary/50 h-9 lg:h-10 w-full text-sm lg:text-base rounded-lg lg:rounded-xl"
               />
             </div>
@@ -173,7 +193,8 @@ export function Header() {
                   type="search"
                   placeholder="Search tests, packages..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={handleSearchChange}
+                  onKeyDown={handleSearchKeyDown}
                   className="medical-input pl-10 sm:pl-12 pr-4 h-10 sm:h-11 w-full text-sm sm:text-base rounded-lg sm:rounded-xl bg-muted/30"
                 />
               </div>

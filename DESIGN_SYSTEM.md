@@ -199,6 +199,42 @@ interface MobileCheckoutFooterProps {
 // Standard medical information card
 <div className="bg-white rounded-lg border border-medical-border p-6 shadow-sm hover:shadow-md transition-shadow">
 
+### Offer Badge Pattern
+Professional offer badges for medical pricing:
+
+```tsx
+// Medical Offer Badge - Professional gradient design
+{test.discountPrice && (
+  <div className="flex-shrink-0">
+    <div className="relative">
+      <div className="bg-gradient-to-r from-primary to-primary/80 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm">
+        <div className="flex items-center gap-1">
+          <span className="text-xs">💰</span>
+          <span>{calculateDiscount(test.price, test.discountPrice)}% OFF</span>
+        </div>
+      </div>
+      <div className="absolute -bottom-1 left-3 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-primary/80"></div>
+    </div>
+  </div>
+)}
+
+// Features:
+// - Medical blue gradient background (primary to primary/80)
+// - White text for high contrast
+// - Money emoji for visual appeal
+// - Small arrow pointer for professional look
+// - Shadow for depth
+// - Responsive sizing
+```
+
+#### Offer Badge Guidelines
+- **Color**: Use medical blue gradient instead of red/destructive variants
+- **Typography**: White text on gradient background for readability
+- **Icon**: Money emoji (💰) for instant recognition
+- **Shape**: Rounded corners with subtle shadow
+- **Positioning**: Top-right corner of product cards
+- **Animation**: Subtle hover effects with scale-hover class
+
 ### Error Page Pattern
 Professional error pages with helpful navigation:
 

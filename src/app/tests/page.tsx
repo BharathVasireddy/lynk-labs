@@ -278,7 +278,7 @@ function TestsPageContent() {
                     <CardTitle className="text-lg leading-tight mb-2">
                       <Link 
                         href={`/tests/${test.slug}`}
-                        className="hover:text-primary liquid-hover line-clamp-2"
+                        className="hover:text-primary liquid-hover"
                       >
                         {test.name}
                       </Link>
@@ -288,9 +288,17 @@ function TestsPageContent() {
                     </CardDescription>
                   </div>
                   {test.discountPrice && (
-                    <Badge variant="destructive" className="scale-hover flex-shrink-0 text-xs">
-                      {calculateDiscount(test.price, test.discountPrice)}% OFF
-                    </Badge>
+                    <div className="flex-shrink-0">
+                      <div className="relative">
+                        <div className="bg-gradient-to-r from-primary to-primary/80 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm">
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs">💰</span>
+                            <span>{calculateDiscount(test.price, test.discountPrice)}% OFF</span>
+                          </div>
+                        </div>
+                        <div className="absolute -bottom-1 left-3 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-primary/80"></div>
+                      </div>
+                    </div>
                   )}
                 </div>
               </CardHeader>
