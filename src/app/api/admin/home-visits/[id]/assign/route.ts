@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { verifyAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 
@@ -14,18 +13,13 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const user = await verifyAuth(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check if user is admin
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true },
-    });
-
-    if (!user || user.role !== "ADMIN") {
+    if (user.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -78,34 +72,59 @@ export async function PUT(
       );
     }
 
-    // Update home visit with agent assignment
-    const updatedHomeVisit = await prisma.homeVisit.update({
-      where: { id: params.id },
-      data: {
-        agentId: validatedData.agentId,
-        notes: validatedData.notes,
-        updatedAt: new Date(),
-      },
-      include: {
-        agent: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
-          },
+    // Update home visit with agent assignment and auto-update order status
+    const updatedHomeVisit = await prisma.$transaction(async (tx) => {
+      // Update home visit with agent assignment
+      const visit = await tx.homeVisit.update({
+        where: { id: params.id },
+        data: {
+          agentId: validatedData.agentId,
+          notes: validatedData.notes,
+          updatedAt: new Date(),
         },
-        order: {
-          select: {
-            orderNumber: true,
-            user: {
-              select: {
-                name: true,
-                phone: true,
+        include: {
+          agent: {
+            select: {
+              id: true,
+              name: true,
+              phone: true,
+            },
+          },
+          order: {
+            select: {
+              id: true,
+              orderNumber: true,
+              status: true,
+              user: {
+                select: {
+                  name: true,
+                  phone: true,
+                },
               },
             },
           },
         },
-      },
+      });
+
+      // Auto-update order status to SAMPLE_COLLECTION_SCHEDULED when agent is assigned
+      if (visit.order.status === "CONFIRMED") {
+        await tx.order.update({
+          where: { id: visit.order.id },
+          data: { status: "SAMPLE_COLLECTION_SCHEDULED" },
+        });
+
+        // Add to order status history
+        await tx.orderStatusHistory.create({
+          data: {
+            orderId: visit.order.id,
+            status: "SAMPLE_COLLECTION_SCHEDULED",
+            notes: `Agent ${agent.name} assigned to home visit`,
+            createdBy: user.id,
+          },
+        });
+      }
+
+      return visit;
     });
 
     // TODO: Send notification to agent about the assignment

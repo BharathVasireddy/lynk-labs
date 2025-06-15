@@ -1,35 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { verifyAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    console.log("Admin Agents GET - Session:", session?.user);
-    
-    if (!session?.user) {
-      console.log("Admin Agents GET - No session found");
+    const user = await verifyAuth(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check if user is admin
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true, isActive: true },
-    });
-    
-    console.log("Admin Agents GET - User found:", user);
-
-    if (!user || user.role !== "ADMIN") {
-      console.log("Admin Agents GET - User is not admin");
+    if (user.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-    
-    if (!user.isActive) {
-      console.log("Admin Agents GET - User is not active");
-      return NextResponse.json({ error: "Account disabled" }, { status: 403 });
     }
 
     // Get all home visit agents
@@ -51,9 +34,6 @@ export async function GET() {
       },
     });
 
-    console.log("Admin Agents GET - Found agents:", agents.length);
-    console.log("Admin Agents GET - Agents:", agents);
-
     return NextResponse.json({
       success: true,
       agents,
@@ -69,18 +49,13 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const user = await verifyAuth(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check if user is admin
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true },
-    });
-
-    if (!user || user.role !== "ADMIN") {
+    if (user.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

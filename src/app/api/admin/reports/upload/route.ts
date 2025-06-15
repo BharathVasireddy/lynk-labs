@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { verifyAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
@@ -8,18 +7,13 @@ import { z } from "zod";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const user = await verifyAuth(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check if user is admin
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true },
-    });
-
-    if (!user || user.role !== "ADMIN") {
+    if (user.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -102,7 +96,7 @@ export async function POST(request: NextRequest) {
         fileName: file.name,
         fileUrl: `/uploads/reports/${fileName}`,
         fileSize: file.size,
-        uploadedBy: session.user.id,
+        uploadedBy: user.id,
         uploadedAt: new Date(),
         isDelivered: false,
       },
@@ -146,7 +140,7 @@ export async function POST(request: NextRequest) {
         orderId,
         status: "REPORT_READY",
         notes: notes || "Report uploaded by admin",
-        createdBy: session.user.id,
+        createdBy: user.id,
       },
     });
 

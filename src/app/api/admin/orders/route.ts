@@ -16,28 +16,70 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
+    const paymentMethod = searchParams.get("paymentMethod");
     const hasReport = searchParams.get("hasReport");
+    const search = searchParams.get("search");
+    const dateFrom = searchParams.get("dateFrom");
+    const dateTo = searchParams.get("dateTo");
+    const minAmount = searchParams.get("minAmount");
+    const maxAmount = searchParams.get("maxAmount");
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
 
     // Build where clause
-    const where: {
-      status?: string;
-      reports?: {
-        none?: Record<string, never>;
-        some?: Record<string, never>;
-      };
-    } = {};
+    const where: any = {};
 
-    if (status) {
+    // Status filter
+    if (status && status !== "all") {
       where.status = status;
     }
 
-    if (hasReport !== null) {
+    // Payment method filter
+    if (paymentMethod && paymentMethod !== "all") {
+      where.paymentMethod = paymentMethod;
+    }
+
+    // Report status filter
+    if (hasReport !== null && hasReport !== "all") {
       if (hasReport === "false") {
         where.reports = { none: {} };
       } else if (hasReport === "true") {
         where.reports = { some: {} };
+      } else if (hasReport === "delivered") {
+        where.reports = { some: { isDelivered: true } };
+      }
+    }
+
+    // Search filter
+    if (search) {
+      where.OR = [
+        { orderNumber: { contains: search, mode: "insensitive" } },
+        { user: { name: { contains: search, mode: "insensitive" } } },
+        { user: { phone: { contains: search } } },
+        { user: { email: { contains: search, mode: "insensitive" } } },
+        { id: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    // Date range filter
+    if (dateFrom || dateTo) {
+      where.createdAt = {};
+      if (dateFrom) {
+        where.createdAt.gte = new Date(dateFrom);
+      }
+      if (dateTo) {
+        where.createdAt.lte = new Date(dateTo);
+      }
+    }
+
+    // Amount range filter
+    if (minAmount || maxAmount) {
+      where.finalAmount = {};
+      if (minAmount) {
+        where.finalAmount.gte = parseFloat(minAmount);
+      }
+      if (maxAmount) {
+        where.finalAmount.lte = parseFloat(maxAmount);
       }
     }
 
@@ -48,15 +90,30 @@ export async function GET(request: NextRequest) {
         include: {
           user: {
             select: {
+              id: true,
               name: true,
               phone: true,
+              email: true,
             },
           },
           orderItems: {
             include: {
               test: {
                 select: {
+                  id: true,
                   name: true,
+                  slug: true,
+                },
+              },
+            },
+          },
+          homeVisit: {
+            include: {
+              agent: {
+                select: {
+                  id: true,
+                  name: true,
+                  phone: true,
                 },
               },
             },
@@ -66,6 +123,18 @@ export async function GET(request: NextRequest) {
               id: true,
               fileName: true,
               isDelivered: true,
+              deliveredAt: true,
+            },
+          },
+          address: {
+            select: {
+              id: true,
+              line1: true,
+              line2: true,
+              city: true,
+              state: true,
+              pincode: true,
+              landmark: true,
             },
           },
         },

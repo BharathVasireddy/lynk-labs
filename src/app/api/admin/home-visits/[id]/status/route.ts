@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { verifyAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 
@@ -15,18 +14,13 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const user = await verifyAuth(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check if user is admin or agent
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true },
-    });
-
-    if (!user || !["ADMIN", "HOME_VISIT_AGENT"].includes(user.role)) {
+    if (!["ADMIN", "HOME_VISIT_AGENT"].includes(user.role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -55,7 +49,7 @@ export async function PUT(
     }
 
     // If user is agent, check if they are assigned to this visit
-    if (user.role === "HOME_VISIT_AGENT" && homeVisit.agentId !== session.user.id) {
+    if (user.role === "HOME_VISIT_AGENT" && homeVisit.agentId !== user.id) {
       return NextResponse.json(
         { error: "You are not assigned to this home visit" },
         { status: 403 }
@@ -139,7 +133,7 @@ export async function PUT(
             orderId: homeVisit.order.id,
             status: newOrderStatus,
             notes: `Home visit status changed to ${validatedData.status}`,
-            createdBy: session.user.id,
+            createdBy: user.id,
           },
         });
       }
