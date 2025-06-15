@@ -172,10 +172,12 @@ export async function POST(request: NextRequest) {
       const itemTotal = item.price * item.quantity;
       totalAmount += itemTotal;
 
-      // Calculate discount if test has discountPrice
-      if (test.discountPrice && test.discountPrice < test.price) {
+      // Calculate discount if test has discountPrice and the order item price is the discounted price
+      // This means the customer ordered at the discounted price, so we track the discount amount
+      if (test.discountPrice && test.discountPrice < test.price && item.price === test.discountPrice) {
         const originalTotal = test.price * item.quantity;
         discountAmount += originalTotal - itemTotal;
+        console.log(`💰 Discount applied for ${test.name}: Original=${test.price}, Discounted=${test.discountPrice}, Saved=${originalTotal - itemTotal}`);
       }
     }
 

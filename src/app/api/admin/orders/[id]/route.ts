@@ -290,4 +290,104 @@ export async function PUT(
       { status: 500 }
     );
   }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const user = await verifyAuth(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if user is admin
+    if (user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const { id: orderId } = params;
+
+    if (!orderId) {
+      return NextResponse.json(
+        { error: "Order ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Check if order exists
+    const existingOrder = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        orderItems: true,
+        homeVisit: true,
+        reports: true,
+      },
+    });
+
+    if (!existingOrder) {
+      return NextResponse.json(
+        { error: "Order not found" },
+        { status: 404 }
+      );
+    }
+
+    // Prevent deletion of orders with certain statuses (optional business rule)
+    const protectedStatuses = ["PROCESSING", "SAMPLE_COLLECTED"];
+    if (protectedStatuses.includes(existingOrder.status)) {
+      return NextResponse.json(
+        { 
+          error: "Cannot delete order", 
+          message: `Orders with status '${existingOrder.status}' cannot be deleted. Please cancel the order first.` 
+        },
+        { status: 400 }
+      );
+    }
+
+    // Use transaction to ensure data consistency
+    await prisma.$transaction(async (tx) => {
+      // Delete order status history first (due to foreign key constraint)
+      await tx.orderStatusHistory.deleteMany({
+        where: { orderId: orderId },
+      });
+
+      // Delete reports first (if they exist)
+      if (existingOrder.reports.length > 0) {
+        await tx.report.deleteMany({
+          where: { orderId: orderId },
+        });
+      }
+
+      // Delete home visit (if it exists)
+      if (existingOrder.homeVisit) {
+        await tx.homeVisit.delete({
+          where: { orderId: orderId },
+        });
+      }
+
+      // Delete order items
+      await tx.orderItem.deleteMany({
+        where: { orderId: orderId },
+      });
+
+      // Finally delete the order
+      await tx.order.delete({
+        where: { id: orderId },
+      });
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Order deleted successfully",
+      deletedOrderId: orderId,
+    });
+
+  } catch (error) {
+    console.error("Error deleting order:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
 } 

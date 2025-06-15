@@ -331,23 +331,28 @@ export default function OrderDetailPage() {
 
   const handleDeliverReport = async (reportId: string) => {
     try {
+      console.log("🚀 Attempting to deliver report:", reportId);
+      
       const response = await fetch(`/api/admin/reports/${reportId}/deliver`, {
-        method: "PUT",
+        method: "POST", // Fixed: Changed from PUT to POST
+        credentials: "include", // Ensure cookies are sent
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orderId: order?.id,
-        }),
       });
+
+      console.log("📡 Response status:", response.status);
+      const data = await response.json();
+      console.log("📦 Response data:", data);
 
       if (response.ok) {
         await fetchOrder();
-        toast.success('Report delivered successfully!');
+        toast.success('✅ Report delivered successfully!');
       } else {
-        toast.error('Failed to deliver report');
+        console.error("❌ Delivery failed:", data);
+        toast.error(`❌ Failed to deliver report: ${data.error || "Unknown error"}`);
       }
     } catch (error) {
-      console.error("Error delivering report:", error);
-      toast.error('Error delivering report');
+      console.error("💥 Network error delivering report:", error);
+      toast.error(`💥 Error delivering report: ${error.message}`);
     }
   };
 

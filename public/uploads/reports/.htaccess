@@ -7,8 +7,8 @@ Options -Indexes
     Deny from all
 </FilesMatch>
 
-# Only allow PDF files for reports
-<FilesMatch "\.pdf$">
+# Allow PDF, JPG, and PNG files for reports
+<FilesMatch "\.(pdf|jpg|jpeg|png)$">
     Order Allow,Deny
     Allow from all
 </FilesMatch>

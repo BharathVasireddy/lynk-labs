@@ -4,6 +4,8 @@
 
 Lynk Labs is built using modern, scalable technologies that ensure high performance, security, and maintainability. Our tech stack follows industry best practices and is designed to handle the demands of a healthcare platform.
 
+**🚀 Latest Update:** Enterprise-grade order flow automation with 24-hour auto-completion system, comprehensive admin management, and automated cron job scheduling.
+
 ## 🏗 Architecture Pattern
 **Monolithic Architecture with Microservices-ready Structure**
 - Single deployable unit for simplicity
@@ -334,6 +336,38 @@ Lynk Labs is built using modern, scalable technologies that ensure high performa
 - **Intercom** - Customer messaging
 - **Zendesk** - Ticketing system
 - **LiveChat** - Real-time support
+
+## 🤖 Automation & Workflow System (NEW)
+
+### **Order Flow Automation**
+- **Automated Status Progression**: Orders automatically progress through workflow stages
+- **Agent Assignment Triggers**: Auto-update to SAMPLE_COLLECTION_SCHEDULED when agent assigned
+- **Report Upload Triggers**: Auto-update to REPORT_READY when reports uploaded
+- **24-Hour Auto-Completion**: Orders automatically complete 24 hours after report delivery
+
+### **Cron Job System**
+- **Node.js Cron Jobs**: Scheduled task execution
+- **Database Transactions**: Ensure data consistency in automated operations
+- **Error Handling**: Comprehensive error logging and recovery
+- **Manual Triggers**: Admin API endpoints for manual cron execution
+
+### **Automation Features**
+```typescript
+// Automated Order Completion
+{
+  "hourlyAutoCompletion": "Complete orders after 24 hours",
+  "dailyReminders": "Send pending order notifications",
+  "weeklyReports": "Generate business analytics",
+  "dataCleanup": "Remove temporary files and expired sessions"
+}
+```
+
+### **Enterprise Admin Management**
+- **Bulk Operations**: Process multiple orders simultaneously
+- **CSV Export**: Automated report generation
+- **Priority Management**: Order priority assignment and tracking
+- **Internal Notes**: Admin communication system
+- **Audit Trails**: Complete action history tracking
 
 ## 🧪 Quality Assurance
 

@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { DateFilter } from "@/components/ui/date-filter";
 
 interface HomeVisit {
   id: string;
@@ -67,7 +68,7 @@ export default function HomeVisitsPage() {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     status: "all",
-    date: "",
+    dateRange: { from: undefined, to: undefined } as { from: Date | undefined; to: Date | undefined },
     search: "",
   });
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -81,7 +82,8 @@ export default function HomeVisitsPage() {
       setLoading(true);
       const params = new URLSearchParams();
       if (filters.status !== "all") params.append("status", filters.status);
-      if (filters.date) params.append("date", filters.date);
+      if (filters.dateRange.from) params.append("dateFrom", filters.dateRange.from.toISOString());
+      if (filters.dateRange.to) params.append("dateTo", filters.dateRange.to.toISOString());
       if (filters.search) params.append("search", filters.search);
 
       const response = await fetch(`/api/admin/home-visits?${params}`);
@@ -295,18 +297,10 @@ export default function HomeVisitsPage() {
 
             <div className="space-y-2">
               <Label>Date</Label>
-              <Select value={filters.date} onValueChange={(value) => setFilters({ ...filters, date: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All dates" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Dates</SelectItem>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="tomorrow">Tomorrow</SelectItem>
-                  <SelectItem value="this_week">This Week</SelectItem>
-                  <SelectItem value="next_week">Next Week</SelectItem>
-                </SelectContent>
-              </Select>
+              <DateFilter
+                value={filters.dateRange}
+                onChange={(range) => setFilters({ ...filters, dateRange: range })}
+              />
             </div>
 
             <div className="space-y-2">

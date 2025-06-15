@@ -45,8 +45,19 @@ src/
 │   ├── 📁 (dashboard)/          # Dashboard route group
 │   ├── 📁 about/                # About page
 │   ├── 📁 addresses/            # Address management
-│   ├── 📁 admin/                # Admin panel
-│   ├── 📁 api/                  # API routes
+│   ├── 📁 admin/                # Admin panel ⭐ ENHANCED
+│   │   ├── 📁 agents/           # Agent management
+│   │   ├── 📁 analytics/        # Business analytics
+│   │   ├── 📁 dashboard/        # Admin dashboard
+│   │   ├── 📁 home-visits/      # Home visit management
+│   │   ├── 📁 orders/           # Order management ⭐ NEW
+│   │   │   └── 📁 [id]/         # Individual order details
+│   │   ├── 📁 packages/         # Test packages
+│   │   ├── 📁 reports/          # Report management
+│   │   ├── 📁 settings/         # Admin settings
+│   │   ├── 📁 tests/            # Test catalog management
+│   │   └── 📁 users/            # User management
+│   ├── 📁 api/                  # API routes ⭐ ENHANCED
 │   ├── 📁 auth/                 # Authentication pages
 │   ├── 📁 checkout/             # Checkout system ⭐ NEW
 │   ├── 📁 contact/              # Contact page
@@ -96,12 +107,22 @@ ui/
 ├── 📄 badge.tsx                 # Status badges
 ├── 📄 button.tsx                # Button variants
 ├── 📄 card.tsx                  # Card components
+├── 📄 date-filter.tsx           # Shopify-style date filter ⭐ NEW
 ├── 📄 input.tsx                 # Form inputs
 ├── 📄 label.tsx                 # Form labels
 ├── 📄 select.tsx                # Select dropdowns
 ├── 📄 textarea.tsx              # Text areas
 └── ... (other shadcn/ui components)
 ```
+
+**DateFilter Component Features:**
+- Shopify-style preset options (Today, Yesterday, Last 7 days, etc.)
+- Custom date range selection with calendar picker
+- Smart preset detection and formatting
+- Dual interface: preset selector + calendar picker
+- Responsive design with proper z-index handling
+- Professional medical styling
+- Used across all admin pages for consistent filtering
 
 ### Form Components (`src/components/forms/`)
 ```
@@ -120,7 +141,38 @@ api/
 ├── 📁 addresses/                # Address management
 │   ├── 📄 route.ts             # GET, POST addresses
 │   └── 📁 [id]/                # Individual address operations
-├── 📁 admin/                    # Admin-only endpoints
+├── 📁 admin/                    # Admin-only endpoints ⭐ ENHANCED
+│   ├── 📁 agents/              # Agent management
+│   ├── 📁 analytics/           # Business analytics
+│   ├── 📁 cron/                # Automated cron jobs ⭐ NEW
+│   ├── 📁 dashboard/           # Dashboard statistics
+│   ├── 📁 home-visits/         # Home visit management
+│   │   └── 📁 [id]/            # Individual home visit operations
+│   │       ├── 📁 assign/      # Agent assignment ⭐ NEW
+│   │       └── 📁 status/      # Status updates ⭐ NEW
+│   ├── 📁 orders/              # Order management ⭐ ENHANCED
+│   │   ├── 📄 route.ts         # List/filter orders
+│   │   ├── 📁 [id]/            # Individual order operations
+│   │   │   ├── 📁 duplicate/   # Order duplication ⭐ NEW
+│   │   │   ├── 📁 notes/       # Internal notes ⭐ NEW
+│   │   │   ├── 📁 notifications/ # Order notifications ⭐ NEW
+│   │   │   ├── 📁 priority/    # Priority management ⭐ NEW
+│   │   │   ├── 📁 receipt/     # Receipt generation ⭐ NEW
+│   │   │   └── 📁 status/      # Status updates ⭐ NEW
+│   │   ├── 📁 bulk/            # Bulk operations ⭐ NEW
+│   │   └── 📁 export/          # CSV export ⭐ NEW
+│   ├── 📁 packages/            # Package management
+│   ├── 📁 reports/             # Report management ⭐ ENHANCED
+│   │   ├── 📄 route.ts         # List reports
+│   │   ├── 📁 [id]/            # Individual report operations
+│   │   │   └── 📁 deliver/     # Report delivery ⭐ NEW
+│   │   └── 📁 upload/          # Report upload ⭐ NEW
+│   ├── 📁 tests/               # Test catalog management
+│   └── 📁 users/               # User management
+├── 📁 agent/                    # Agent-specific endpoints ⭐ NEW
+│   └── 📁 home-visits/         # Agent home visit management
+│       └── 📁 [id]/            # Individual visit operations
+│           └── 📁 status/      # Status updates by agents
 ├── 📁 auth/                     # Authentication endpoints
 │   ├── 📁 login/               # User login
 │   ├── 📁 register/            # User registration
@@ -225,6 +277,7 @@ export async function GET(request: NextRequest) {
 ```
 lib/
 ├── 📄 auth-utils.ts             # Authentication utilities ⭐ ENHANCED
+├── 📄 cron-jobs.ts              # Automated cron job system ⭐ NEW
 ├── 📄 db.ts                     # Database connection (Prisma)
 ├── 📄 utils.ts                  # General utilities (cn, etc.)
 ├── 📄 validations.ts            # Zod validation schemas
@@ -233,6 +286,29 @@ lib/
 ├── 📄 payment.ts                # Payment gateway utilities
 └── 📄 upload.ts                 # File upload utilities
 ```
+
+## 🤖 Automation System (NEW)
+
+### Cron Jobs (`src/lib/cron-jobs.ts`)
+**Automated Order Management System:**
+- **24-Hour Auto-Completion**: Orders in `REPORT_READY` status automatically complete after 24 hours
+- **Daily Reminders**: Automated notifications for pending orders
+- **Weekly Reports**: Automated business analytics reports
+- **Data Cleanup**: Automated cleanup of temporary files and expired sessions
+
+**Key Features:**
+- Comprehensive error handling and logging
+- Audit trail for all automated actions
+- Manual trigger capability via admin API
+- Configurable timing and thresholds
+- Database transaction safety
+
+### Admin Cron API (`/api/admin/cron`)
+**Manual Automation Control:**
+- Trigger specific cron jobs manually
+- View automation logs and results
+- Configure automation settings
+- Emergency automation controls
 
 ## 🏪 State Management (`src/store/`)
 

@@ -192,6 +192,58 @@ interface MobileCheckoutFooterProps {
 // - Loading states
 ```
 
+#### DateFilter Component
+Shopify-style date filtering with presets and custom range selection:
+
+```typescript
+interface DateFilterProps {
+  value: { from: Date | undefined; to: Date | undefined };
+  onChange: (range: { from: Date | undefined; to: Date | undefined }) => void;
+  className?: string;
+  placeholder?: string;
+}
+
+// Features:
+// - Preset options: Today, Yesterday, Last 7 days, Last 30 days, This week, This month, This year
+// - Custom date range selection with calendar picker
+// - Smart preset detection and formatting
+// - Dual interface: preset selector + calendar picker
+// - Responsive design with proper z-index handling
+// - Professional medical styling
+
+// Usage
+<DateFilter
+  value={filters.dateRange}
+  onChange={(range) => setFilters({ ...filters, dateRange: range })}
+  placeholder="Select date range"
+/>
+```
+
+#### Debounced Search Pattern
+Performance-optimized search implementation for admin interfaces:
+
+```typescript
+// Separate state for input field and actual search
+const [searchTerm, setSearchTerm] = useState("");
+const [filters, setFilters] = useState({ search: "" });
+
+// Debounced search effect (500ms delay)
+useEffect(() => {
+  const timeoutId = setTimeout(() => {
+    setFilters(prev => ({ ...prev, search: searchTerm }));
+  }, 500);
+
+  return () => clearTimeout(timeoutId);
+}, [searchTerm]);
+
+// Usage in input field
+<Input
+  placeholder="Search..."
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+/>
+```
+
 ## 🎨 Design Patterns
 
 ### Medical Card Pattern
@@ -642,6 +694,247 @@ Always provide clear usage examples with medical context:
 - Resolved accessibility issues in ProgressIndicator
 ```
 
+## 🏥 Admin UI Components (NEW)
+
+### Enterprise Admin Dashboard
+Professional admin interface components for healthcare management:
+
+#### OrderManagementCard Component
+```typescript
+interface OrderManagementCardProps {
+  order: Order;
+  onStatusUpdate: (orderId: string, status: OrderStatus) => void;
+  onAssignAgent: (orderId: string, agentId: string) => void;
+  onAddNote: (orderId: string, note: string) => void;
+  className?: string;
+}
+
+// Features:
+// - Order status progression visualization
+// - Agent assignment interface
+// - Internal notes system
+// - Priority management
+// - Bulk action support
+```
+
+#### AnalyticsDashboard Component
+```typescript
+interface AnalyticsDashboardProps {
+  dateRange: DateRange;
+  metrics: DashboardMetrics;
+  onDateRangeChange: (range: DateRange) => void;
+  className?: string;
+}
+
+// Features:
+// - Real-time statistics cards
+// - Revenue analytics charts
+// - Order volume trends
+// - Agent performance metrics
+// - Export functionality
+```
+
+#### AutomationStatusIndicator Component
+```typescript
+interface AutomationStatusIndicatorProps {
+  automationType: 'ORDER_COMPLETION' | 'DAILY_REMINDERS' | 'WEEKLY_REPORTS';
+  status: 'ACTIVE' | 'INACTIVE' | 'ERROR';
+  lastRun?: Date;
+  nextRun?: Date;
+  className?: string;
+}
+
+// Features:
+// - Automation system status display
+// - Last run and next run timestamps
+// - Error state indicators
+// - Manual trigger buttons
+```
+
+### Admin Color Palette
+```css
+/* Admin-specific colors */
+--admin-primary: 220 70% 50%;        /* Admin blue */
+--admin-success: 142 76% 36%;        /* Success green */
+--admin-warning: 38 92% 50%;         /* Warning amber */
+--admin-error: 0 84% 60%;            /* Error red */
+--admin-info: 199 89% 48%;           /* Info cyan */
+
+/* Admin card system */
+--admin-card: 0 0% 100%;             /* White background */
+--admin-card-hover: 220 14% 96%;     /* Hover state */
+--admin-border: 220 13% 91%;         /* Professional borders */
+--admin-sidebar: 222.2 84% 4.9%;     /* Dark sidebar */
+```
+
+### Admin Layout Patterns
+```tsx
+// Standard admin page layout
+<div className="min-h-screen bg-gray-50">
+  <AdminSidebar />
+  <main className="lg:pl-64">
+    <div className="px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900">Page Title</h1>
+        <p className="text-gray-600">Page description</p>
+      </div>
+      
+      {/* Stats cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatsCard />
+      </div>
+      
+      {/* Main content */}
+      <div className="bg-white rounded-lg shadow">
+        {/* Content */}
+      </div>
+    </div>
+  </main>
+</div>
+```
+
+### Automation UI Patterns
+```tsx
+// Automation status display
+<div className="bg-white rounded-lg border border-gray-200 p-6">
+  <div className="flex items-center justify-between mb-4">
+    <h3 className="text-lg font-medium text-gray-900">Order Auto-Completion</h3>
+    <Badge variant={isActive ? 'success' : 'secondary'}>
+      {isActive ? 'Active' : 'Inactive'}
+    </Badge>
+  </div>
+  
+  <div className="grid grid-cols-2 gap-4 text-sm">
+    <div>
+      <p className="text-gray-500">Last Run</p>
+      <p className="font-medium">{formatDate(lastRun)}</p>
+    </div>
+    <div>
+      <p className="text-gray-500">Next Run</p>
+      <p className="font-medium">{formatDate(nextRun)}</p>
+    </div>
+  </div>
+  
+  <div className="mt-4 flex gap-2">
+    <Button size="sm" onClick={triggerManually}>
+      Trigger Now
+    </Button>
+    <Button size="sm" variant="outline" onClick={viewLogs}>
+      View Logs
+    </Button>
+  </div>
+</div>
+```
+
+### Order Status Visualization
+```tsx
+// Enhanced order status flow with automation indicators
+const OrderStatusFlow = ({ currentStatus, isAutomated }) => (
+  <div className="flex items-center space-x-2">
+    {orderStatuses.map((status, index) => (
+      <div key={status} className="flex items-center">
+        <div className={cn(
+          "w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium",
+          currentStatus === status 
+            ? "bg-primary text-primary-foreground" 
+            : "bg-gray-200 text-gray-600"
+        )}>
+          {index + 1}
+        </div>
+        {isAutomated && currentStatus === status && (
+          <div className="ml-1">
+            <Badge variant="outline" className="text-xs">
+              AUTO
+            </Badge>
+          </div>
+        )}
+        {index < orderStatuses.length - 1 && (
+          <div className="w-8 h-0.5 bg-gray-200 mx-2" />
+        )}
+      </div>
+    ))}
+  </div>
+);
+```
+
+## 🤖 Automation Design Patterns (NEW)
+
+### Status Indicators
+```css
+/* Automation status colors */
+.automation-active { @apply bg-green-100 text-green-800 border-green-200; }
+.automation-inactive { @apply bg-gray-100 text-gray-800 border-gray-200; }
+.automation-error { @apply bg-red-100 text-red-800 border-red-200; }
+.automation-running { @apply bg-blue-100 text-blue-800 border-blue-200; }
+```
+
+### Cron Job Display
+```tsx
+// Cron job status card
+<div className="bg-white rounded-lg border p-4">
+  <div className="flex items-center justify-between mb-2">
+    <h4 className="font-medium">24-Hour Auto-Completion</h4>
+    <div className="flex items-center gap-2">
+      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+      <span className="text-sm text-green-600">Active</span>
+    </div>
+  </div>
+  
+  <div className="text-sm text-gray-600 mb-3">
+    Automatically completes orders 24 hours after report delivery
+  </div>
+  
+  <div className="flex justify-between text-xs text-gray-500">
+    <span>Last run: 2 hours ago</span>
+    <span>Next run: in 58 minutes</span>
+  </div>
+  
+  <div className="mt-3 pt-3 border-t border-gray-100">
+    <div className="flex gap-2">
+      <Button size="sm" variant="outline">View Logs</Button>
+      <Button size="sm" variant="outline">Trigger Now</Button>
+    </div>
+  </div>
+</div>
+```
+
+### Bulk Operations Interface
+```tsx
+// Bulk operations toolbar
+<div className="bg-gray-50 border-b border-gray-200 px-6 py-3">
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-4">
+      <Checkbox 
+        checked={allSelected}
+        onCheckedChange={toggleSelectAll}
+      />
+      <span className="text-sm text-gray-600">
+        {selectedCount} of {totalCount} selected
+      </span>
+    </div>
+    
+    {selectedCount > 0 && (
+      <div className="flex items-center gap-2">
+        <Select onValueChange={setBulkAction}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Bulk actions" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="confirm">Confirm Orders</SelectItem>
+            <SelectItem value="cancel">Cancel Orders</SelectItem>
+            <SelectItem value="export">Export Selected</SelectItem>
+          </SelectContent>
+        </Select>
+        
+        <Button size="sm" onClick={executeBulkAction}>
+          Apply
+        </Button>
+      </div>
+    )}
+  </div>
+</div>
+```
+
 ---
 
 ## 🎯 Quick Reference
@@ -652,9 +945,17 @@ Always provide clear usage examples with medical context:
 .medical-card { @apply bg-white rounded-lg border border-medical-border shadow-sm; }
 .medical-card-hover { @apply hover:shadow-md transition-shadow; }
 
+/* Admin Cards */
+.admin-card { @apply bg-white rounded-lg border border-admin-border shadow-sm; }
+.admin-stats-card { @apply bg-white rounded-lg border border-gray-200 p-6; }
+
 /* Buttons */
 .medical-button-primary { @apply bg-primary text-primary-foreground hover:bg-primary/90; }
 .medical-button-outline { @apply border border-input bg-background hover:bg-accent; }
+
+/* Admin Buttons */
+.admin-button-primary { @apply bg-admin-primary text-white hover:bg-admin-primary/90; }
+.admin-button-danger { @apply bg-admin-error text-white hover:bg-admin-error/90; }
 
 /* Forms */
 .medical-form-field { @apply space-y-2; }
@@ -663,6 +964,12 @@ Always provide clear usage examples with medical context:
 /* Layout */
 .container-padding { @apply px-4 sm:px-6 lg:px-8; }
 .medical-grid { @apply grid gap-6; }
+.admin-grid { @apply grid gap-6; }
+
+/* Automation */
+.automation-indicator { @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium; }
+.cron-status-active { @apply bg-green-100 text-green-800; }
+.cron-status-inactive { @apply bg-gray-100 text-gray-800; }
 ```
 
 ### Color Variables
@@ -674,7 +981,17 @@ Always provide clear usage examples with medical context:
   --medical-error: 0 84% 60%;
   --medical-card: 0 0% 100%;
   --medical-border: 220 13% 91%;
+  
+  /* Admin colors */
+  --admin-primary: 220 70% 50%;
+  --admin-success: 142 76% 36%;
+  --admin-warning: 38 92% 50%;
+  --admin-error: 0 84% 60%;
+  --admin-info: 199 89% 48%;
+  --admin-card: 0 0% 100%;
+  --admin-border: 220 13% 91%;
+  --admin-sidebar: 222.2 84% 4.9%;
 }
 ```
 
-This design system ensures consistency, accessibility, and professional medical aesthetics across the entire Lynk Labs platform. 
+This design system ensures consistency, accessibility, and professional medical aesthetics across the entire Lynk Labs platform, including the new enterprise admin features and automation systems. 

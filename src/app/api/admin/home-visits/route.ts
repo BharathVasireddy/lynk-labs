@@ -17,7 +17,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
     const agentId = searchParams.get("agentId");
-    const date = searchParams.get("date");
+    const dateFrom = searchParams.get("dateFrom");
+    const dateTo = searchParams.get("dateTo");
+    const search = searchParams.get("search");
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
 
@@ -32,15 +34,25 @@ export async function GET(request: NextRequest) {
       where.agentId = agentId;
     }
 
-    if (date) {
-      const startDate = new Date(date);
-      const endDate = new Date(date);
-      endDate.setDate(endDate.getDate() + 1);
-      
-      where.scheduledDate = {
-        gte: startDate,
-        lt: endDate,
-      };
+    // Date range filter
+    if (dateFrom || dateTo) {
+      where.scheduledDate = {};
+      if (dateFrom) {
+        where.scheduledDate.gte = new Date(dateFrom);
+      }
+      if (dateTo) {
+        where.scheduledDate.lte = new Date(dateTo);
+      }
+    }
+
+    // Search filter
+    if (search) {
+      where.OR = [
+        { order: { orderNumber: { contains: search, mode: "insensitive" } } },
+        { order: { user: { name: { contains: search, mode: "insensitive" } } } },
+        { order: { user: { phone: { contains: search } } } },
+        { notes: { contains: search, mode: "insensitive" } },
+      ];
     }
 
     // Get home visits with pagination

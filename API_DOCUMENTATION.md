@@ -4,6 +4,21 @@
 
 The Lynk Labs API follows RESTful principles and provides comprehensive endpoints for managing lab tests, orders, users, and administrative functions. All API responses are in JSON format.
 
+**🚀 Latest Update:** Complete order flow automation with enterprise-grade admin management, 24-hour auto-completion system, and comprehensive analytics.
+
+## 🔄 Order Flow Automation
+
+### Order Status Workflow
+```
+PENDING → CONFIRMED → SAMPLE_COLLECTION_SCHEDULED → SAMPLE_COLLECTED → PROCESSING → REPORT_READY → COMPLETED
+```
+
+**Auto-Status Updates:**
+- Agent assignment automatically updates order to `SAMPLE_COLLECTION_SCHEDULED`
+- Report upload automatically updates order to `REPORT_READY`
+- Report delivery automatically updates order to `COMPLETED`
+- 24-hour auto-completion system for orders in `REPORT_READY` status
+
 ## 🔐 Authentication
 
 ### Authentication Methods
@@ -1106,13 +1121,400 @@ Activate/deactivate user
 ### Order Management (Admin Only)
 
 #### **GET /api/admin/orders**
-Get all orders with advanced filtering
+Get all orders with advanced filtering and Shopify-style date filtering
 
-#### **PUT /api/admin/orders/[id]/assign-agent**
-Assign home visit agent
+**Query Parameters:**
+- `page`, `limit`: Pagination (default: page=1, limit=20)
+- `status`: Filter by order status (PENDING, CONFIRMED, SAMPLE_COLLECTION_SCHEDULED, etc.)
+- `paymentMethod`: Filter by payment method (ONLINE, COD)
+- `search`: Search in order number, customer name, phone, email, or order ID
+- `dateFrom`, `dateTo`: Date range filtering (ISO 8601 format)
+  - Supports Shopify-style presets: Today, Yesterday, Last 7 days, Last 30 days, This week, This month, This year
+  - Custom date range selection with calendar picker
+- `hasReport`: Filter orders with/without reports (true, false, all)
+- `minAmount`, `maxAmount`: Filter by order amount range
+- `priority`: Filter by priority level (HIGH, MEDIUM, LOW, NORMAL)
 
-#### **POST /api/admin/orders/bulk-update**
-Bulk update order status
+**Example Requests:**
+```http
+# Get orders from today
+GET /api/admin/orders?dateFrom=2024-06-15T00:00:00.000Z&dateTo=2024-06-15T23:59:59.999Z
+
+# Search with debounced query
+GET /api/admin/orders?search=john&page=1&limit=20
+
+# Filter by status and payment method
+GET /api/admin/orders?status=CONFIRMED&paymentMethod=ONLINE
+
+# Complex filtering
+GET /api/admin/orders?dateFrom=2024-06-01T00:00:00.000Z&dateTo=2024-06-30T23:59:59.999Z&status=COMPLETED&minAmount=500&maxAmount=2000
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "orders": [...],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 150,
+    "totalPages": 15
+  },
+  "stats": {
+    "totalOrders": 150,
+    "activeOrders": 45,
+    "completedOrders": 105
+  }
+}
+```
+
+#### **GET /api/admin/orders/[id]**
+Get detailed order information
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "order": {
+    "id": "order_123",
+    "orderNumber": "LL2025001",
+    "status": "CONFIRMED",
+    "priority": "NORMAL",
+    "customer": {...},
+    "items": [...],
+    "homeVisit": {...},
+    "statusHistory": [...],
+    "notes": [...]
+  }
+}
+```
+
+#### **PUT /api/admin/orders/[id]/status**
+Update order status with automatic workflow handling
+
+**Request Body:**
+```json
+{
+  "status": "CONFIRMED",
+  "notes": "Order confirmed by admin"
+}
+```
+
+#### **POST /api/admin/orders/bulk**
+Bulk update multiple orders
+
+**Request Body:**
+```json
+{
+  "orderIds": ["order_1", "order_2"],
+  "action": "UPDATE_STATUS",
+  "data": {
+    "status": "CONFIRMED",
+    "notes": "Bulk confirmation"
+  }
+}
+```
+
+#### **GET /api/admin/orders/export**
+Export orders to CSV
+
+**Query Parameters:**
+- `format`: Export format (csv, excel)
+- `dateFrom`, `dateTo`: Date range
+- `status`: Filter by status
+
+#### **POST /api/admin/orders/[id]/duplicate**
+Create duplicate order
+
+#### **POST /api/admin/orders/[id]/notes**
+Add internal notes to order
+
+#### **PUT /api/admin/orders/[id]/priority**
+Update order priority
+
+#### **GET /api/admin/orders/[id]/receipt**
+Generate order receipt
+
+### Home Visit Management (Admin Only)
+
+#### **GET /api/admin/home-visits**
+Get all home visits with advanced filtering and date range support
+
+**Query Parameters:**
+- `page`, `limit`: Pagination (default: page=1, limit=20)
+- `status`: Filter by visit status (PENDING, ASSIGNED, IN_PROGRESS, COMPLETED, CANCELLED)
+- `agentId`: Filter by assigned agent
+- `dateFrom`, `dateTo`: Date range filtering on scheduled date (ISO 8601 format)
+  - Supports Shopify-style presets: Today, Yesterday, Last 7 days, etc.
+- `search`: Search in order number, customer name, phone, or address
+
+**Example Requests:**
+```http
+# Get today's home visits
+GET /api/admin/home-visits?dateFrom=2024-06-15T00:00:00.000Z&dateTo=2024-06-15T23:59:59.999Z
+
+# Filter by agent and status
+GET /api/admin/home-visits?agentId=agent_123&status=ASSIGNED
+
+# Search for specific visits
+GET /api/admin/home-visits?search=john&page=1&limit=20
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "homeVisits": [
+    {
+      "id": "visit_123",
+      "status": "ASSIGNED",
+      "scheduledDate": "2024-06-15",
+      "scheduledTime": "09:00-12:00",
+      "priority": "HIGH",
+      "agent": {
+        "id": "agent_123",
+        "name": "John Agent",
+        "phone": "+919876543210"
+      },
+      "order": {
+        "id": "order_123",
+        "orderNumber": "LL2024001",
+        "user": {
+          "name": "Jane Doe",
+          "phone": "+919876543211"
+        },
+        "address": {
+          "fullAddress": "123 Main St, City, State 12345"
+        }
+      },
+      "createdAt": "2024-06-14T10:00:00Z",
+      "updatedAt": "2024-06-14T15:30:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 45,
+    "pages": 3
+  }
+}
+```
+
+#### **PUT /api/admin/home-visits/[id]/assign**
+Assign agent to home visit
+
+**Request Body:**
+```json
+{
+  "agentId": "agent_123",
+  "scheduledDate": "2024-06-15",
+  "scheduledTime": "09:00-12:00",
+  "notes": "Special instructions"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "homeVisit": {
+    "id": "visit_123",
+    "status": "ASSIGNED",
+    "agent": {...},
+    "order": {
+      "status": "SAMPLE_COLLECTION_SCHEDULED"
+    }
+  }
+}
+```
+
+#### **PUT /api/admin/home-visits/[id]/status**
+Update home visit status
+
+### Agent Management (Admin Only)
+
+#### **GET /api/admin/agents**
+Get all home visit agents
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "agents": [
+    {
+      "id": "agent_123",
+      "name": "John Agent",
+      "phone": "+919876543210",
+      "status": "ACTIVE",
+      "currentAssignments": 3,
+      "completedVisits": 45,
+      "rating": 4.8
+    }
+  ]
+}
+```
+
+#### **POST /api/admin/agents**
+Create new agent
+
+#### **PUT /api/admin/agents/[id]**
+Update agent information
+
+### Report Management (Admin Only)
+
+#### **GET /api/admin/reports**
+Get all reports with advanced filtering and date range support
+
+**Query Parameters:**
+- `page`, `limit`: Pagination (default: page=1, limit=20)
+- `status`: Filter by delivery status (pending, delivered, all)
+- `dateFrom`, `dateTo`: Date range filtering on upload date (ISO 8601 format)
+  - Supports Shopify-style presets: Today, Yesterday, Last 7 days, etc.
+- `search`: Search in report filename, order number, customer name, or phone
+
+**Example Requests:**
+```http
+# Get reports uploaded today
+GET /api/admin/reports?dateFrom=2024-06-15T00:00:00.000Z&dateTo=2024-06-15T23:59:59.999Z
+
+# Search for specific reports
+GET /api/admin/reports?search=john&status=pending
+
+# Filter by delivery status
+GET /api/admin/reports?status=delivered&page=1&limit=20
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "reports": [
+    {
+      "id": "report_123",
+      "fileName": "CBC_Report_LL2024001.pdf",
+      "fileUrl": "https://storage.lynklabs.com/reports/...",
+      "fileSize": 1024000,
+      "uploadedAt": "2024-06-15T10:30:00Z",
+      "isDelivered": false,
+      "deliveredAt": null,
+      "order": {
+        "id": "order_123",
+        "orderNumber": "LL2024001",
+        "user": {
+          "name": "John Doe",
+          "phone": "+919876543210"
+        },
+        "orderItems": [...]
+      },
+      "uploader": {
+        "name": "Lab Admin"
+      }
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 150,
+    "pages": 8
+  }
+}
+```
+
+#### **POST /api/admin/reports/upload**
+Upload lab report
+
+**Request Body (multipart/form-data):**
+```
+orderId: order_123
+reportFile: [PDF file]
+notes: Report uploaded by lab
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "report": {
+    "id": "report_123",
+    "orderId": "order_123",
+    "fileName": "report_order_123.pdf",
+    "uploadedAt": "2024-01-01T00:00:00Z"
+  },
+  "order": {
+    "status": "REPORT_READY"
+  }
+}
+```
+
+#### **POST /api/admin/reports/[id]/deliver**
+Mark report as delivered
+
+**Request Body:**
+```json
+{
+  "deliveryMethod": "WHATSAPP",
+  "deliveredTo": "+919876543210",
+  "notes": "Report delivered via WhatsApp"
+}
+```
+
+### Analytics & Dashboard (Admin Only)
+
+#### **GET /api/admin/dashboard**
+Get dashboard statistics
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "stats": {
+    "totalOrders": 1250,
+    "todayOrders": 45,
+    "pendingOrders": 23,
+    "completedOrders": 1180,
+    "totalRevenue": 125000,
+    "todayRevenue": 4500,
+    "activeAgents": 12,
+    "totalCustomers": 890
+  },
+  "recentOrders": [...],
+  "recentReports": [...]
+}
+```
+
+#### **GET /api/admin/analytics**
+Get comprehensive analytics
+
+**Query Parameters:**
+- `period`: Time period (today, week, month, year)
+- `metric`: Specific metric to analyze
+
+### Automation & Cron Jobs (Admin Only)
+
+#### **POST /api/admin/cron**
+Manually trigger cron jobs
+
+**Request Body:**
+```json
+{
+  "job": "AUTO_COMPLETE_ORDERS",
+  "force": true
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Cron job executed successfully",
+  "results": {
+    "ordersProcessed": 5,
+    "ordersCompleted": 3,
+    "errors": []
+  }
+}
+```
 
 ---
 

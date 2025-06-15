@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DateFilter } from "@/components/ui/date-filter";
 import { 
   Package, 
   Search, 
@@ -44,7 +45,8 @@ import {
   Star,
   MessageSquare,
   Copy,
-  ExternalLink
+  ExternalLink,
+  Trash2
 } from "lucide-react";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
@@ -120,7 +122,7 @@ const statusColors = {
 const statusOptions = [
   { value: "PENDING", label: "Pending", icon: Clock },
   { value: "CONFIRMED", label: "Confirmed", icon: CheckCircle },
-  { value: "SAMPLE_COLLECTION_SCHEDULED", label: "Sample Collection Scheduled", icon: Calendar },
+  { value: "SAMPLE_COLLECTION_SCHEDULED", label: "Sample Collection Scheduled", icon: Truck },
   { value: "SAMPLE_COLLECTED", label: "Sample Collected", icon: Package2 },
   { value: "PROCESSING", label: "Processing", icon: RefreshCw },
   { value: "REPORT_READY", label: "Report Ready", icon: FileText },
@@ -148,6 +150,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<Filters>({
     status: "all",
     paymentMethod: "all",
@@ -168,12 +171,16 @@ export default function OrdersPage() {
   const [statusUpdateDialog, setStatusUpdateDialog] = useState(false);
   const [exportDialog, setExportDialog] = useState(false);
   const [orderNotesDialog, setOrderNotesDialog] = useState(false);
+  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState(false);
+  const [bulkDeleteConfirmDialog, setBulkDeleteConfirmDialog] = useState(false);
   
   // Bulk action states
   const [bulkAction, setBulkAction] = useState("");
   const [bulkStatus, setBulkStatus] = useState("");
   const [bulkNotes, setBulkNotes] = useState("");
   const [selectedOrderForNotes, setSelectedOrderForNotes] = useState<Order | null>(null);
+  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const [stats, setStats] = useState({
     total: 0,
@@ -235,6 +242,15 @@ export default function OrdersPage() {
     }
   }, [filters, currentPage]);
 
+  // Debounced search effect
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setFilters(prev => ({ ...prev, search: searchTerm }));
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
@@ -275,6 +291,12 @@ export default function OrdersPage() {
 
   const handleBulkAction = async () => {
     if (!bulkAction || selectedOrders.length === 0) return;
+
+    // Handle delete action separately with confirmation
+    if (bulkAction === "delete_orders") {
+      handleBulkDelete();
+      return;
+    }
 
     try {
       const response = await fetch("/api/admin/orders/bulk", {
@@ -326,6 +348,7 @@ export default function OrdersPage() {
   };
 
   const clearFilters = () => {
+    setSearchTerm(""); // Clear search input
     setFilters({
       status: "all",
       paymentMethod: "all",
@@ -341,6 +364,89 @@ export default function OrdersPage() {
     const statusOption = statusOptions.find(s => s.value === status);
     const Icon = statusOption?.icon || Clock;
     return <Icon className="h-3 w-3" />;
+  };
+
+  const handleDeleteOrder = async (order: Order) => {
+    setOrderToDelete(order);
+    setDeleteConfirmDialog(true);
+  };
+
+  const confirmDeleteOrder = async () => {
+    if (!orderToDelete) return;
+    
+    try {
+      setDeleting(true);
+      const response = await fetch(`/api/admin/orders/${orderToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Remove order from local state
+        setOrders(orders.filter(o => o.id !== orderToDelete.id));
+        setTotalOrders(prev => prev - 1);
+        setDeleteConfirmDialog(false);
+        setOrderToDelete(null);
+        
+        // Show success message
+        alert('Order deleted successfully');
+      } else {
+        const error = await response.json();
+        console.error('Failed to delete order:', error.message);
+        // Show specific error message
+        alert(`Cannot delete order: ${error.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      alert('Error deleting order. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedOrders.length === 0) return;
+    setBulkDeleteConfirmDialog(true);
+  };
+
+  const confirmBulkDelete = async () => {
+    try {
+      setDeleting(true);
+      const response = await fetch('/api/admin/orders/bulk', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'delete_orders',
+          orderIds: selectedOrders,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        // Remove deleted orders from local state
+        setOrders(orders.filter(o => !selectedOrders.includes(o.id)));
+        setTotalOrders(prev => prev - selectedOrders.length);
+        setSelectedOrders([]);
+        setBulkDeleteConfirmDialog(false);
+        
+        alert(`Successfully deleted ${result.deletedCount} orders`);
+      } else {
+        const error = await response.json();
+        console.error('Failed to delete orders:', error.message);
+        // Show specific error message for bulk operations
+        if (error.protectedOrderIds && error.protectedOrderIds.length > 0) {
+          alert(`Cannot delete some orders due to their status: ${error.message}`);
+        } else {
+          alert(`Failed to delete orders: ${error.message || 'Unknown error'}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting orders:', error);
+      alert('Error deleting orders. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   if (loading) {
@@ -475,8 +581,8 @@ export default function OrdersPage() {
                 <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3" />
                 <Input
                   placeholder="Search orders..."
-                  value={filters.search}
-                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-7 h-8 text-xs"
                 />
               </div>
@@ -513,32 +619,10 @@ export default function OrdersPage() {
             </Select>
 
             {/* Date Range */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="h-8 text-xs">
-                  <CalendarIcon className="mr-1 h-3 w-3" />
-                  {filters.dateRange.from ? (
-                    filters.dateRange.to ? (
-                      `${format(filters.dateRange.from, "dd/MM")} - ${format(filters.dateRange.to, "dd/MM")}`
-                    ) : (
-                      format(filters.dateRange.from, "dd/MM/yy")
-                    )
-                  ) : (
-                    "Date"
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 z-[90]" align="start" side="bottom" sideOffset={4}>
-                <Calendar
-                  initialFocus
-                  mode="range"
-                  defaultMonth={filters.dateRange.from}
-                  selected={filters.dateRange}
-                  onSelect={(range) => setFilters({ ...filters, dateRange: range || { from: undefined, to: undefined } })}
-                  numberOfMonths={2}
-                />
-              </PopoverContent>
-            </Popover>
+            <DateFilter
+              value={filters.dateRange}
+              onChange={(range) => setFilters({ ...filters, dateRange: range || { from: undefined, to: undefined } })}
+            />
 
             {/* More Filters */}
             <Button variant="outline" size="sm" className="h-8 text-xs" onClick={clearFilters}>
@@ -715,6 +799,14 @@ export default function OrdersPage() {
                         >
                           <MessageSquare className="h-3 w-3" />
                         </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteOrder(order)}
+                          className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -788,6 +880,12 @@ export default function OrdersPage() {
                   <SelectItem value="add_notes">Add Notes</SelectItem>
                   <SelectItem value="export_selected">Export Selected</SelectItem>
                   <SelectItem value="mark_priority">Mark Priority</SelectItem>
+                  <SelectItem value="delete_orders" className="text-destructive">
+                    <div className="flex items-center gap-2">
+                      <Trash2 className="h-4 w-4" />
+                      Delete Orders
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -829,7 +927,7 @@ export default function OrdersPage() {
               Cancel
             </Button>
             <Button onClick={handleBulkAction} disabled={!bulkAction}>
-              Apply to {selectedOrders.length} Order{selectedOrders.length !== 1 ? 's' : ''}
+              {bulkAction === "delete_orders" ? "Delete" : "Apply to"} {selectedOrders.length} Order{selectedOrders.length !== 1 ? 's' : ''}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -925,6 +1023,99 @@ export default function OrdersPage() {
               setBulkNotes("");
             }}>
               Add Note
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteConfirmDialog} onOpenChange={setDeleteConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Order</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+              <div>
+                <p className="font-medium text-destructive">Are you sure you want to delete this order?</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Order #{orderToDelete?.orderNumber} will be permanently deleted. This action cannot be undone.
+                </p>
+              </div>
+            </div>
+            {orderToDelete && (
+              <div className="bg-muted/30 rounded-lg p-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium">Order Details:</span>
+                  <Badge className={cn(
+                    "text-xs",
+                    statusColors[orderToDelete.status as keyof typeof statusColors]
+                  )}>
+                    {orderToDelete.status.replace(/_/g, " ")}
+                  </Badge>
+                </div>
+                <div className="text-sm space-y-1">
+                  <p><strong>Customer:</strong> {orderToDelete.user.name || "Guest"}</p>
+                  <p><strong>Amount:</strong> {formatCurrency(orderToDelete.finalAmount)}</p>
+                  <p><strong>Date:</strong> {formatDate(orderToDelete.createdAt)}</p>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirmDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={confirmDeleteOrder}
+              disabled={deleting}
+            >
+              {deleting ? "Deleting..." : "Delete Order"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <Dialog open={bulkDeleteConfirmDialog} onOpenChange={setBulkDeleteConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Multiple Orders</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+              <div>
+                <p className="font-medium text-destructive">Are you sure you want to delete {selectedOrders.length} orders?</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  All selected orders will be permanently deleted. This action cannot be undone.
+                </p>
+              </div>
+            </div>
+            <div className="bg-muted/30 rounded-lg p-3">
+              <p className="font-medium mb-2">Orders to be deleted:</p>
+              <div className="max-h-32 overflow-y-auto space-y-1">
+                {orders.filter(order => selectedOrders.includes(order.id)).map(order => (
+                  <div key={order.id} className="flex justify-between items-center text-sm">
+                    <span>#{order.orderNumber}</span>
+                    <span>{formatCurrency(order.finalAmount)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkDeleteConfirmDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={confirmBulkDelete}
+              disabled={deleting}
+            >
+              {deleting ? "Deleting..." : `Delete ${selectedOrders.length} Orders`}
             </Button>
           </DialogFooter>
         </DialogContent>

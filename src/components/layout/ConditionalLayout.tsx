@@ -12,11 +12,12 @@ interface ConditionalLayoutProps {
 export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   const pathname = usePathname();
   
-  // Check if current route is an admin route
+  // Check if current route is an admin or agent route
   const isAdminRoute = pathname?.startsWith('/admin');
+  const isAgentRoute = pathname?.startsWith('/agent');
   
-  // For admin routes, render children without customer header/footer
-  if (isAdminRoute) {
+  // For admin and agent routes, render children without customer header/footer
+  if (isAdminRoute || isAgentRoute) {
     return <>{children}</>;
   }
   

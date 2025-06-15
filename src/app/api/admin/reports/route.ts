@@ -17,6 +17,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
     const isDelivered = searchParams.get("isDelivered");
+    const dateFrom = searchParams.get("dateFrom");
+    const dateTo = searchParams.get("dateTo");
+    const search = searchParams.get("search");
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
 
@@ -31,6 +34,27 @@ export async function GET(request: NextRequest) {
 
     if (isDelivered !== null) {
       where.isDelivered = isDelivered === "true";
+    }
+
+    // Date range filter
+    if (dateFrom || dateTo) {
+      where.uploadedAt = {};
+      if (dateFrom) {
+        where.uploadedAt.gte = new Date(dateFrom);
+      }
+      if (dateTo) {
+        where.uploadedAt.lte = new Date(dateTo);
+      }
+    }
+
+    // Search filter
+    if (search) {
+      where.OR = [
+        { fileName: { contains: search, mode: "insensitive" } },
+        { order: { orderNumber: { contains: search, mode: "insensitive" } } },
+        { order: { user: { name: { contains: search, mode: "insensitive" } } } },
+        { order: { user: { phone: { contains: search } } } },
+      ];
     }
 
     // Get reports with pagination

@@ -4,13 +4,6 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Calendar, 
-  LogOut,
-  User,
-  Home
-} from "lucide-react";
 import Link from "next/link";
 
 interface AgentLayoutProps {
@@ -28,11 +21,6 @@ export default function AgentLayout({ children }: AgentLayoutProps) {
       return;
     }
   }, [user, loading, router]);
-
-  const handleLogout = async () => {
-    await logout();
-    router.push("/");
-  };
 
   // Show loading while checking authentication
   if (loading) {
@@ -65,56 +53,9 @@ export default function AgentLayout({ children }: AgentLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top Header */}
-      <header className="bg-white shadow-sm border-b h-16 flex items-center justify-between px-6">
-        <div className="flex items-center space-x-4">
-          <Link href="/agent/dashboard" className="flex items-center space-x-3">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-              <Calendar className="h-5 w-5 text-white" />
-            </div>
-            <span className="font-bold text-lg text-foreground">Agent Panel</span>
-          </Link>
-        </div>
-        
-        <div className="flex items-center space-x-4">
-          {/* Agent Info */}
-          <div className="flex items-center space-x-3">
-            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="h-4 w-4 text-primary" />
-            </div>
-            <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">
-                {user?.name || "Agent"}
-              </p>
-              <Badge variant="outline" className="text-xs">
-                Home Visit Agent
-              </Badge>
-            </div>
-          </div>
-          
-          {/* Navigation */}
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/agent/dashboard">
-                <Home className="h-4 w-4 mr-2" />
-                Dashboard
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main>
+    <div className="min-h-screen">
+      {/* Main Content - No Header or Footer */}
+      <main className="h-screen">
         {children}
       </main>
     </div>

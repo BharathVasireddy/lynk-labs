@@ -43,15 +43,14 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        // Add timeline entries for each order
+        // Add status history entries for each order
         const statusUpdatePromises = orderIds.map((orderId: string) =>
-          prisma.timeline.create({
+          prisma.orderStatusHistory.create({
             data: {
               orderId: orderId,
-              action: "Status Updated",
-              description: `Order status changed to ${status}${notes ? `. Note: ${notes}` : ""}`,
-              timestamp: new Date(),
-              actorId: user.id,
+              status: status,
+              notes: notes ? `Bulk status update: ${notes}` : `Bulk status update to ${status}`,
+              createdBy: user.id,
             },
           })
         );
@@ -67,14 +66,14 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        // Add notes to all selected orders
+        // Add notes via status history (since there's no separate notes table)
         const notePromises = orderIds.map((orderId: string) =>
-          prisma.orderNote.create({
+          prisma.orderStatusHistory.create({
             data: {
               orderId: orderId,
-              content: notes,
-              isInternal: true,
-              authorId: user.id,
+              status: "NOTE_ADDED",
+              notes: notes,
+              createdBy: user.id,
             },
           })
         );
@@ -83,26 +82,14 @@ export async function POST(request: NextRequest) {
         break;
 
       case "mark_priority":
-        // Add priority flag to orders (you might need to add a priority field to your schema)
-        await prisma.order.updateMany({
-          where: {
-            id: { in: orderIds },
-          },
-          data: {
-            // priority: true, // Add this field to your schema if needed
-            updatedAt: new Date(),
-          },
-        });
-
-        // Add timeline entries
+        // Add priority status history entries
         const priorityPromises = orderIds.map((orderId: string) =>
-          prisma.timeline.create({
+          prisma.orderStatusHistory.create({
             data: {
               orderId: orderId,
-              action: "Marked Priority",
-              description: "Order marked as priority",
-              timestamp: new Date(),
-              actorId: user.id,
+              status: "PRIORITY_MARKED",
+              notes: "Order marked as priority via bulk action",
+              createdBy: user.id,
             },
           })
         );
@@ -143,6 +130,70 @@ export async function POST(request: NextRequest) {
           success: true,
           orders: ordersForExport,
           message: `Successfully exported ${ordersForExport.length} orders`,
+        });
+
+      case "delete_orders":
+        // Get orders to check their status before deletion
+        const ordersToDelete = await prisma.order.findMany({
+          where: {
+            id: { in: orderIds },
+          },
+          include: {
+            orderItems: true,
+            homeVisit: true,
+            reports: true,
+          },
+        });
+
+        // Check for protected statuses
+        const protectedStatuses = ["PROCESSING", "SAMPLE_COLLECTED"];
+        const protectedOrders = ordersToDelete.filter(order => 
+          protectedStatuses.includes(order.status)
+        );
+
+        if (protectedOrders.length > 0) {
+          return NextResponse.json(
+            { 
+              error: "Cannot delete some orders", 
+              message: `${protectedOrders.length} orders cannot be deleted due to their status. Please cancel them first.`,
+              protectedOrderIds: protectedOrders.map(o => o.id)
+            },
+            { status: 400 }
+          );
+        }
+
+        // Use transaction to delete all orders and their related data
+        await prisma.$transaction(async (tx) => {
+          // Delete order status history for all orders (must be first due to foreign key)
+          await tx.orderStatusHistory.deleteMany({
+            where: { orderId: { in: orderIds } },
+          });
+
+          // Delete reports for all orders
+          await tx.report.deleteMany({
+            where: { orderId: { in: orderIds } },
+          });
+
+          // Delete home visits for all orders
+          await tx.homeVisit.deleteMany({
+            where: { orderId: { in: orderIds } },
+          });
+
+          // Delete order items for all orders
+          await tx.orderItem.deleteMany({
+            where: { orderId: { in: orderIds } },
+          });
+
+          // Delete the orders
+          await tx.order.deleteMany({
+            where: { id: { in: orderIds } },
+          });
+        });
+
+        return NextResponse.json({
+          success: true,
+          message: `Successfully deleted ${orderIds.length} orders`,
+          deletedCount: orderIds.length,
         });
 
       default:

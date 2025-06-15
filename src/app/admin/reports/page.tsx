@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { DateFilter } from "@/components/ui/date-filter";
 
 interface Report {
   id: string;
@@ -59,7 +60,7 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     status: "all",
-    date: "",
+    dateRange: { from: undefined, to: undefined } as { from: Date | undefined; to: Date | undefined },
     search: "",
   });
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
@@ -73,7 +74,8 @@ export default function ReportsPage() {
       setLoading(true);
       const params = new URLSearchParams();
       if (filters.status !== "all") params.append("status", filters.status);
-      if (filters.date) params.append("date", filters.date);
+      if (filters.dateRange.from) params.append("dateFrom", filters.dateRange.from.toISOString());
+      if (filters.dateRange.to) params.append("dateTo", filters.dateRange.to.toISOString());
       if (filters.search) params.append("search", filters.search);
 
       const response = await fetch(`/api/admin/reports?${params}`);
@@ -95,10 +97,13 @@ export default function ReportsPage() {
 
   const fetchOrdersForUpload = async () => {
     try {
-      const response = await fetch("/api/admin/orders?status=SAMPLE_COLLECTED&hasReport=false");
+      // Fetch orders that are eligible for report upload (sample collected or processing)
+      const response = await fetch("/api/admin/orders?status=SAMPLE_COLLECTED,PROCESSING&hasReport=false");
       if (response.ok) {
         const data = await response.json();
         setOrders(data.orders || []);
+      } else {
+        console.error("Failed to fetch orders for upload:", response.status);
       }
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -106,7 +111,10 @@ export default function ReportsPage() {
   };
 
   const handleFileUpload = async () => {
-    if (!selectedOrder || !uploadFile) return;
+    if (!selectedOrder || !uploadFile) {
+      alert("Please select an order and upload a file");
+      return;
+    }
 
     setIsUploading(true);
     try {
@@ -120,16 +128,22 @@ export default function ReportsPage() {
         body: formData,
       });
 
+      const data = await response.json();
+
       if (response.ok) {
+        alert("Report uploaded successfully!");
         fetchReports();
         fetchOrdersForUpload();
         setUploadDialogOpen(false);
         setSelectedOrder("");
         setUploadFile(null);
         setUploadNotes("");
+      } else {
+        alert(`Upload failed: ${data.error || "Unknown error"}`);
       }
     } catch (error) {
       console.error("Error uploading report:", error);
+      alert("Upload failed: Network error or server unavailable");
     } finally {
       setIsUploading(false);
     }
@@ -137,15 +151,32 @@ export default function ReportsPage() {
 
   const handleMarkAsDelivered = async (reportId: string) => {
     try {
+      console.log("🚀 Attempting to mark report as delivered:", reportId);
+      
       const response = await fetch(`/api/admin/reports/${reportId}/deliver`, {
-        method: "PUT",
+        method: "POST",
+        credentials: "include", // Ensure cookies are sent
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
 
+      console.log("📡 Response status:", response.status);
+      console.log("📡 Response headers:", Object.fromEntries(response.headers.entries()));
+
+      const data = await response.json();
+      console.log("📦 Response data:", data);
+
       if (response.ok) {
+        alert("✅ Report marked as delivered successfully!");
         fetchReports();
+      } else {
+        console.error("❌ Delivery failed:", data);
+        alert(`❌ Failed to mark as delivered: ${data.error || "Unknown error"}\n\nStatus: ${response.status}\nDetails: ${JSON.stringify(data, null, 2)}`);
       }
     } catch (error) {
-      console.error("Error marking report as delivered:", error);
+      console.error("💥 Network error marking report as delivered:", error);
+      alert(`💥 Failed to mark as delivered: Network error\n\nError: ${error.message}\n\nPlease check your internet connection and try again.`);
     }
   };
 
@@ -286,18 +317,10 @@ export default function ReportsPage() {
 
             <div className="space-y-2">
               <Label>Date</Label>
-              <Select value={filters.date} onValueChange={(value) => setFilters({ ...filters, date: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All dates" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Dates</SelectItem>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="yesterday">Yesterday</SelectItem>
-                  <SelectItem value="this_week">This Week</SelectItem>
-                  <SelectItem value="last_week">Last Week</SelectItem>
-                </SelectContent>
-              </Select>
+              <DateFilter
+                value={filters.dateRange}
+                onChange={(range) => setFilters({ ...filters, dateRange: range })}
+              />
             </div>
 
             <div className="space-y-2">
