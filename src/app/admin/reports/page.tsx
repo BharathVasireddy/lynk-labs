@@ -443,7 +443,7 @@ export default function ReportsPage() {
 
       {/* Upload Report Dialog */}
       <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="sm:max-w-md w-full">
           <DialogHeader>
             <DialogTitle>Upload Report</DialogTitle>
             <DialogDescription>

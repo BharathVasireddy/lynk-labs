@@ -50,7 +50,7 @@ export function getRazorpayConfig() {
     key: process.env.RAZORPAY_KEY_ID,
     name: "Lynk Labs",
     description: "Diagnostic Test Booking",
-    image: "/images/logo.png",
+    image: "/images/lynk-logo.png",
     theme: {
       color: "#3B82F6",
     },

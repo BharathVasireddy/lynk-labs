@@ -2,22 +2,34 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import bcrypt from "bcryptjs";
 
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
+    console.log("Admin Agents GET - Session:", session?.user);
+    
     if (!session?.user) {
+      console.log("Admin Agents GET - No session found");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check if user is admin
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { role: true },
+      select: { role: true, isActive: true },
     });
+    
+    console.log("Admin Agents GET - User found:", user);
 
     if (!user || user.role !== "ADMIN") {
+      console.log("Admin Agents GET - User is not admin");
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    
+    if (!user.isActive) {
+      console.log("Admin Agents GET - User is not active");
+      return NextResponse.json({ error: "Account disabled" }, { status: 403 });
     }
 
     // Get all home visit agents
@@ -30,13 +42,17 @@ export async function GET() {
         id: true,
         name: true,
         phone: true,
+        email: true,
+        role: true,
         createdAt: true,
-        // Add availability status if needed
       },
       orderBy: {
         name: "asc",
       },
     });
+
+    console.log("Admin Agents GET - Found agents:", agents.length);
+    console.log("Admin Agents GET - Agents:", agents);
 
     return NextResponse.json({
       success: true,
@@ -91,12 +107,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create new agent
+    // Create new agent with a default password
+    const defaultPassword = await bcrypt.hash('agent123', 10); // Default password
+
     const newAgent = await prisma.user.create({
       data: {
         name,
         phone,
         email,
+        password: defaultPassword,
         role: "HOME_VISIT_AGENT",
         isActive: true,
       },
@@ -114,6 +133,10 @@ export async function POST(request: NextRequest) {
       success: true,
       message: "Agent created successfully",
       agent: newAgent,
+      loginInfo: {
+        phone: phone,
+        defaultPassword: "agent123"
+      }
     });
   } catch (error) {
     console.error("Error creating agent:", error);

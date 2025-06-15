@@ -411,7 +411,7 @@ export default function HomeVisitsPage() {
                               <Eye className="h-4 w-4" />
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
+                          <DialogContent className="sm:max-w-2xl w-full">
                             <DialogHeader>
                               <DialogTitle>Home Visit Details</DialogTitle>
                               <DialogDescription>

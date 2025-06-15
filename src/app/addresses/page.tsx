@@ -326,7 +326,7 @@ export default function AddressesPage() {
 
           {/* Add/Edit Address Dialog */}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent className="max-w-md">
+            <DialogContent className="sm:max-w-md w-full">
               <DialogHeader>
                 <DialogTitle>
                   {editingAddress ? "Edit Address" : "Add New Address"}

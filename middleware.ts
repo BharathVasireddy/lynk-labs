@@ -8,11 +8,17 @@ const protectedRoutes = [
   "/orders",
   "/reports",
   "/admin",
+  "/agent",
 ];
 
 // Routes that require admin access
 const adminRoutes = [
   "/admin",
+];
+
+// Routes that require agent access
+const agentRoutes = [
+  "/agent",
 ];
 
 // Routes that should redirect authenticated users away
@@ -48,6 +54,8 @@ export function middleware(request: NextRequest) {
       // Role-based redirect
       if (user.role === "ADMIN") {
         return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+      } else if (user.role === "HOME_VISIT_AGENT") {
+        return NextResponse.redirect(new URL("/agent/dashboard", request.url));
       } else {
         return NextResponse.redirect(new URL("/profile", request.url));
       }
@@ -64,6 +72,19 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
     if (user.role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // Check agent routes
+  if (agentRoutes.some(route => pathname.startsWith(route))) {
+    if (!user) {
+      const loginUrl = new URL("/auth/login", request.url);
+      loginUrl.searchParams.set("returnUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    if (user.role !== "HOME_VISIT_AGENT") {
       return NextResponse.redirect(new URL("/", request.url));
     }
     return NextResponse.next();

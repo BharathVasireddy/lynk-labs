@@ -24,7 +24,8 @@ import {
   ArrowDownRight,
   BarChart3,
   PieChart,
-  RefreshCw
+  RefreshCw,
+  UserPlus
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -249,7 +250,7 @@ export default function AdminDashboard() {
           <CardDescription>Common tasks and shortcuts</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <Button asChild className="h-auto p-4 flex-col">
               <Link href="/admin/tests/new">
                 <TestTube className="h-6 w-6 mb-2" />
@@ -260,6 +261,12 @@ export default function AdminDashboard() {
               <Link href="/admin/packages/new">
                 <Package className="h-6 w-6 mb-2" />
                 <span>Add Package</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="h-auto p-4 flex-col">
+              <Link href="/admin/agents">
+                <UserPlus className="h-6 w-6 mb-2" />
+                <span>Manage Agents</span>
               </Link>
             </Button>
             <Button asChild variant="outline" className="h-auto p-4 flex-col">

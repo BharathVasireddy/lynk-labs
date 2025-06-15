@@ -377,7 +377,7 @@ export default function OrdersPage() {
 
       {/* Order Details Dialog */}
       <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
-        <DialogContent className="max-w-2xl">
+                  <DialogContent className="sm:max-w-2xl w-full">
           <DialogHeader>
             <DialogTitle>Order Details</DialogTitle>
           </DialogHeader>

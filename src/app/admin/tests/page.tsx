@@ -413,7 +413,7 @@ export default function AdminTestsPage() {
 
       {/* Test Details Dialog */}
       <Dialog open={showTestDialog} onOpenChange={setShowTestDialog}>
-        <DialogContent className="max-w-2xl">
+                  <DialogContent className="sm:max-w-2xl w-full">
           <DialogHeader>
             <DialogTitle>Test Details</DialogTitle>
           </DialogHeader>

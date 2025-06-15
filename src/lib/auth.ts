@@ -12,30 +12,61 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
+        email: { label: "Email or Phone", type: "text" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        console.log('🔐 Auth attempt with:', credentials?.email);
+        
         if (!credentials?.email || !credentials?.password) {
+          console.log('❌ Missing credentials');
           return null
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email
-          }
-        })
+        // Check if it's an email or phone number
+        const isEmail = credentials.email.includes('@');
+        const isPhone = credentials.email.startsWith('+');
+        
+        console.log('📧 Is email:', isEmail, 'Is phone:', isPhone);
+
+        let user;
+        if (isEmail) {
+          user = await prisma.user.findUnique({
+            where: { email: credentials.email }
+          });
+        } else if (isPhone) {
+          user = await prisma.user.findUnique({
+            where: { phone: credentials.email }
+          });
+        } else {
+          // Try both email and phone
+          user = await prisma.user.findFirst({
+            where: {
+              OR: [
+                { email: credentials.email },
+                { phone: credentials.email }
+              ]
+            }
+          });
+        }
+
+        console.log('👤 User found:', user ? `${user.name} (${user.phone})` : 'None');
 
         if (!user || !user.password) {
+          console.log('❌ No user or no password');
           return null
         }
 
         // Verify password
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
         
+        console.log('🔑 Password valid:', isPasswordValid);
+        
         if (!isPasswordValid) {
           return null
         }
+        
+        console.log('✅ Login successful for:', user.name);
         
         return {
           id: user.id,

@@ -409,7 +409,7 @@ export default function AdminPackagesPage() {
 
       {/* Package Details Dialog */}
       <Dialog open={showPackageDialog} onOpenChange={setShowPackageDialog}>
-        <DialogContent className="max-w-4xl">
+                  <DialogContent className="sm:max-w-4xl w-full">
           <DialogHeader>
             <DialogTitle>Package Details</DialogTitle>
           </DialogHeader>

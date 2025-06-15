@@ -7,11 +7,11 @@ const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, name } = await request.json();
+    const { email, phone, password, name } = await request.json();
 
-    if (!email || !password || !name) {
+    if (!email || !phone || !password || !name) {
       return NextResponse.json(
-        { error: "Email, password, and name are required" },
+        { error: "Email, phone, password, and name are required" },
         { status: 400 }
       );
     }
@@ -23,14 +23,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
+    // Check if user already exists by email
+    const existingUserByEmail = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
     });
 
-    if (existingUser) {
+    if (existingUserByEmail) {
       return NextResponse.json(
         { error: "An account with this email already exists" },
+        { status: 409 }
+      );
+    }
+
+    // Check if user already exists by phone
+    const existingUserByPhone = await prisma.user.findUnique({
+      where: { phone: phone.trim() },
+    });
+
+    if (existingUserByPhone) {
+      return NextResponse.json(
+        { error: "An account with this phone number already exists" },
         { status: 409 }
       );
     }
@@ -43,6 +55,7 @@ export async function POST(request: NextRequest) {
       data: {
         name: name.trim(),
         email: email.toLowerCase(),
+        phone: phone.trim(),
         password: hashedPassword,
         role: "CUSTOMER",
         isActive: true,

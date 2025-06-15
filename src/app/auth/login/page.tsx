@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/auth-context";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -68,6 +69,11 @@ function LoginForm() {
       return;
     }
 
+    if (isSignUp && !phone.trim()) {
+      setError("Please enter your phone number");
+      return;
+    }
+
     if (isSignUp && password !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -89,6 +95,7 @@ function LoginForm() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: email.trim(),
+            phone: phone.trim(),
             password: password,
             name: fullName.trim(),
           }),
@@ -191,19 +198,89 @@ function LoginForm() {
                 </div>
               )}
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Email Address</label>
-                <Input
-                  type="email"
-                  placeholder="Enter your email address"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setError("");
-                  }}
-                  disabled={loading}
-                />
-              </div>
+              {/* Login: Single field for Email or Phone */}
+              {!isSignUp && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Email or Phone</label>
+                  <Input
+                    type="text"
+                    placeholder="Enter your email or phone number"
+                    value={email}
+                    onChange={(e) => {
+                      let value = e.target.value;
+                      
+                      // Check if user is entering a phone number (only digits)
+                      const digitsOnly = value.replace(/\D/g, '');
+                      const isPhoneNumber = /^\d+$/.test(value.replace(/[\s\-\(\)]/g, '')) && !value.includes('@');
+                      
+                      // If it's a phone number and doesn't start with +91, add it
+                      if (isPhoneNumber && digitsOnly.length > 0) {
+                        if (!value.startsWith('+91') && !value.startsWith('91')) {
+                          if (digitsOnly.length <= 10) {
+                            value = '+91' + digitsOnly;
+                          }
+                        } else if (value.startsWith('91') && !value.startsWith('+91')) {
+                          value = '+' + value;
+                        }
+                      }
+                      
+                      setEmail(value);
+                      setError("");
+                    }}
+                    disabled={loading}
+                  />
+                </div>
+              )}
+
+              {/* Registration: Separate fields for Email and Phone */}
+              {isSignUp && (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Email Address</label>
+                    <Input
+                      type="email"
+                      placeholder="Enter your email address"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setError("");
+                      }}
+                      disabled={loading}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Phone Number</label>
+                    <Input
+                      type="tel"
+                      placeholder="Enter your phone number"
+                      value={phone}
+                      onChange={(e) => {
+                        let value = e.target.value;
+                        
+                        // Check if user is entering a phone number (only digits)
+                        const digitsOnly = value.replace(/\D/g, '');
+                        const isPhoneNumber = /^\d+$/.test(value.replace(/[\s\-\(\)]/g, ''));
+                        
+                        // If it's a phone number and doesn't start with +91, add it
+                        if (isPhoneNumber && digitsOnly.length > 0) {
+                          if (!value.startsWith('+91') && !value.startsWith('91')) {
+                            if (digitsOnly.length <= 10) {
+                              value = '+91' + digitsOnly;
+                            }
+                          } else if (value.startsWith('91') && !value.startsWith('+91')) {
+                            value = '+' + value;
+                          }
+                        }
+                        
+                        setPhone(value);
+                        setError("");
+                      }}
+                      disabled={loading}
+                    />
+                  </div>
+                </>
+              )}
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Password</label>
@@ -273,6 +350,8 @@ function LoginForm() {
                     setPassword("");
                     setConfirmPassword("");
                     setFullName("");
+                    setPhone("");
+                    setEmail("");
                   }}
                   className="text-sm text-blue-600 hover:text-blue-800 underline"
                   disabled={loading}

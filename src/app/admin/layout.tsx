@@ -17,7 +17,8 @@ import {
   Bell,
   Search,
   BarChart3,
-  Heart
+  Heart,
+  UserPlus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +55,11 @@ const sidebarItems = [
     title: "Users",
     href: "/admin/users",
     icon: Users,
+  },
+  {
+    title: "Agents",
+    href: "/admin/agents",
+    icon: UserPlus,
   },
   {
     title: "Home Visits",
@@ -138,7 +144,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <Link href="/admin" className="flex items-center space-x-3">
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
                 <Image 
-                  src="/images/logo.png"
+                  src="/images/lynk-logo.png"
                   alt="Lynk Labs"
                   width={32}
                   height={32}
