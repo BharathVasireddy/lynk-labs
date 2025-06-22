@@ -66,10 +66,10 @@ function TestsPageContent() {
   const [hasMore, setHasMore] = useState(false);
   const [totalTests, setTotalTests] = useState(0);
 
-  // Fetch categories
+  // Fetch categories using fast API
   const fetchCategories = async () => {
     try {
-      const response = await fetch("/api/categories?includeTestCount=true");
+      const response = await fetch("/api/fast/categories");
       if (response.ok) {
         const data = await response.json();
         setCategories(data.categories || []);
@@ -80,7 +80,7 @@ function TestsPageContent() {
     }
   };
 
-  // Fetch tests with load more functionality
+  // Fetch tests with optimized API
   const fetchTests = async (page: number = 1, append: boolean = false) => {
     if (append) {
       setLoadingMore(true);
@@ -93,10 +93,13 @@ function TestsPageContent() {
         page: page.toString(),
         limit: "12",
         ...(searchQuery && { search: searchQuery }),
-        ...(selectedCategory && selectedCategory !== "all" && { category: selectedCategory }),
+        ...(selectedCategory && selectedCategory !== "all" && { categoryId: selectedCategory }),
       });
 
-      const response = await fetch(`/api/tests?${params}`);
+      // Use ultra-fast API for first page, regular API for pagination
+      const endpoint = page === 1 && !append ? "/api/ultra-fast/tests" : "/api/tests";
+      const response = await fetch(`${endpoint}?${params}`);
+      
       if (response.ok) {
         const data: TestsResponse = await response.json();
         
@@ -106,8 +109,8 @@ function TestsPageContent() {
           setTests(data.tests);
         }
         
-        setHasMore(data.pagination.hasMore);
-        setTotalTests(data.pagination.total);
+        setHasMore(data.pagination?.hasMore || false);
+        setTotalTests(data.pagination?.total || data.tests.length);
         setCurrentPage(page);
       }
     } catch (error) {

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Search, ShoppingBag, UserCircle, Menu, X, LogOut } from "lucide-react";
+import { Search, ShoppingBag, UserCircle, Menu, X, LogOut, TestTube, Package, FileText, User, MapPin, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -31,11 +31,33 @@ export function Header() {
     setMounted(true);
   }, []);
 
+  // Close mobile menu on Escape key and prevent body scroll
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isMenuOpen) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMenuOpen]);
+
   const cartItemsCount = mounted ? getTotalItems() : 0;
 
   const navigationItems = [
-    { name: "Tests", href: "/tests" },
-    { name: "Health Packages", href: "/packages" },
+    { name: "Tests", href: "/tests", icon: TestTube },
+    { name: "Health Packages", href: "/packages", icon: Package },
+    { name: "Health Blog", href: "/blog", icon: FileText },
   ];
 
   const handleLogout = async () => {
@@ -87,7 +109,7 @@ export function Header() {
             </div>
           </Link>
 
-          {/* Center Search Bar - Desktop */}
+          {/* Desktop Search */}
           <div className="hidden md:flex items-center flex-1 max-w-xl lg:max-w-2xl mx-4 lg:mx-8">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 lg:h-5 lg:w-5" />
@@ -181,101 +203,151 @@ export function Header() {
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="lg:hidden border-t bg-background/98 backdrop-blur-sm">
+      {/* Mobile Menu Backdrop */}
+      {isMenuOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 z-30"
+          onClick={() => setIsMenuOpen(false)}
+        />
+      )}
+
+      {/* Enhanced Mobile Menu */}
+      {isMenuOpen && (
+        <div className="lg:hidden fixed inset-x-0 top-[64px] sm:top-[72px] z-40 bg-background border-t border-border shadow-2xl transition-all duration-300 ease-out animate-fadeInUp">
+          <div className="max-h-[calc(100vh-64px)] sm:max-h-[calc(100vh-72px)] overflow-y-auto">
             {/* Mobile Search */}
-            <div className="p-3 sm:p-4 md:hidden border-b border-border/40">
+            <div className="p-4 md:hidden border-b border-border bg-muted/30">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 sm:h-5 sm:w-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   type="search"
                   placeholder="Search tests, packages..."
                   value={searchQuery}
                   onChange={handleSearchChange}
                   onKeyDown={handleSearchKeyDown}
-                  className="medical-input pl-10 sm:pl-12 pr-4 h-10 sm:h-11 w-full text-sm sm:text-base rounded-lg sm:rounded-xl bg-muted/30"
+                  className="medical-input pl-10 pr-4 h-11 w-full rounded-xl bg-background border-border focus:bg-background focus:border-primary"
                 />
               </div>
             </div>
 
             {/* Mobile Navigation */}
-            <nav className="p-3 sm:p-4 space-y-1">
-              {navigationItems.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base font-medium text-foreground hover:text-primary hover:bg-primary/5 rounded-lg sm:rounded-xl transition-all duration-200"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              ))}
+            <nav className="p-4 space-y-2">
+              {navigationItems.map((item, index) => {
+                const IconComponent = item.icon;
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`flex items-center justify-between px-4 py-4 text-base font-medium text-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-200 group border border-transparent hover:border-primary/10 ${isMenuOpen ? 'animate-fadeInUp' : ''}`}
+                    onClick={() => setIsMenuOpen(false)}
+                    style={{ 
+                      animationDelay: isMenuOpen ? `${index * 100}ms` : '0ms'
+                    }}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                        <IconComponent className="h-5 w-5 text-primary" />
+                      </div>
+                      <span>{item.name}</span>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </Link>
+                );
+              })}
             </nav>
 
             {/* Mobile Auth Button */}
             {!loading && !user && (
-              <div className="p-3 sm:p-4 border-t border-border/40 sm:hidden">
-                <Button className="w-full medical-button-primary h-10 sm:h-11 rounded-lg sm:rounded-xl font-medium text-sm sm:text-base" asChild>
-                  <Link href="/auth/login">Login</Link>
+              <div className="p-4 border-t border-border bg-muted/20">
+                <Button className="w-full medical-button-primary h-12 rounded-xl font-medium text-base shadow-md" asChild>
+                  <Link href="/auth/login">Sign In</Link>
                 </Button>
               </div>
             )}
 
-            {/* Mobile User Menu */}
+            {/* Enhanced Mobile User Menu */}
             {!loading && user && (
-              <div className="border-t border-border/40">
+              <div className="border-t border-border bg-muted/20">
                 <div className="p-4">
-                  <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-xl mb-3">
-                    <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
+                  {/* User Profile Card */}
+                  <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-primary/20 to-primary/10 rounded-xl mb-4 border border-primary/20 shadow-sm">
+                    <div className="h-12 w-12 bg-primary/20 rounded-full flex items-center justify-center ring-2 ring-primary/20">
                       <UserCircle className="h-7 w-7 text-primary" />
                     </div>
-                    <div>
-                      <p className="font-medium text-sm">{user.name || `User ${user.phone?.slice(-4) || user.email?.split('@')[0] || 'Account'}`}</p>
-                      <p className="text-xs text-muted-foreground">{user.phone || user.email}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm truncate">{user.name || `User ${user.phone?.slice(-4) || user.email?.split('@')[0] || 'Account'}`}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user.phone || user.email}</p>
                     </div>
                   </div>
                   
-                  <div className="space-y-1">
+                  {/* User Menu Items */}
+                  <div className="space-y-2">
                     <Link
                       href="/profile"
-                      className="flex items-center px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-200"
+                      className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-200 group border border-transparent hover:border-primary/10"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      Profile
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                          <User className="h-4 w-4 text-primary" />
+                        </div>
+                        <span>Profile</span>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </Link>
                     <Link
                       href="/orders"
-                      className="flex items-center px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-200"
+                      className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-200 group border border-transparent hover:border-primary/10"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      My Orders
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                          <Package className="h-4 w-4 text-primary" />
+                        </div>
+                        <span>My Orders</span>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </Link>
                     <Link
                       href="/addresses"
-                      className="flex items-center px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-200"
+                      className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-200 group border border-transparent hover:border-primary/10"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      My Addresses
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                          <MapPin className="h-4 w-4 text-primary" />
+                        </div>
+                        <span>My Addresses</span>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </Link>
-                    <button
-                      onClick={() => {
-                        handleLogout();
-                        setIsMenuOpen(false);
-                      }}
-                      className="flex items-center w-full px-4 py-3 text-base font-medium text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200"
-                    >
-                      <LogOut className="h-6 w-6 mr-3" />
-                      Sign Out
-                    </button>
+                    
+                    {/* Logout Button */}
+                    <div className="pt-2 mt-2 border-t border-border">
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setIsMenuOpen(false);
+                        }}
+                        className="flex items-center justify-between w-full px-4 py-3 text-base font-medium text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 group border border-transparent hover:border-red-200"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="p-2 bg-red-100 rounded-lg group-hover:bg-red-200 transition-colors">
+                            <LogOut className="h-4 w-4 text-red-600" />
+                          </div>
+                          <span>Sign Out</span>
+                        </div>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </header>
   );
-} 
+}

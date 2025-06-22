@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import Head from "next/head";
 import { ArrowRight, Shield, Clock, Home, Users, Star, CheckCircle, ShoppingCart, Plus, Minus, Phone, Mail, MapPin, Award, Microscope, Heart, Activity, FileText, Calendar, Headphones, TrendingUp, Globe, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BookTestButton } from "@/components/ui/book-test-button";
@@ -205,6 +206,27 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col">
+      <Head>
+        <title>Lynk Labs - Home Page</title>
+        <meta name="description" content="Lynk Labs is a leading provider of diagnostic services. Book lab tests online with home sample collection, get fast accurate results, and take control of your health journey with Lynk Labs." />
+        <meta name="keywords" content="Lynk Labs, lab tests, home sample collection, fast accurate results, health journey, NABL accredited lab, ISO 15189 standards, expert care, pathologists, healthcare professionals, blood tests, diabetes panel, thyroid function test, comprehensive health checkup packages, health packages, healthcare services, Hyderabad, India" />
+        <meta name="author" content="Lynk Labs" />
+        <meta name="robots" content="index, follow" />
+        <meta name="google-site-verification" content="your-google-site-verification-code" />
+        <meta name="bing-site-verification" content="your-bing-site-verification-code" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@lynklabs" />
+        <meta name="twitter:creator" content="@lynklabs" />
+        <meta name="twitter:title" content="Lynk Labs - Home Page" />
+        <meta name="twitter:description" content="Lynk Labs is a leading provider of diagnostic services. Book lab tests online with home sample collection, get fast accurate results, and take control of your health journey with Lynk Labs." />
+        <meta name="twitter:image" content="https://www.lynklabs.com/twitter-card.jpg" />
+        <meta name="og:title" content="Lynk Labs - Home Page" />
+        <meta name="og:description" content="Lynk Labs is a leading provider of diagnostic services. Book lab tests online with home sample collection, get fast accurate results, and take control of your health journey with Lynk Labs." />
+        <meta name="og:image" content="https://www.lynklabs.com/og-image.jpg" />
+        <meta name="og:url" content="https://www.lynklabs.com" />
+        <meta name="og:site_name" content="Lynk Labs" />
+        <meta name="og:type" content="website" />
+      </Head>
       {/* Hero Section */}
       <section className="relative medical-background py-20 lg:py-32 overflow-hidden">
         <div className="container-padding relative">
@@ -701,7 +723,7 @@ export default function HomePage() {
                 <h3 className="text-xl font-semibold">Email Us</h3>
               </div>
               <p className="opacity-90 mb-2">Get Quick Response</p>
-              <p className="text-lg font-semibold">support@lynklabs.com</p>
+              <p className="text-lg font-semibold">support@lynklabs.in</p>
             </div>
             
             <div className="text-center md:text-left">

@@ -292,3 +292,12 @@ model Notification {
 
   @@map("notifications")
 }
+
+model SystemLock {
+  id        String   @id @default(cuid())
+  lockKey   String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("system_locks")
+}

@@ -9,10 +9,11 @@ const nextConfig = {
   images: {
     domains: [
       'localhost',
-      'lynklabs.com',
-      'www.lynklabs.com',
+      'lynklabs.in',
+      'www.lynklabs.in',
       's3.amazonaws.com',
       'lynklabs-uploads.s3.amazonaws.com',
+      'images.unsplash.com',
     ],
     formats: ['image/webp', 'image/avif'],
   },

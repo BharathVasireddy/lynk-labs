@@ -25,10 +25,12 @@ export function CartSidebar() {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    // Ensure cart is closed on mount to prevent hydration flash
+    closeCart();
+  }, [closeCart]);
 
   useEffect(() => {
-    if (isOpen) {
+    if (mounted && isOpen) {
       setShouldRender(true);
       // Small delay to ensure the element is rendered before animation starts
       setTimeout(() => setIsAnimating(true), 10);
@@ -37,19 +39,20 @@ export function CartSidebar() {
       // Wait for animation to complete before hiding
       setTimeout(() => setShouldRender(false), 300);
     }
-  }, [isOpen]);
+  }, [isOpen, mounted]);
 
   if (!mounted) {
     return null;
   }
 
-  const totalItems = getTotalItems();
-  const totalPrice = getTotalPrice();
+  // Prevent flash during hydration by ensuring mounted state
+  const totalItems = mounted ? getTotalItems() : 0;
+  const totalPrice = mounted ? getTotalPrice() : 0;
 
   return (
     <>
       {/* Overlay */}
-      {shouldRender && (
+      {mounted && shouldRender && (
         <div
           className="fixed inset-0 bg-black/50 z-40 cart-overlay"
           onClick={closeCart}
@@ -61,7 +64,7 @@ export function CartSidebar() {
       )}
 
       {/* Sidebar */}
-      {shouldRender && (
+      {mounted && shouldRender && (
         <div 
           className="fixed top-0 right-0 h-full w-full max-w-md bg-background border-l shadow-lg z-50 cart-sidebar"
           style={{

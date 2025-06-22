@@ -2,14 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { safeOperation } from "@/lib/data-protection";
 import { z } from "zod";
 import crypto from "crypto";
 
 const verifyPaymentSchema = z.object({
   orderId: z.string().min(1, "Order ID is required"),
-  razorpayPaymentId: z.string().min(1, "Razorpay payment ID is required"),
-  razorpayOrderId: z.string().min(1, "Razorpay order ID is required"),
-  razorpaySignature: z.string().min(1, "Razorpay signature is required"),
+  razorpay_payment_id: z.string().min(1, "Razorpay payment ID is required"),
+  razorpay_order_id: z.string().min(1, "Razorpay order ID is required"),
+  razorpay_signature: z.string().min(1, "Razorpay signature is required"),
 });
 
 export async function POST(request: NextRequest) {
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = verifyPaymentSchema.parse(body);
 
-    // Get the order
+    // Get the order first
     const order = await prisma.order.findUnique({
       where: { id: validatedData.orderId },
       include: {
@@ -51,6 +52,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if order is in correct status
+    if (order.status !== "PENDING") {
+      return NextResponse.json(
+        { error: "Order is not in pending status" },
+        { status: 400 }
+      );
+    }
+
     // Verify Razorpay signature
     const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
     if (!razorpayKeySecret) {
@@ -61,21 +70,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body_string = validatedData.razorpayOrderId + "|" + validatedData.razorpayPaymentId;
+    const body_string = validatedData.razorpay_order_id + "|" + validatedData.razorpay_payment_id;
     const expectedSignature = crypto
       .createHmac("sha256", razorpayKeySecret)
       .update(body_string)
       .digest("hex");
 
-    const isSignatureValid = expectedSignature === validatedData.razorpaySignature;
+    const isSignatureValid = expectedSignature === validatedData.razorpay_signature;
 
     if (!isSignatureValid) {
       // Log failed verification attempt
       console.error("Payment signature verification failed", {
         orderId: validatedData.orderId,
-        razorpayPaymentId: validatedData.razorpayPaymentId,
+        razorpayPaymentId: validatedData.razorpay_payment_id,
         expectedSignature,
-        receivedSignature: validatedData.razorpaySignature,
+        receivedSignature: validatedData.razorpay_signature,
       });
 
       return NextResponse.json(
@@ -84,54 +93,59 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update order with payment information
-    const updatedOrder = await prisma.$transaction(async (tx) => {
-      // Update order status and payment info
-      const updated = await tx.order.update({
-        where: { id: validatedData.orderId },
-        data: {
-          status: "CONFIRMED",
-          paymentId: validatedData.razorpayPaymentId,
-          paymentMethod: "razorpay",
-          updatedAt: new Date(),
-        },
-        include: {
-          user: {
-            select: {
-              name: true,
-              phone: true,
+    // Update order with payment information using safe operation
+    const updatedOrder = await safeOperation(
+      `payment_verify:${validatedData.orderId}`,
+      async () => {
+        return await prisma.$transaction(async (tx) => {
+          // Update order status and payment info
+          const updated = await tx.order.update({
+            where: { id: validatedData.orderId },
+            data: {
+              status: "CONFIRMED",
+              paymentId: validatedData.razorpay_payment_id,
+              paymentMethod: "razorpay",
+              updatedAt: new Date(),
             },
-          },
-          orderItems: {
             include: {
-              test: {
+              user: {
                 select: {
                   name: true,
+                  phone: true,
+                },
+              },
+              orderItems: {
+                include: {
+                  test: {
+                    select: {
+                      name: true,
+                    },
+                  },
+                },
+              },
+              homeVisit: {
+                select: {
+                  scheduledDate: true,
+                  scheduledTime: true,
                 },
               },
             },
-          },
-          homeVisit: {
-            select: {
-              scheduledDate: true,
-              scheduledTime: true,
+          });
+
+          // Add to order status history
+          await tx.orderStatusHistory.create({
+            data: {
+              orderId: validatedData.orderId,
+              status: "CONFIRMED",
+              notes: `Payment verified successfully. Payment ID: ${validatedData.razorpay_payment_id}`,
+              createdBy: session.user.id,
             },
-          },
-        },
-      });
+          });
 
-      // Add to order status history
-      await tx.orderStatusHistory.create({
-        data: {
-          orderId: validatedData.orderId,
-          status: "CONFIRMED",
-          notes: "Payment verified successfully",
-          createdBy: session.user.id,
-        },
-      });
-
-      return updated;
-    });
+          return updated;
+        });
+      }
+    );
 
     // TODO: Send confirmation notifications
     // - Send SMS/WhatsApp to customer
@@ -158,7 +172,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.error("Error verifying payment:", error);
+    console.error("Error verifying payment:", {
+      error: error.message,
+      stack: error.stack,
+      orderId: request.body?.orderId || 'unknown',
+      timestamp: new Date().toISOString()
+    });
+    
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

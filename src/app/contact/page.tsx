@@ -19,7 +19,7 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-medium text-gray-900">Customer Support</h3>
                   <p className="text-gray-600">+91 99999 99999</p>
-                  <p className="text-gray-600">support@lynklabs.com</p>
+                  <p className="text-gray-600">support@lynklabs.in</p>
                 </div>
                 
                 <div>

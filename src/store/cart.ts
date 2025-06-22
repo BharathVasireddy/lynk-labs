@@ -103,6 +103,10 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: 'lynk-labs-cart',
+      partialize: (state) => ({ 
+        items: state.items 
+        // Exclude isOpen from persistence to prevent hydration flash
+      }),
     }
   )
 ); 

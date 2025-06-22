@@ -14,7 +14,7 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
     console.log('📧 Email would be sent:', {
       to: options.to,
       subject: options.subject,
-      from: options.from || 'noreply@lynklabs.com',
+      from: options.from || 'noreply@lynklabs.in',
       html: options.html
     });
 

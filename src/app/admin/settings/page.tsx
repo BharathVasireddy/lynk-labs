@@ -40,7 +40,7 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<SystemSettings>({
     siteName: "Lynk Labs",
     siteDescription: "Professional lab testing services with home sample collection",
-    contactEmail: "support@lynklabs.com",
+    contactEmail: "support@lynklabs.in",
     contactPhone: "+91 1800-123-4567",
     businessHours: {
       start: "09:00",

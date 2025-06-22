@@ -83,7 +83,7 @@ export default function TermsPage() {
                 For questions about these Terms of Service, contact us at:
               </p>
               <div className="bg-gray-50 p-4 rounded-lg mt-4">
-                <p className="text-gray-700">Email: legal@lynklabs.com</p>
+                <p className="text-gray-700">Email: legal@lynklabs.in</p>
                 <p className="text-gray-700">Phone: +91 99999 99999</p>
               </div>
             </section>

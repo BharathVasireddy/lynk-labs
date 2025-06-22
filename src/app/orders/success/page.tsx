@@ -299,7 +299,7 @@ function OrderSuccessContent() {
                   <Mail className="h-4 w-4 text-gray-400" />
                   <div>
                     <p className="text-sm font-medium">Email Us</p>
-                    <p className="text-sm text-gray-600">support@lynklabs.com</p>
+                    <p className="text-sm text-gray-600">support@lynklabs.in</p>
                   </div>
                 </div>
               </CardContent>

@@ -37,6 +37,8 @@ export default function CheckoutPage() {
   const { items, getTotalPrice, clearCart } = useCartStore();
   const { user, loading } = useAuth() || { user: null, loading: true };
   
+  // Removed debug logging
+  
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
@@ -70,11 +72,7 @@ export default function CheckoutPage() {
     }
   }, [user, loading, router]);
 
-  useEffect(() => {
-    if (items.length === 0 && !orderPlaced) {
-      router.push("/tests");
-    }
-  }, [items, router, orderPlaced]);
+  // Removed automatic redirect to /tests - now showing empty cart message instead
 
   useEffect(() => {
     if (user) {
@@ -211,7 +209,9 @@ export default function CheckoutPage() {
       scheduledDate: date,
       scheduledTime: time,
       paymentMethod: method,
-      totalAmount: finalAmount
+      totalAmount: totalAmount,
+      discountAmount: discount,
+      finalAmount: finalAmount
     };
 
     const response = await fetch("/api/orders", {
@@ -397,8 +397,20 @@ export default function CheckoutPage() {
     return null;
   }
 
+  // Show a message if cart is empty instead of blank page
   if (items.length === 0 && !orderPlaced) {
-    return null;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🛒</div>
+          <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
+          <p className="text-muted-foreground mb-4">Add some tests to your cart to proceed with checkout</p>
+          <Button asChild>
+            <Link href="/tests">Browse Tests</Link>
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (

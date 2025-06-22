@@ -80,7 +80,7 @@ export default function PrivacyPage() {
                 If you have any questions about this Privacy Policy, please contact us at:
               </p>
               <div className="bg-gray-50 p-4 rounded-lg mt-4">
-                <p className="text-gray-700">Email: privacy@lynklabs.com</p>
+                <p className="text-gray-700">Email: privacy@lynklabs.in</p>
                 <p className="text-gray-700">Phone: +91 99999 99999</p>
                 <p className="text-gray-700">Address: Lynk Labs Privacy Team</p>
               </div>

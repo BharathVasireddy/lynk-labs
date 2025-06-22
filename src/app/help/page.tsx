@@ -40,7 +40,7 @@ export default function HelpPage() {
                 </p>
                 <p className="text-green-800">
                   <strong>Email Support:</strong><br />
-                  support@lynklabs.com
+                                      support@lynklabs.in
                 </p>
                 <p className="text-green-800">
                   <strong>WhatsApp:</strong><br />

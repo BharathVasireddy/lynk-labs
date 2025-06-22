@@ -16,7 +16,8 @@ import {
   X,
   BarChart3,
   Heart,
-  UserPlus
+  UserPlus,
+  PenTool
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -67,6 +68,11 @@ const sidebarItems = [
     title: "Reports",
     href: "/admin/reports",
     icon: FileText,
+  },
+  {
+    title: "Blog Studio",
+    href: "/admin/blog-studio",
+    icon: PenTool,
   },
   {
     title: "Analytics",

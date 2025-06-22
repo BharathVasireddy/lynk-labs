@@ -1,0 +1,26 @@
+
+> lynk-labs@1.0.0 dev
+> next dev
+
+ ⚠ Port 3000 is in use, trying 3001 instead.
+  ▲ Next.js 14.2.29
+  - Local:        http://localhost:3001
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1721ms
+ ⚠ Found a change in next.config.js. Restarting the server to apply the changes...
+  ▲ Next.js 14.2.29
+  - Local:        http://localhost:3000
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 2.1s
+ ✓ Compiled /api/tests in 465ms (112 modules)
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."tests"."id" FROM "public"."tests" WHERE "public"."tests"."isActive" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT "public"."tests"."id", "public"."tests"."name", "public"."tests"."slug", "public"."tests"."description", "public"."tests"."price", "public"."tests"."discountPrice", "public"."tests"."preparationInstructions", "public"."tests"."reportTime", "public"."tests"."isActive", "public"."tests"."categoryId" FROM "public"."tests" WHERE "public"."tests"."isActive" = $1 ORDER BY "public"."tests"."name" ASC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."categories"."id", "public"."categories"."name", "public"."categories"."slug" FROM "public"."categories" WHERE "public"."categories"."id" IN ($1,$2,$3,$4,$5,$6,$7,$8,$9) OFFSET $10
+ HEAD /api/tests 200 in 2150ms
+ HEAD /api/tests 200 in 119ms
+ ✓ Compiled in 99ms (112 modules)
+[?25h

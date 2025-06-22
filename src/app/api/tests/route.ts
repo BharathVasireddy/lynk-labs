@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
+import { checkRateLimit } from "@/lib/rate-limit"
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 // Cache for frequently accessed data
 const cache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutes (faster cache refresh)
 
 function getCacheKey(params: Record<string, any>): string {
   return JSON.stringify(params);
@@ -135,7 +136,12 @@ export async function GET(request: NextRequest) {
     // Cache the result
     setCache(cacheKey, result);
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=60',
+        'Content-Type': 'application/json',
+      }
+    });
     
   } catch (error) {
     console.error("Error fetching tests:", error)

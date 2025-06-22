@@ -2,19 +2,27 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { verifyAuth } from "@/lib/auth-utils";
+import { createOrderSafely, verifyOrderIntegrity } from '@/lib/data-protection';
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const createOrderSchema = z.object({
   items: z.array(z.object({
-    testId: z.string(),
-    quantity: z.number().min(1),
+    testId: z.string().optional(),
+    packageId: z.string().optional(),
+    quantity: z.number().min(1).default(1),
     price: z.number().min(0),
-  })),
-  addressId: z.string(),
-  scheduledDate: z.string(),
-  scheduledTime: z.string(),
-  couponCode: z.string().nullable().optional(),
-  paymentMethod: z.enum(["razorpay", "cod"]),
-  totalAmount: z.number().min(0).optional(),
+  })).min(1, "At least one item is required").refine(
+    items => items.every(item => item.testId || item.packageId),
+    "Each item must have either testId or packageId"
+  ),
+  addressId: z.string().min(1, "Address is required"),
+  scheduledDate: z.string().min(1, "Scheduled date is required"),
+  scheduledTime: z.string().min(1, "Scheduled time is required"),
+  couponCode: z.string().optional().nullable(),
+  paymentMethod: z.enum(["razorpay", "cod"]).default("razorpay"),
+  totalAmount: z.number().min(0),
+  discountAmount: z.number().min(0).default(0),
+  finalAmount: z.number().min(0),
 });
 
 // Generate unique order number
@@ -67,6 +75,13 @@ export async function GET(request: NextRequest) {
                   },
                 },
               },
+              package: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
+              },
             },
           },
           homeVisit: true,
@@ -100,171 +115,185 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/orders - Create new order
-export async function POST(request: NextRequest) {
+// POST /api/orders - Create new order with enhanced protection
+export async function POST(request: Request) {
   try {
-    console.log("📋 Order creation started");
-    
+    // Verify authentication
     const user = await verifyAuth(request);
     if (!user) {
-      console.log("❌ User not authenticated");
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    console.log(`👤 User authenticated: ${user.name} (${user.phone})`);
-
+    // Parse and validate request body
     const body = await request.json();
-    console.log("📦 Request body:", JSON.stringify(body, null, 2));
-    
     const validatedData = createOrderSchema.parse(body);
-    console.log("✅ Data validation passed");
+
+    // Validate that each item has either testId or packageId
+    for (const item of validatedData.items) {
+      if (!item.testId && !item.packageId) {
+        return NextResponse.json(
+          { error: "Each item must have either testId or packageId" },
+          { status: 400 }
+        );
+      }
+    }
 
     // Verify address belongs to user
     const address = await prisma.address.findFirst({
       where: {
         id: validatedData.addressId,
-        userId: user.id,
-      },
+        userId: user.id
+      }
     });
 
     if (!address) {
-      console.log(`❌ Address not found: ${validatedData.addressId} for user ${user.id}`);
       return NextResponse.json(
         { error: "Invalid address" },
         { status: 400 }
       );
     }
 
-    console.log(`📍 Address verified: ${address.line1}, ${address.city}`);
+    // Verify all tests/packages exist and are active
+    const testIds = validatedData.items.filter(item => item.testId).map(item => item.testId);
+    const packageIds = validatedData.items.filter(item => item.packageId).map(item => item.packageId);
 
-    // Verify all tests exist and calculate total
-    const testIds = validatedData.items.map(item => item.testId);
-    console.log(`🧪 Checking tests: ${testIds.join(', ')}`);
-    
-    const tests = await prisma.test.findMany({
-      where: {
-        id: { in: testIds },
-        isActive: true,
-      },
-    });
+    if (testIds.length > 0) {
+      const tests = await prisma.test.findMany({
+        where: {
+          id: { in: testIds },
+          isActive: true
+        }
+      });
 
-    if (tests.length !== testIds.length) {
-      console.log(`❌ Test mismatch: Found ${tests.length}, expected ${testIds.length}`);
-      return NextResponse.json(
-        { error: "Some tests are not available" },
-        { status: 400 }
-      );
-    }
-
-    console.log(`✅ All tests verified: ${tests.map(t => t.name).join(', ')}`);
-
-    // Calculate totals
-    let totalAmount = 0;
-    let discountAmount = 0;
-
-    for (const item of validatedData.items) {
-      const test = tests.find(t => t.id === item.testId);
-      if (!test) continue;
-
-      const itemTotal = item.price * item.quantity;
-      totalAmount += itemTotal;
-
-      // Calculate discount if test has discountPrice and the order item price is the discounted price
-      // This means the customer ordered at the discounted price, so we track the discount amount
-      if (test.discountPrice && test.discountPrice < test.price && item.price === test.discountPrice) {
-        const originalTotal = test.price * item.quantity;
-        discountAmount += originalTotal - itemTotal;
-        console.log(`💰 Discount applied for ${test.name}: Original=${test.price}, Discounted=${test.discountPrice}, Saved=${originalTotal - itemTotal}`);
+      if (tests.length !== testIds.length) {
+        return NextResponse.json(
+          { error: "Some tests are not available" },
+          { status: 400 }
+        );
       }
     }
 
-    const finalAmount = totalAmount - discountAmount;
-    console.log(`💰 Totals calculated: Total=${totalAmount}, Discount=${discountAmount}, Final=${finalAmount}`);
-
-    // Create order with transaction
-    console.log("🔄 Starting database transaction...");
-    const result = await prisma.$transaction(async (tx) => {
-      // Create order
-      const order = await tx.order.create({
-        data: {
-          userId: user.id,
-          orderNumber: generateOrderNumber(),
-          status: "PENDING",
-          totalAmount,
-          discountAmount,
-          finalAmount,
-          addressId: validatedData.addressId,
-          paymentMethod: validatedData.paymentMethod,
-          couponCode: validatedData.couponCode,
-        },
+    if (packageIds.length > 0) {
+      const packages = await prisma.package.findMany({
+        where: {
+          id: { in: packageIds },
+          isActive: true
+        }
       });
 
-      console.log(`📋 Order created: ${order.orderNumber}`);
-
-      // Create order items
-      const orderItems = await Promise.all(
-        validatedData.items.map(item =>
-          tx.orderItem.create({
-            data: {
-              orderId: order.id,
-              testId: item.testId,
-              quantity: item.quantity,
-              price: item.price,
-            },
-          })
-        )
-      );
-
-      console.log(`📦 Order items created: ${orderItems.length} items`);
-
-      // Create home visit
-      const homeVisit = await tx.homeVisit.create({
-        data: {
-          orderId: order.id,
-          scheduledDate: new Date(validatedData.scheduledDate),
-          scheduledTime: validatedData.scheduledTime,
-          status: "SCHEDULED",
-        },
-      });
-
-      console.log(`🏠 Home visit scheduled: ${validatedData.scheduledDate} at ${validatedData.scheduledTime}`);
-
-      return { order, orderItems, homeVisit };
-    });
-
-    // If payment method is Razorpay, create Razorpay order
-    let razorpayOrderId = null;
-    if (validatedData.paymentMethod === "razorpay") {
-      // TODO: Integrate with Razorpay API
-      // For now, we'll simulate the order ID
-      razorpayOrderId = `order_${Date.now()}`;
-      console.log(`💳 Razorpay order ID generated: ${razorpayOrderId}`);
+      if (packages.length !== packageIds.length) {
+        return NextResponse.json(
+          { error: "Some packages are not available" },
+          { status: 400 }
+        );
+      }
     }
 
-    console.log("✅ Order creation completed successfully");
+    // Generate order number
+    const orderNumber = generateOrderNumber();
+
+    // Prepare order data for safe creation
+    const orderData = {
+      userId: user.id,
+      orderNumber,
+      status: 'PENDING',
+      totalAmount: validatedData.totalAmount,
+      discountAmount: validatedData.discountAmount || 0,
+      finalAmount: validatedData.finalAmount,
+      addressId: validatedData.addressId,
+      paymentMethod: validatedData.paymentMethod,
+      couponCode: validatedData.couponCode,
+      items: validatedData.items,
+      homeVisit: {
+        scheduledDate: new Date(validatedData.scheduledDate),
+        scheduledTime: validatedData.scheduledTime,
+      }
+    };
+
+    // Create order with comprehensive protection
+    const order = await createOrderSafely(orderData);
+
+    // Double-verify order integrity
+    const isValid = await verifyOrderIntegrity(order.id);
+    if (!isValid) {
+      throw new Error('Order integrity verification failed after creation');
+    }
+
+    // Fetch complete order data for response
+    const completeOrder = await prisma.order.findUnique({
+      where: { id: order.id },
+      include: {
+        orderItems: {
+          include: {
+            test: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+            package: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+          },
+        },
+        homeVisit: true,
+        address: true,
+        statusHistory: true,
+      },
+    });
 
     return NextResponse.json({
       success: true,
-      message: "Order created successfully",
-      order: result.order,
-      razorpayOrderId,
+      order: completeOrder,
+      message: "Order created successfully with full data protection"
     });
+
   } catch (error) {
-    console.error("❌ Error creating order:", error);
-    
+    // Enhanced error logging
+    console.error('Order creation failed:', {
+      error: error.message,
+      stack: error.stack,
+      userId: request.headers.get('user-id') || 'unknown',
+      timestamp: new Date().toISOString()
+    });
+
+    // Handle validation errors
     if (error instanceof z.ZodError) {
-      console.log("📝 Validation errors:", error.errors);
       return NextResponse.json(
-        { error: "Invalid input data", details: error.errors },
+        { 
+          error: "Validation failed", 
+          details: error.errors.map(e => `${e.path.join('.')}: ${e.message}`)
+        },
         { status: 400 }
       );
     }
 
+    // Handle specific error types
+    if (error.message.includes('Operation in progress')) {
+      return NextResponse.json(
+        { error: "Another order is being processed. Please wait and try again." },
+        { status: 409 }
+      );
+    }
+
+    if (error.message.includes('integrity')) {
+      return NextResponse.json(
+        { error: "Order validation failed. Please try again." },
+        { status: 422 }
+      );
+    }
+
+    // Generic error response
     return NextResponse.json(
-      { error: "Internal server error", details: error.message },
+      { error: "Unable to create order. Please try again." },
       { status: 500 }
     );
   }

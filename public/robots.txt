@@ -1,0 +1,82 @@
+User-agent: *
+Allow: /
+
+# Allow important pages
+Allow: /tests/
+Allow: /packages/
+Allow: /health-checkup-packages-hyderabad/
+Allow: /about/
+Allow: /contact/
+Allow: /help/
+Allow: /track-order/
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /checkout/
+Disallow: /orders/
+Disallow: /profile/
+Disallow: /addresses/
+Disallow: /reports/
+Disallow: /agent/
+
+# Disallow temporary or development files
+Disallow: /visual-editor-demo/
+Disallow: /admin-login-helper/
+Disallow: /*.backup
+Disallow: /temp/
+Disallow: /dev/
+
+# Allow specific files
+Allow: /favicon.ico
+Allow: /robots.txt
+Allow: /sitemap.xml
+Allow: /sitemap.ts
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://lynklabs.in/sitemap.xml
+
+# Google-specific directives
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+# Bing-specific directives
+User-agent: bingbot
+Allow: /
+Crawl-delay: 1
+
+# Yandex-specific directives
+User-agent: Yandex
+Allow: /
+Crawl-delay: 1
+
+# Block bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+# Allow social media crawlers
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: WhatsApp
+Allow: / 
