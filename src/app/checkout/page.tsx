@@ -123,9 +123,6 @@ export default function CheckoutPage() {
           newErrors.address = "Please select an existing address or add a new one";
         }
         if (newAddress.line1.trim()) {
-          if (!newAddress.line1.trim()) {
-            newErrors.line1 = "Address Line 1 is required";
-          }
           if (!newAddress.city.trim()) {
             newErrors.city = "City is required";
           }
@@ -167,9 +164,6 @@ export default function CheckoutPage() {
       newErrors.address = "Please select an existing address or add a new one";
     }
     if (newAddress.line1.trim()) {
-      if (!newAddress.line1.trim()) {
-        newErrors.line1 = "Address Line 1 is required";
-      }
       if (!newAddress.city.trim()) {
         newErrors.city = "City is required";
       }
