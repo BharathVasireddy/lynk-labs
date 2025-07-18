@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
+import { generateAgentPassword } from "@/lib/password-utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -82,15 +83,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create new agent with a default password
-    const defaultPassword = await bcrypt.hash('agent123', 10); // Default password
+    // Generate a secure random password for the new agent
+    const temporaryPassword = generateAgentPassword();
+    const hashedPassword = await bcrypt.hash(temporaryPassword, 12);
 
     const newAgent = await prisma.user.create({
       data: {
         name,
         phone,
         email,
-        password: defaultPassword,
+        password: hashedPassword,
         role: "HOME_VISIT_AGENT",
         isActive: true,
       },
@@ -106,11 +108,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Agent created successfully",
+      message: "Agent created successfully with secure temporary password",
       agent: newAgent,
       loginInfo: {
         phone: phone,
-        defaultPassword: "agent123"
+        temporaryPassword: temporaryPassword,
+        note: "This is a temporary password. Agent should change it after first login."
       }
     });
   } catch (error) {

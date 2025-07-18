@@ -479,7 +479,9 @@ async function main() {
 
   // Create Users
   console.log('👥 Creating users...')
-  const hashedPassword = await bcrypt.hash('password123', 12)
+  // Generate a secure password for development testing  
+  const testPassword = process.env.NODE_ENV === 'development' ? 'DevTest_2024!' : require('crypto').randomBytes(12).toString('hex') + '!A1';
+  const hashedPassword = await bcrypt.hash(testPassword, 12)
   
   const users = await Promise.all([
     // Admin User
@@ -951,14 +953,14 @@ async function main() {
 
   console.log('\n🔑 Admin Credentials:')
   console.log('Phone: +919999999999')
-  console.log('Password: password123')
+  console.log(`Password: ${testPassword}`)
 
   console.log('\n👤 Test User Credentials:')
-  console.log('John Doe - Phone: +919876543210, Password: password123')
-  console.log('Jane Smith - Phone: +919876543211, Password: password123')
-  console.log('Rajesh Patel - Phone: +919876543214, Password: password123')
-  console.log('Priya Sharma - Phone: +919876543215, Password: password123')
-  console.log('Amit Kumar - Phone: +919876543216, Password: password123')
+  console.log(`John Doe - Phone: +919876543210, Password: ${testPassword}`)
+  console.log(`Jane Smith - Phone: +919876543211, Password: ${testPassword}`)
+  console.log(`Rajesh Patel - Phone: +919876543214, Password: ${testPassword}`)
+  console.log(`Priya Sharma - Phone: +919876543215, Password: ${testPassword}`)
+  console.log(`Amit Kumar - Phone: +919876543216, Password: ${testPassword}`)
 
   console.log('\n🏥 Home Visit Agents:')
   console.log('Dr. Rajesh Kumar - Phone: +919876543212')

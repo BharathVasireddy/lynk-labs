@@ -11,8 +11,8 @@ import { Shield, LogIn } from "lucide-react";
 
 export default function AdminLoginHelper() {
   const [loading, setLoading] = useState(false);
-  const [phone, setPhone] = useState("+919999999999");
-  const [password, setPassword] = useState("password123");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const router = useRouter();
 
   const handleLogin = async () => {
@@ -66,7 +66,7 @@ export default function AdminLoginHelper() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="password123"
+              placeholder="Enter admin password"
             />
           </div>
           
@@ -84,10 +84,10 @@ export default function AdminLoginHelper() {
             )}
           </Button>
           
-          <div className="text-center text-sm text-gray-600 space-y-2">
-            <p><strong>Default Admin Credentials:</strong></p>
-            <p>Phone: +919999999999</p>
-            <p>Password: password123</p>
+          <div className="text-center text-sm text-red-600 space-y-2 bg-red-50 p-3 rounded-md border border-red-200">
+            <p><strong>⚠️ DEVELOPMENT ONLY</strong></p>
+            <p>Contact your administrator for login credentials.</p>
+            <p className="text-xs">This page should not be accessible in production.</p>
           </div>
           
           <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-sm">

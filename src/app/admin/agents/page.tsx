@@ -449,7 +449,8 @@ export default function AgentsPage() {
                 <h4 className="font-medium text-blue-800 mb-2">Login Credentials</h4>
                 <div className="space-y-2 text-sm">
                   <p><strong>Phone:</strong> {createdAgentInfo.loginInfo?.phone}</p>
-                  <p><strong>Password:</strong> {createdAgentInfo.loginInfo?.defaultPassword}</p>
+                  <p><strong>Temporary Password:</strong> {createdAgentInfo.loginInfo?.temporaryPassword}</p>
+                <p className="text-sm text-amber-600 mt-2">⚠️ {createdAgentInfo.loginInfo?.note}</p>
                 </div>
                 <p className="text-xs text-blue-600 mt-2">
                   The agent can login at /auth/login using these credentials
@@ -459,7 +460,7 @@ export default function AgentsPage() {
                 <Button 
                   onClick={() => {
                     navigator.clipboard.writeText(
-                      `Login Details:\nPhone: ${createdAgentInfo.loginInfo?.phone}\nPassword: ${createdAgentInfo.loginInfo?.defaultPassword}`
+                      `Login Details:\nPhone: ${createdAgentInfo.loginInfo?.phone}\nTemporary Password: ${createdAgentInfo.loginInfo?.temporaryPassword}\n\nNote: ${createdAgentInfo.loginInfo?.note}`
                     );
                     toast.success("Login details copied to clipboard!");
                   }}

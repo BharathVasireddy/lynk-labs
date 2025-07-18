@@ -86,7 +86,7 @@ console.log('');
 
 console.log('\n✅ After Deployment:');
 console.log('1. Your admin dashboard will be available at: https://your-app.vercel.app/admin/dashboard');
-console.log('2. Login with: +919999999999 / password123');
+    console.log('2. Login with admin credentials provided during setup');
 console.log('3. Test all features with the comprehensive test data');
 console.log('');
 
