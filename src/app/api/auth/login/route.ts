@@ -2,11 +2,29 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { checkLoginRateLimit } from "@/lib/auth-rate-limit";
 
 const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting for login attempts
+    const clientIP = request.ip || request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anonymous';
+    const rateLimit = await checkLoginRateLimit(clientIP);
+    
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { 
+          error: "Too many login attempts. Please try again later.",
+          retryAfter: Math.ceil((rateLimit.reset - Date.now()) / 1000)
+        },
+        { 
+          status: 429, 
+          headers: rateLimit.headers 
+        }
+      );
+    }
+
     const { email, phone, password } = await request.json();
 
     // Support both email and phone login
@@ -87,6 +105,8 @@ export async function POST(request: NextRequest) {
       success: true,
       user: userData,
       message: "Login successful",
+    }, {
+      headers: rateLimit.headers
     });
 
     // Set HTTP-only cookie
