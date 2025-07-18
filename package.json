@@ -12,6 +12,7 @@
     "lint": "next lint",
     "postinstall": "prisma generate",
     "type-check": "tsc --noEmit",
+    "validate-env": "node scripts/validate-env.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",

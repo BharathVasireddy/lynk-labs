@@ -7,6 +7,9 @@ import { AuthProvider } from '@/contexts/auth-context'
 import { ToastProvider } from '@/contexts/toast-context'
 import { GoogleAnalytics } from '@next/third-parties/google'
 
+// Import startup validation to ensure environment variables are validated
+import '@/lib/startup-validation'
+
 const plusJakartaSans = Plus_Jakarta_Sans({ 
   subsets: ['latin'],
   display: 'swap',
