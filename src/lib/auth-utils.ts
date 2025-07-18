@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { verify } from "jsonwebtoken";
 import { prisma } from "@/lib/db";
+import { isTokenBlacklisted } from "@/lib/jwt-blacklist";
 
 export interface AuthUser {
   id: string;
@@ -15,6 +16,12 @@ export async function verifyAuth(request: NextRequest): Promise<AuthUser | null>
     const token = request.cookies.get("auth-token")?.value;
     
     if (!token) {
+      return null;
+    }
+
+    // Check if token is blacklisted
+    const isBlacklisted = await isTokenBlacklisted(token);
+    if (isBlacklisted) {
       return null;
     }
 

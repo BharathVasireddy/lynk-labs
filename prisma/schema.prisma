@@ -301,3 +301,13 @@ model SystemLock {
 
   @@map("system_locks")
 }
+
+model BlacklistedToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("blacklisted_tokens")
+}
