@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { verifyAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 
@@ -21,8 +20,8 @@ const fastCreateOrderSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const user = await verifyAuth(request);
+    if (!user) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
@@ -72,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     // Verify address belongs to user
     const address = await prisma.address.findFirst({
-      where: { id: validatedData.addressId, userId: session.user.id }
+      where: { id: validatedData.addressId, userId: user.id }
     });
     if (!address) {
       return NextResponse.json(
@@ -88,7 +87,7 @@ export async function POST(request: NextRequest) {
     const order = await prisma.$transaction(async (tx) => {
       const newOrder = await tx.order.create({
         data: {
-          userId: session.user.id,
+          userId: user.id,
           orderNumber,
           status: "PENDING",
           totalAmount: validatedData.totalAmount,
@@ -127,7 +126,7 @@ export async function POST(request: NextRequest) {
           orderId: newOrder.id,
           status: "PENDING",
           notes: "Order created successfully",
-          createdBy: session.user.id,
+          createdBy: user.id,
         },
       });
 

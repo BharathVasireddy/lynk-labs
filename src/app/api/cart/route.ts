@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { verifyAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
@@ -35,13 +34,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const user = await verifyAuth(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const cartItems = await prisma.cartItem.findMany({
-      where: { userId: session.user.id },
+      where: { userId: user.id },
       include: {
         test: {
           select: {
@@ -103,8 +102,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const user = await verifyAuth(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -114,7 +113,7 @@ export async function POST(request: NextRequest) {
     // Check if item already exists in cart
     const existingItem = await prisma.cartItem.findFirst({
       where: {
-        userId: session.user.id,
+        userId: user.id,
         ...(validatedData.testId && { testId: validatedData.testId }),
         ...(validatedData.packageId && { packageId: validatedData.packageId }),
       },
@@ -169,7 +168,7 @@ export async function POST(request: NextRequest) {
       // Create new cart item
       const cartItem = await prisma.cartItem.create({
         data: {
-          userId: session.user.id,
+          userId: user.id,
           testId: validatedData.testId,
           packageId: validatedData.packageId,
           quantity: validatedData.quantity,
@@ -241,8 +240,8 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const user = await verifyAuth(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -253,7 +252,7 @@ export async function PUT(request: NextRequest) {
     const existingItem = await prisma.cartItem.findFirst({
       where: {
         id: validatedData.itemId,
-        userId: session.user.id,
+        userId: user.id,
       },
     });
 
@@ -336,8 +335,8 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const user = await verifyAuth(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -348,7 +347,7 @@ export async function DELETE(request: NextRequest) {
     const existingItem = await prisma.cartItem.findFirst({
       where: {
         id: validatedData.itemId,
-        userId: session.user.id,
+        userId: user.id,
       },
     });
 

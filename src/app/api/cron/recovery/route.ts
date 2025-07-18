@@ -4,12 +4,12 @@ import { verifyAuth } from '@/lib/auth-utils';
 
 export async function POST(request: Request) {
   try {
-    // Verify it's an authorized cron job
+    // Verify it's an authorized cron job - only admins can trigger recovery
     const user = await verifyAuth(request);
-    if (!user?.isAdmin) {
+    if (!user || user.role !== "ADMIN") {
       return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
+        { error: "Unauthorized - Admin access required" },
+        { status: 403 }
       );
     }
 

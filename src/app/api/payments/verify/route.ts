@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { verifyAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import { safeOperation } from "@/lib/data-protection";
 import { z } from "zod";
@@ -15,8 +14,8 @@ const verifyPaymentSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const user = await verifyAuth(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -45,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if the order belongs to the authenticated user
-    if (order.userId !== session.user.id) {
+    if (order.userId !== user.id) {
       return NextResponse.json(
         { error: "Unauthorized access to order" },
         { status: 403 }
