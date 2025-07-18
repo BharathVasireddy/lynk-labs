@@ -3,6 +3,12 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { checkLoginRateLimit } from "@/lib/auth-rate-limit";
+import { 
+  checkLockoutStatus, 
+  recordFailedAttempt, 
+  clearLoginAttempts,
+  LOCKOUT_POLICIES 
+} from "@/lib/account-security";
 
 const prisma = new PrismaClient();
 
@@ -37,6 +43,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check account lockout status
+    const lockoutStatus = await checkLockoutStatus(loginIdentifier, clientIP);
+    if (lockoutStatus.isLocked) {
+      const minutesRemaining = lockoutStatus.lockoutExpiresAt 
+        ? Math.ceil((lockoutStatus.lockoutExpiresAt.getTime() - Date.now()) / (1000 * 60))
+        : 15;
+      
+      return NextResponse.json(
+        { 
+          error: `Account temporarily locked due to multiple failed login attempts. Please try again in ${minutesRemaining} minutes.`,
+          lockoutExpiresAt: lockoutStatus.lockoutExpiresAt,
+          retryAfter: Math.ceil((lockoutStatus.lockoutExpiresAt?.getTime() || Date.now()) / 1000)
+        },
+        { status: 423 } // 423 Locked
+      );
+    }
+
     // Find user by email or phone
     const user = await prisma.user.findFirst({
       where: {
@@ -48,10 +71,22 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Invalid credentials" },
-        { status: 401 }
+      // Record failed attempt for non-existent user
+      const attemptResult = await recordFailedAttempt(
+        loginIdentifier, 
+        clientIP, 
+        LOCKOUT_POLICIES.USER_LOGIN
       );
+      
+      const errorResponse = {
+        error: "Invalid credentials",
+        ...(attemptResult.attemptsRemaining <= 2 && {
+          attemptsRemaining: attemptResult.attemptsRemaining,
+          warning: `${attemptResult.attemptsRemaining} attempts remaining before account lockout`
+        })
+      };
+      
+      return NextResponse.json(errorResponse, { status: 401 });
     }
 
     // Check if user has a password
@@ -65,10 +100,22 @@ export async function POST(request: NextRequest) {
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      return NextResponse.json(
-        { error: "Invalid credentials" },
-        { status: 401 }
+      // Record failed attempt for invalid password
+      const attemptResult = await recordFailedAttempt(
+        loginIdentifier,
+        clientIP,
+        user.role === "ADMIN" ? LOCKOUT_POLICIES.ADMIN_LOGIN : LOCKOUT_POLICIES.USER_LOGIN
       );
+      
+      const errorResponse = {
+        error: "Invalid credentials",
+        ...(attemptResult.attemptsRemaining <= 2 && {
+          attemptsRemaining: attemptResult.attemptsRemaining,
+          warning: `${attemptResult.attemptsRemaining} attempts remaining before account lockout`
+        })
+      };
+      
+      return NextResponse.json(errorResponse, { status: 401 });
     }
 
     // Check if user is active
@@ -78,6 +125,9 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
+
+    // Clear failed login attempts on successful authentication
+    await clearLoginAttempts(loginIdentifier, clientIP);
 
     // Generate JWT token
     const token = jwt.sign(

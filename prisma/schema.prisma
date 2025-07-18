@@ -311,3 +311,33 @@ model BlacklistedToken {
 
   @@map("blacklisted_tokens")
 }
+
+model LoginAttempt {
+  id          String   @id @default(cuid())
+  identifier  String   // email or phone
+  clientIP    String
+  attemptedAt DateTime @default(now())
+  success     Boolean
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([identifier, success, attemptedAt])
+  @@index([clientIP, success, attemptedAt])
+  @@map("login_attempts")
+}
+
+model AccountLockout {
+  id           String    @id @default(cuid())
+  identifier   String    // email or phone
+  clientIP     String
+  lockedAt     DateTime  @default(now())
+  expiresAt    DateTime
+  reason       String    // 'user_attempts', 'ip_attempts', 'admin_action'
+  attemptCount Int
+  unlockedBy   String?   // admin user ID who manually unlocked
+  createdAt    DateTime  @default(now())
+
+  @@index([identifier, expiresAt])
+  @@index([clientIP, expiresAt])
+  @@map("account_lockouts")
+}
