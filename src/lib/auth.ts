@@ -24,8 +24,6 @@ export const authOptions: NextAuthOptions = {
         // Check if it's an email or phone number
         const isEmail = credentials.email.includes('@');
         const isPhone = credentials.email.startsWith('+');
-        
-        console.log('📧 Is email:', isEmail, 'Is phone:', isPhone);
 
         let user;
         if (isEmail) {

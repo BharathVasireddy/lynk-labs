@@ -268,8 +268,9 @@ export async function notifyHomeVisitScheduled(homeVisit: HomeVisit) {
 export async function sendSMS(phone: string, message: string): Promise<boolean> {
   try {
     // TODO: Implement actual SMS service integration
-    // For now, just log the SMS
-    console.log(`SMS to ${phone}: ${message}`);
+    // For now, just log the SMS (phone number masked for privacy)
+    const maskedPhone = phone.replace(/(\+\d{2})\d{6}(\d{4})/, '$1******$2');
+    console.log(`SMS to ${maskedPhone}: ${message}`);
     
     // In production, integrate with Twilio, AWS SNS, or other SMS service
     /*
@@ -297,8 +298,9 @@ export async function sendSMS(phone: string, message: string): Promise<boolean> 
 // WhatsApp Service (using WhatsApp Business API)
 export async function sendWhatsApp(phone: string, message: string): Promise<boolean> {
   try {
-    // TODO: Implement actual WhatsApp service integration
-    console.log(`WhatsApp to ${phone}: ${message}`);
+    // TODO: Implement actual WhatsApp service integration  
+    const maskedPhone = phone.replace(/(\+\d{2})\d{6}(\d{4})/, '$1******$2');
+    console.log(`WhatsApp to ${maskedPhone}: ${message}`);
     
     // In production, integrate with WhatsApp Business API
     /*

@@ -952,21 +952,21 @@ async function main() {
   console.log(`- Reports: ${reports.length}`)
 
   console.log('\n🔑 Admin Credentials:')
-  console.log('Phone: +919999999999')
+  console.log('Phone: +91****99999') // Masked for security
   console.log(`Password: ${testPassword}`)
 
   console.log('\n👤 Test User Credentials:')
-  console.log(`John Doe - Phone: +919876543210, Password: ${testPassword}`)
-  console.log(`Jane Smith - Phone: +919876543211, Password: ${testPassword}`)
-  console.log(`Rajesh Patel - Phone: +919876543214, Password: ${testPassword}`)
-  console.log(`Priya Sharma - Phone: +919876543215, Password: ${testPassword}`)
-  console.log(`Amit Kumar - Phone: +919876543216, Password: ${testPassword}`)
+  console.log(`John Doe - Phone: +91****43210, Password: ${testPassword}`)
+  console.log(`Jane Smith - Phone: +91****43211, Password: ${testPassword}`)
+  console.log(`Rajesh Patel - Phone: +91****43214, Password: ${testPassword}`)
+  console.log(`Priya Sharma - Phone: +91****43215, Password: ${testPassword}`)
+  console.log(`Amit Kumar - Phone: +91****43216, Password: ${testPassword}`)
 
   console.log('\n🏥 Home Visit Agents:')
-  console.log('Dr. Rajesh Kumar - Phone: +919876543212')
-  console.log('Dr. Priya Sharma - Phone: +919876543213')
-  console.log('Dr. Suresh Reddy - Phone: +919876543217')
-  console.log('Dr. Kavitha Nair - Phone: +919876543218')
+  console.log('Dr. Rajesh Kumar - Phone: +91****43212')
+  console.log('Dr. Priya Sharma - Phone: +91****43213')
+  console.log('Dr. Suresh Reddy - Phone: +91****43217')
+  console.log('Dr. Kavitha Nair - Phone: +91****43218')
 }
 
 main()
