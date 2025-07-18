@@ -35,6 +35,18 @@ lynk-labs/
 - **File Storage**: Local Storage (Vercel)
 - **Deployment**: Vercel (Production)
 
+## 📚 Documentation
+
+All project documentation has been organized into logical categories:
+
+- **📖 [Complete Documentation Hub](./docs/README.md)** - Start here for navigation
+- **🔌 [API Documentation](./docs/api/)** - Complete API reference
+- **🚀 [Deployment Guides](./docs/deployment/)** - Production deployment procedures
+- **💻 [Development Guide](./docs/development/)** - Project structure and design system
+- **🏗️ [System Architecture](./docs/system/)** - Technical architecture and features
+- **📚 [Setup Guides](./docs/guides/)** - Configuration and setup instructions
+- **📈 [Marketing & SEO](./docs/marketing/)** - Local optimization strategies
+
 ## 🚀 Quick Start
 
 ```bash

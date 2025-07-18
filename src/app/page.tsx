@@ -6,6 +6,7 @@ import Head from "next/head";
 import { ArrowRight, Shield, Clock, Home, Users, Star, CheckCircle, ShoppingCart, Plus, Minus, Phone, Mail, MapPin, Award, Microscope, Heart, Activity, FileText, Calendar, Headphones, TrendingUp, Globe, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BookTestButton } from "@/components/ui/book-test-button";
+import { BuilderComponent } from "@/components/builder/BuilderComponent";
 
 interface Test {
   id: string;
@@ -227,7 +228,11 @@ export default function HomePage() {
         <meta name="og:site_name" content="Lynk Labs" />
         <meta name="og:type" content="website" />
       </Head>
-      {/* Hero Section */}
+      
+      {/* Builder.io Editable Hero Section - Replace your current hero with this for visual editing */}
+      {/* <BuilderComponent model="hero-section" /> */}
+      
+      {/* Current Hero Section - You can replace this with Builder.io when ready */}
       <section className="relative medical-background py-20 lg:py-32 overflow-hidden">
         <div className="container-padding relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center">

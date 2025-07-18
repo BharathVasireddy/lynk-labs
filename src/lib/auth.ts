@@ -16,8 +16,6 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        console.log('🔐 Auth attempt with:', credentials?.email);
-        
         if (!credentials?.email || !credentials?.password) {
           console.log('❌ Missing credentials');
           return null
@@ -50,8 +48,6 @@ export const authOptions: NextAuthOptions = {
           });
         }
 
-        console.log('👤 User found:', user ? `${user.name} (${user.phone})` : 'None');
-
         if (!user || !user.password) {
           console.log('❌ No user or no password');
           return null
@@ -60,13 +56,9 @@ export const authOptions: NextAuthOptions = {
         // Verify password
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
         
-        console.log('🔑 Password valid:', isPasswordValid);
-        
         if (!isPasswordValid) {
           return null
         }
-        
-        console.log('✅ Login successful for:', user.name);
         
         return {
           id: user.id,
