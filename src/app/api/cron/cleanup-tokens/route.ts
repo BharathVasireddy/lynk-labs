@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cleanupExpiredRefreshTokens } from "@/lib/refresh-token";
-import { cleanupExpiredBlacklistedTokens } from "@/lib/jwt-blacklist";
 import { verifyAuth } from "@/lib/auth-utils";
 
 /**
@@ -37,10 +36,20 @@ export async function POST(request: NextRequest) {
     // Cleanup expired refresh tokens
     const refreshTokensResult = await cleanupExpiredRefreshTokens();
     
-    // Cleanup expired blacklisted tokens (if function exists)
+    // Cleanup expired blacklisted tokens
     let blacklistedTokensResult = { deleted: 0 };
     try {
-      blacklistedTokensResult = await cleanupExpiredBlacklistedTokens();
+      const { PrismaClient } = await import("@prisma/client");
+      const prisma = new PrismaClient();
+      
+      const result = await prisma.blacklistedToken.deleteMany({
+        where: {
+          expiresAt: { lt: new Date() }
+        }
+      });
+      
+      blacklistedTokensResult = { deleted: result.count };
+      await prisma.$disconnect();
     } catch (error) {
       console.warn("Blacklisted token cleanup failed:", error);
     }
