@@ -1,9 +1,9 @@
 import { NextAuthOptions } from "next-auth"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import CredentialsProvider from "next-auth/providers/credentials"
-import bcrypt from "bcryptjs"
 
 import { prisma } from "@/lib/db"
+import { timingSafeAuthenticate } from "@/lib/timing-safe-auth"
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -17,46 +17,20 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          console.log('❌ Missing credentials');
           return null
         }
 
-        // Check if it's an email or phone number
-        const isEmail = credentials.email.includes('@');
-        const isPhone = credentials.email.startsWith('+');
+        // Use timing-safe authentication to prevent timing attacks
+        const authResult = await timingSafeAuthenticate(
+          credentials.email, 
+          credentials.password
+        );
 
-        let user;
-        if (isEmail) {
-          user = await prisma.user.findUnique({
-            where: { email: credentials.email }
-          });
-        } else if (isPhone) {
-          user = await prisma.user.findUnique({
-            where: { phone: credentials.email }
-          });
-        } else {
-          // Try both email and phone
-          user = await prisma.user.findFirst({
-            where: {
-              OR: [
-                { email: credentials.email },
-                { phone: credentials.email }
-              ]
-            }
-          });
-        }
-
-        if (!user || !user.password) {
-          console.log('❌ No user or no password');
+        if (!authResult.success || !authResult.user) {
           return null
         }
 
-        // Verify password
-        const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
-        
-        if (!isPasswordValid) {
-          return null
-        }
+        const user = authResult.user;
         
         return {
           id: user.id,

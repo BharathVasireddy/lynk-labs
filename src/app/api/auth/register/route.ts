@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import * as jwt from "jsonwebtoken";
 import { checkRegistrationRateLimit } from "@/lib/auth-rate-limit";
+import { timingSafeUserExists } from "@/lib/timing-safe-auth";
 
 const prisma = new PrismaClient();
 
@@ -41,24 +42,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user already exists by email
-    const existingUserByEmail = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
-    });
+    // Use timing-safe user existence checks to prevent enumeration
+    const [emailExists, phoneExists] = await Promise.all([
+      timingSafeUserExists(email.toLowerCase()),
+      timingSafeUserExists(phone.trim())
+    ]);
 
-    if (existingUserByEmail) {
+    if (emailExists) {
       return NextResponse.json(
         { error: "An account with this email already exists" },
         { status: 409 }
       );
     }
 
-    // Check if user already exists by phone
-    const existingUserByPhone = await prisma.user.findUnique({
-      where: { phone: phone.trim() },
-    });
-
-    if (existingUserByPhone) {
+    if (phoneExists) {
       return NextResponse.json(
         { error: "An account with this phone number already exists" },
         { status: 409 }

@@ -31,9 +31,12 @@ export function runStartupValidation(): void {
 }
 
 // Auto-run validation in production and when explicitly enabled
+// Skip during build process to prevent build failures
 const shouldValidate = 
-  process.env.NODE_ENV === 'production' || 
-  process.env.ENABLE_STARTUP_VALIDATION === 'true';
+  !process.env.NEXT_PHASE && // Skip during Next.js build phases
+  !process.env.DISABLE_ENV_VALIDATION && // Allow explicit disable
+  (process.env.NODE_ENV === 'production' || 
+   process.env.ENABLE_STARTUP_VALIDATION === 'true');
 
 if (shouldValidate) {
   runStartupValidation();

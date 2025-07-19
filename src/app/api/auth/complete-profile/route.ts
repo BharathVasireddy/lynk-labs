@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { verifyAuth } from "@/lib/auth-utils";
-import jwt from "jsonwebtoken";
+import * as jwt from "jsonwebtoken";
+import { timingSafeUserLookup } from "@/lib/timing-safe-auth";
 
 const prisma = new PrismaClient();
 
@@ -34,15 +35,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if email is already taken by another user
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        email: email.toLowerCase(),
-        id: { not: user.id }, // Exclude current user
-      },
-    });
+    // Check if email is already taken by another user (timing-safe)
+    const existingUser = await timingSafeUserLookup(email.toLowerCase());
 
-    if (existingUser) {
+    if (existingUser && existingUser.id !== user.id) {
       return NextResponse.json(
         { error: "This email is already associated with another account" },
         { status: 409 }

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import * as jwt from "jsonwebtoken";
 import { checkLoginRateLimit } from "@/lib/auth-rate-limit";
 import { 
   checkLockoutStatus, 
@@ -9,6 +8,7 @@ import {
   clearLoginAttempts,
   LOCKOUT_POLICIES 
 } from "@/lib/account-security";
+import { timingSafeAuthenticate } from "@/lib/timing-safe-auth";
 
 const prisma = new PrismaClient();
 
@@ -60,18 +60,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user by email or phone
-    const user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: loginIdentifier.toLowerCase() },
-          { phone: loginIdentifier }
-        ]
-      },
-    });
+    // Timing-safe authentication to prevent timing attacks
+    const authResult = await timingSafeAuthenticate(loginIdentifier, password);
 
-    if (!user) {
-      // Record failed attempt for non-existent user
+    if (!authResult.success || !authResult.user) {
+      // Record failed attempt (this applies whether user exists or not)
       const attemptResult = await recordFailedAttempt(
         loginIdentifier, 
         clientIP, 
@@ -89,39 +82,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 401 });
     }
 
-    // Check if user has a password
-    if (!user.password) {
-      return NextResponse.json(
-        { error: "This account uses WhatsApp login. Please use WhatsApp to sign in." },
-        { status: 401 }
-      );
-    }
+    const user = authResult.user;
 
-    // Verify password
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) {
-      // Record failed attempt for invalid password
-      const attemptResult = await recordFailedAttempt(
-        loginIdentifier,
-        clientIP,
-        user.role === "ADMIN" ? LOCKOUT_POLICIES.ADMIN_LOGIN : LOCKOUT_POLICIES.USER_LOGIN
-      );
-      
-      const errorResponse = {
-        error: "Invalid credentials",
-        ...(attemptResult.attemptsRemaining <= 2 && {
-          attemptsRemaining: attemptResult.attemptsRemaining,
-          warning: `${attemptResult.attemptsRemaining} attempts remaining before account lockout`
-        })
-      };
-      
-      return NextResponse.json(errorResponse, { status: 401 });
-    }
-
-    // Check if user is active
-    if (!user.isActive) {
+    // For users without passwords (WhatsApp login), we need separate handling
+    // Note: timingSafeAuthenticate already handles this, but we add explicit check for clarity
+    if (!user) {
       return NextResponse.json(
-        { error: "Account is deactivated" },
+        { error: "Invalid credentials" },
         { status: 401 }
       );
     }

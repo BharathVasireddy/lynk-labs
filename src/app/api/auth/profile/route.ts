@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { verifyAuth } from "@/lib/auth-utils";
+import { timingSafeUserLookup } from "@/lib/timing-safe-auth";
 
 const updateProfileSchema = z.object({
   name: z.string().min(1, "Name is required").optional(),
@@ -25,16 +26,11 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const validatedData = updateProfileSchema.parse(body);
 
-    // Check if email is already taken by another user
+    // Check if email is already taken by another user (timing-safe)
     if (validatedData.email) {
-      const existingUser = await prisma.user.findFirst({
-        where: {
-          email: validatedData.email.toLowerCase(),
-          id: { not: user.id },
-        },
-      });
+      const existingUser = await timingSafeUserLookup(validatedData.email.toLowerCase());
 
-      if (existingUser) {
+      if (existingUser && existingUser.id !== user.id) {
         return NextResponse.json(
           { error: "This email is already associated with another account" },
           { status: 409 }
@@ -42,16 +38,11 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    // Check if phone is already taken by another user
+    // Check if phone is already taken by another user (timing-safe)
     if (validatedData.phone) {
-      const existingUser = await prisma.user.findFirst({
-        where: {
-          phone: validatedData.phone,
-          id: { not: user.id },
-        },
-      });
+      const existingUser = await timingSafeUserLookup(validatedData.phone);
 
-      if (existingUser) {
+      if (existingUser && existingUser.id !== user.id) {
         return NextResponse.json(
           { error: "This phone number is already associated with another account" },
           { status: 409 }
