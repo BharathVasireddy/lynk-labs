@@ -341,3 +341,19 @@ model AccountLockout {
   @@index([clientIP, expiresAt])
   @@map("account_lockouts")
 }
+
+model RefreshToken {
+  id          String   @id @default(cuid())
+  token       String   @unique
+  userId      String
+  expiresAt   DateTime
+  isRevoked   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  lastUsedAt  DateTime @default(now())
+  deviceInfo  String?  // User agent info for device tracking
+  clientIP    String?  // IP address for security tracking
+
+  @@index([userId, isRevoked])
+  @@index([token, expiresAt])
+  @@map("refresh_tokens")
+}

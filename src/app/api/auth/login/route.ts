@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import * as jwt from "jsonwebtoken";
 import { checkLoginRateLimit } from "@/lib/auth-rate-limit";
 import { 
   checkLockoutStatus, 
@@ -9,6 +8,7 @@ import {
   LOCKOUT_POLICIES 
 } from "@/lib/account-security";
 import { timingSafeAuthenticate } from "@/lib/timing-safe-auth";
+import { createTokenPair } from "@/lib/refresh-token";
 
 const prisma = new PrismaClient();
 
@@ -96,19 +96,10 @@ export async function POST(request: NextRequest) {
     // Clear failed login attempts on successful authentication
     await clearLoginAttempts(loginIdentifier, clientIP);
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { 
-        userId: user.id,
-        email: user.email,
-        phone: user.phone,
-        role: user.role 
-      },
-      process.env.NEXTAUTH_SECRET!,
-      { expiresIn: "7d" }
-    );
+    // Generate secure token pair (24h access token + 30d refresh token)
+    const tokenPair = await createTokenPair(user, request);
 
-    // Create response with user data
+    // Create response with user data and token information
     const userData = {
       id: user.id,
       name: user.name,
@@ -121,18 +112,31 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       success: true,
       user: userData,
+      accessToken: tokenPair.accessToken,
+      refreshToken: tokenPair.refreshToken,
+      expiresIn: tokenPair.expiresIn,
+      tokenType: "Bearer",
       message: "Login successful",
     }, {
       headers: rateLimit.headers
     });
 
-    // Set HTTP-only cookie
-    response.cookies.set("auth-token", token, {
+    // Set access token as HTTP-only cookie (24 hours)
+    response.cookies.set("auth-token", tokenPair.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: tokenPair.expiresIn, // 24 hours
       path: "/",
+    });
+
+    // Set refresh token as HTTP-only cookie (30 days, restricted path)
+    response.cookies.set("refresh-token", tokenPair.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: tokenPair.refreshExpiresIn, // 30 days
+      path: "/api/auth/refresh", // Restrict to refresh endpoint only
     });
 
     return response;

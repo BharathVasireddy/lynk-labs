@@ -11,20 +11,13 @@ interface RouteParams {
 // GET /api/orders/[id] - Get specific order details
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { searchParams } = new URL(request.url);
-    const isSuccessView = searchParams.get("success") === "true";
-    
-    // For success view (just after order creation), allow access without auth
-    // For regular order viewing, require authentication
-    let user = null;
-    if (!isSuccessView) {
-      user = await verifyAuth(request);
-      if (!user) {
-        return NextResponse.json(
-          { error: "Unauthorized" },
-          { status: 401 }
-        );
-      }
+    // SECURITY: Always require authentication - no bypass for "success" view
+    const user = await verifyAuth(request);
+    if (!user) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
     const { id } = params;
@@ -75,8 +68,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // For authenticated requests, check if the order belongs to the user
-    if (user && order.userId !== user.id) {
+    // SECURITY: Always check if the order belongs to the authenticated user
+    if (order.userId !== user.id) {
       return NextResponse.json(
         { error: "Unauthorized access to order" },
         { status: 403 }

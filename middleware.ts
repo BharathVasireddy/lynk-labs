@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { verify } from "jsonwebtoken";
+import { apiAuthMiddleware } from "@/lib/api-middleware";
 
 // Routes that require authentication
 const protectedRoutes = [
@@ -27,8 +28,16 @@ const authRoutes = [
   "/login",
 ];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  
+  // Handle API routes with comprehensive authentication
+  const apiResponse = await apiAuthMiddleware(request);
+  if (apiResponse) {
+    return apiResponse;
+  }
+  
+  // Continue with existing page-level authentication for non-API routes
   const token = request.cookies.get("auth-token")?.value;
 
   // Check if user is authenticated
@@ -107,12 +116,13 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public files (images, uploads, etc.)
+     * 
+     * SECURITY: Now includes API routes for authentication enforcement
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|images|uploads).*)",
+    "/((?!_next/static|_next/image|favicon.ico|images|uploads).*)",
   ],
 }; 

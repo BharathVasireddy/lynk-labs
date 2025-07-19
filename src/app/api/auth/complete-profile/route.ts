@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { verifyAuth } from "@/lib/auth-utils";
-import * as jwt from "jsonwebtoken";
 import { timingSafeUserLookup } from "@/lib/timing-safe-auth";
+import { createTokenPair } from "@/lib/refresh-token";
 
 const prisma = new PrismaClient();
 
@@ -54,16 +54,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Generate new JWT token with updated info
-    const token = jwt.sign(
-      { 
-        userId: updatedUser.id,
-        email: updatedUser.email,
-        role: updatedUser.role 
-      },
-      process.env.NEXTAUTH_SECRET!,
-      { expiresIn: "7d" }
-    );
+    // Generate new secure token pair with updated user info
+    const tokenPair = await createTokenPair(updatedUser, request);
 
     // Create response with updated user data
     const userData = {
@@ -78,16 +70,29 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       success: true,
       user: userData,
+      accessToken: tokenPair.accessToken,
+      refreshToken: tokenPair.refreshToken,
+      expiresIn: tokenPair.expiresIn,
+      tokenType: "Bearer",
       message: "Profile completed successfully",
     });
 
-    // Update HTTP-only cookie with new token
-    response.cookies.set("auth-token", token, {
+    // Set access token as HTTP-only cookie (24 hours)
+    response.cookies.set("auth-token", tokenPair.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: tokenPair.expiresIn, // 24 hours
       path: "/",
+    });
+
+    // Set refresh token as HTTP-only cookie (30 days, restricted path)
+    response.cookies.set("refresh-token", tokenPair.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: tokenPair.refreshExpiresIn, // 30 days
+      path: "/api/auth/refresh", // Restrict to refresh endpoint only
     });
 
     return response;
