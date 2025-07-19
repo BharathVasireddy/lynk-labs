@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { checkRegistrationRateLimit } from "@/lib/auth-rate-limit";
 import { timingSafeUserExists } from "@/lib/timing-safe-auth";
 import { createTokenPair } from "@/lib/refresh-token";
+import { validateEmailForAPI } from "@/lib/email-validation";
 
 const prisma = new PrismaClient();
 
@@ -35,6 +36,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Comprehensive email validation
+    const emailValidation = validateEmailForAPI(email, false); // Use standard validation for registration
+    if (!emailValidation.valid) {
+      return NextResponse.json(
+        { error: emailValidation.error },
+        { 
+          status: 400,
+          headers: rateLimit.headers
+        }
+      );
+    }
+
+    const normalizedEmail = emailValidation.email!;
+
     if (password.length < 6) {
       return NextResponse.json(
         { error: "Password must be at least 6 characters long" },
@@ -44,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     // Use timing-safe user existence checks to prevent enumeration
     const [emailExists, phoneExists] = await Promise.all([
-      timingSafeUserExists(email.toLowerCase()),
+      timingSafeUserExists(normalizedEmail),
       timingSafeUserExists(phone.trim())
     ]);
 

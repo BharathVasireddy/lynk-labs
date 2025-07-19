@@ -3,10 +3,11 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { verifyAuth } from "@/lib/auth-utils";
 import { timingSafeUserLookup } from "@/lib/timing-safe-auth";
+import { optionalEmailSchema } from "@/lib/email-validation";
 
 const updateProfileSchema = z.object({
   name: z.string().min(1, "Name is required").optional(),
-  email: z.string().email("Invalid email format").optional(),
+  email: optionalEmailSchema,
   phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number format").optional(),
   dateOfBirth: z.string().optional(),
   gender: z.enum(["MALE", "FEMALE", "OTHER"]).optional(),

@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { verifyAuth } from "@/lib/auth-utils";
 import { timingSafeUserLookup } from "@/lib/timing-safe-auth";
 import { createTokenPair } from "@/lib/refresh-token";
+import { validateEmailForAPI } from "@/lib/email-validation";
 
 const prisma = new PrismaClient();
 
@@ -26,17 +27,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    // Comprehensive email validation
+    const emailValidation = validateEmailForAPI(email, false);
+    if (!emailValidation.valid) {
       return NextResponse.json(
-        { error: "Please enter a valid email address" },
+        { error: emailValidation.error },
         { status: 400 }
       );
     }
 
+    const normalizedEmail = emailValidation.email!;
+
     // Check if email is already taken by another user (timing-safe)
-    const existingUser = await timingSafeUserLookup(email.toLowerCase());
+    const existingUser = await timingSafeUserLookup(normalizedEmail);
 
     if (existingUser && existingUser.id !== user.id) {
       return NextResponse.json(
@@ -50,7 +53,7 @@ export async function POST(request: NextRequest) {
       where: { id: user.id },
       data: {
         name: name.trim(),
-        email: email.toLowerCase(),
+        email: normalizedEmail,
       },
     });
 

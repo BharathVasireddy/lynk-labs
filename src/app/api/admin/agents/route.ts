@@ -3,6 +3,7 @@ import { verifyAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { generateAgentPassword } from "@/lib/password-utils";
+import { validateEmailForAPI } from "@/lib/email-validation";
 
 export async function GET(request: NextRequest) {
   try {

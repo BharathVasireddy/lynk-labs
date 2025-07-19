@@ -1,5 +1,6 @@
 import * as bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
+import { normalizeEmail } from "@/lib/email-validation";
 
 const prisma = new PrismaClient();
 
@@ -28,13 +29,14 @@ export async function timingSafeUserLookup(identifier: string): Promise<{
   try {
     // Always use the same query pattern to prevent timing differences
     // Query by both email and phone regardless of input format
-    const normalizedIdentifier = identifier.toLowerCase().trim();
+    const isEmailFormat = identifier.includes('@');
+    const normalizedIdentifier = isEmailFormat ? normalizeEmail(identifier) : identifier.trim();
     
     const user = await prisma.user.findFirst({
       where: {
         OR: [
           { email: normalizedIdentifier },
-          { phone: identifier.trim() } // Don't lowercase phone numbers
+          { phone: identifier.trim() }
         ],
         isActive: true
       },

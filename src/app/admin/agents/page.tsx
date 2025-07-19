@@ -87,9 +87,13 @@ export default function AgentsPage() {
       errors.phone = "Please enter a valid phone number";
     }
 
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = "Please enter a valid email address";
-    }
+                if (formData.email) {
+        // Use the same email validation as the backend
+        const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+        if (!emailRegex.test(formData.email.trim())) {
+          errors.email = "Please enter a valid email address";
+        }
+      }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
