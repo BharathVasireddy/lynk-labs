@@ -1,50 +1,76 @@
 import { Metadata } from 'next';
+import Link from 'next/link';
+import { FileText, ArrowRight, Lock } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'My Reports - Lynk Labs',
   description: 'Access and download your test reports from Lynk Labs.',
 };
 
+
 export default function ReportsPage() {
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow-sm p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">My Test Reports</h1>
-          
-          <div className="mb-8">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-blue-800">
-                Please log in to view your test reports. All reports are delivered digitally and securely.
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      {/* Hero Section */}
+      <section className="relative py-16 lg:py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/95 to-teal-600" />
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
+            backgroundSize: '40px 40px'
+          }} />
+        </div>
+
+        <div className="container-padding relative">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full mb-6">
+              <FileText className="w-4 h-4 text-white" />
+              <span className="text-sm font-medium text-white">Download Reports</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
+              My Test Reports
+            </h1>
+            <p className="text-lg text-white/80 max-w-xl mx-auto">
+              Access and download your diagnostic test reports securely
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content */}
+      <div className="container-padding -mt-8 relative z-10 pb-20">
+        <div className="max-w-3xl mx-auto">
+          {/* Login Prompt Card */}
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-8 mb-10">
+            <div className="text-center py-8">
+              <div className="w-20 h-20 bg-gradient-to-br from-primary/10 to-teal-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Lock className="w-10 h-10 text-primary" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-3">Login to View Reports</h2>
+              <p className="text-slate-600 mb-8 max-w-md mx-auto">
+                Please log in to your account to access and download your test reports. All reports are delivered digitally and stored securely.
               </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  href="/auth/login"
+                  className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-teal-600 hover:from-primary/90 hover:to-teal-600/90 text-white py-4 px-8 rounded-xl font-semibold shadow-lg shadow-primary/25 transition-all"
+                >
+                  Login to Account
+                  <ArrowRight className="h-5 w-5" />
+                </Link>
+                <Link
+                  href="/tests"
+                  className="inline-flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-4 px-8 rounded-xl font-semibold transition-all"
+                >
+                  Browse Tests
+                </Link>
+              </div>
             </div>
           </div>
 
-          <div className="text-center py-12">
-            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No reports available</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Log in to view your test reports or book a new test.
-            </p>
-            <div className="mt-6 flex justify-center space-x-4">
-              <a
-                href="/login"
-                className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
-              >
-                Login
-              </a>
-              <a
-                href="/tests"
-                className="bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700"
-              >
-                Browse Tests
-              </a>
-            </div>
-          </div>
+
         </div>
       </div>
     </div>
   );
-} 
+}

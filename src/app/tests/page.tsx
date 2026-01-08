@@ -55,7 +55,7 @@ function TestsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  
+
   const [tests, setTests] = useState<Test[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,16 +99,16 @@ function TestsPageContent() {
       // Use ultra-fast API for first page, regular API for pagination
       const endpoint = page === 1 && !append ? "/api/ultra-fast/tests" : "/api/tests";
       const response = await fetch(`${endpoint}?${params}`);
-      
+
       if (response.ok) {
         const data: TestsResponse = await response.json();
-        
+
         if (append) {
           setTests(prev => [...prev, ...data.tests]);
         } else {
           setTests(data.tests);
         }
-        
+
         setHasMore(data.pagination?.hasMore || false);
         setTotalTests(data.pagination?.total || data.tests.length);
         setCurrentPage(page);
@@ -274,12 +274,12 @@ function TestsPageContent() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {tests.map((test, index) => (
-            <Card key={test.id} className="medical-card-hover page-transition test-card-equal-height overflow-hidden" style={{animationDelay: `${index * 0.05}s`}}>
+            <Card key={test.id} className="medical-card-hover page-transition test-card-equal-height overflow-hidden" style={{ animationDelay: `${index * 0.05}s` }}>
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <CardTitle className="text-lg leading-tight mb-2">
-                      <Link 
+                      <Link
                         href={`/tests/${test.slug}`}
                         className="hover:text-primary liquid-hover"
                       >
@@ -292,7 +292,7 @@ function TestsPageContent() {
                   </div>
                   {test.discountPrice && (
                     <div className="flex-shrink-0">
-                      <div className="text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm offer-badge-glare">
+                      <div className="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm">
                         {calculateDiscount(test.price, test.discountPrice)}% OFF
                       </div>
                     </div>
@@ -330,8 +330,8 @@ function TestsPageContent() {
 
               <div className="test-card-footer p-6 pt-0 mt-auto">
                 {/* Actions */}
-                <BookTestButton 
-                  test={test} 
+                <BookTestButton
+                  test={test}
                   viewDetailsButton={
                     <Button variant="outline" className="flex-1 medical-button-outline text-xs px-3" asChild>
                       <Link href={`/tests/${test.slug}`}>

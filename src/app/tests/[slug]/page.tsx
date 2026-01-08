@@ -43,7 +43,7 @@ export default function TestDetailPage() {
   const [relatedTests, setRelatedTests] = useState<RelatedTest[]>([]);
   const [loading, setLoading] = useState(true);
   const [isWishlisted, setIsWishlisted] = useState(false);
-  
+
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
@@ -61,7 +61,7 @@ export default function TestDetailPage() {
         }
         throw new Error('Failed to fetch test details');
       }
-      
+
       const testData = await response.json();
       setTest(testData);
 
@@ -158,7 +158,7 @@ export default function TestDetailPage() {
             Back to Tests
           </Link>
         </Button>
-        
+
         <nav className="text-sm text-muted-foreground">
           <Link href="/" className="hover:text-foreground">Home</Link>
           <span className="mx-2">/</span>
@@ -185,7 +185,7 @@ export default function TestDetailPage() {
                 <h1 className="text-3xl lg:text-4xl font-bold mb-2">{test.name}</h1>
                 <p className="text-lg text-muted-foreground">{test.description}</p>
               </div>
-              
+
               <div className="flex gap-2 ml-4">
                 <Button
                   variant="outline"
@@ -212,7 +212,7 @@ export default function TestDetailPage() {
                     <span className="text-lg text-muted-foreground line-through">
                       ₹{test.price}
                     </span>
-                    <div className="text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm offer-badge-glare">
+                    <div className="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm">
                       {calculateDiscount(test.price, test.discountPrice)}% OFF
                     </div>
                   </>
@@ -246,7 +246,7 @@ export default function TestDetailPage() {
               <TabsTrigger value="preparation">Preparation</TabsTrigger>
               <TabsTrigger value="faq">FAQ</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="overview" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -257,9 +257,9 @@ export default function TestDetailPage() {
                     <h4 className="font-semibold mb-2">What is this test?</h4>
                     <p className="text-muted-foreground">{test.description}</p>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div>
                     <h4 className="font-semibold mb-2">Why is this test done?</h4>
                     <ul className="list-disc list-inside text-muted-foreground space-y-1">
@@ -269,20 +269,20 @@ export default function TestDetailPage() {
                       <li>As part of routine health checkups</li>
                     </ul>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div>
                     <h4 className="font-semibold mb-2">What does this test measure?</h4>
                     <p className="text-muted-foreground">
-                      This test provides detailed insights into your health parameters and helps 
+                      This test provides detailed insights into your health parameters and helps
                       healthcare providers make informed decisions about your care.
                     </p>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="preparation" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -302,9 +302,9 @@ export default function TestDetailPage() {
                       </p>
                     </div>
                   )}
-                  
+
                   <Separator />
-                  
+
                   <div>
                     <h4 className="font-semibold mb-2">General Guidelines</h4>
                     <ul className="list-disc list-inside text-muted-foreground space-y-1">
@@ -317,7 +317,7 @@ export default function TestDetailPage() {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="faq" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -330,27 +330,27 @@ export default function TestDetailPage() {
                       The sample collection typically takes 5-10 minutes.
                     </p>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div>
                     <h4 className="font-semibold mb-2">When will I get my results?</h4>
                     <p className="text-muted-foreground">
                       Results are typically available within {test.reportTime || "24-48 hours"}.
                     </p>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div>
                     <h4 className="font-semibold mb-2">Is home collection available?</h4>
                     <p className="text-muted-foreground">
                       Yes, we offer free home sample collection for your convenience.
                     </p>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div>
                     <h4 className="font-semibold mb-2">How will I receive my report?</h4>
                     <p className="text-muted-foreground">
@@ -384,17 +384,17 @@ export default function TestDetailPage() {
                   </div>
                 )}
               </div>
-              
+
               <BookTestButton test={test} size="lg" />
-              
+
               <div className="text-center">
                 <p className="text-xs text-muted-foreground">
                   Free home collection • NABL accredited lab
                 </p>
               </div>
-              
+
               <Separator />
-              
+
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Sample Type:</span>
@@ -425,7 +425,7 @@ export default function TestDetailPage() {
                 {relatedTests.slice(0, 3).map((relatedTest) => (
                   <div key={relatedTest.id} className="flex justify-between items-center">
                     <div className="flex-1">
-                      <Link 
+                      <Link
                         href={`/tests/${relatedTest.slug}`}
                         className="text-sm font-medium hover:text-primary transition-colors"
                       >
@@ -447,7 +447,7 @@ export default function TestDetailPage() {
                     </div>
                   </div>
                 ))}
-                
+
                 <Button variant="outline" className="w-full" asChild>
                   <Link href={`/tests?category=${test.category.id}`}>
                     View All in {test.category.name}

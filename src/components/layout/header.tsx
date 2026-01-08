@@ -57,7 +57,6 @@ export function Header() {
   const navigationItems = [
     { name: "Tests", href: "/tests", icon: TestTube },
     { name: "Health Packages", href: "/packages", icon: Package },
-    { name: "Health Blog", href: "/blog", icon: FileText },
   ];
 
   const handleLogout = async () => {
@@ -141,8 +140,8 @@ export function Header() {
 
             {/* Cart */}
             <div className="relative flex items-center">
-              <button 
-                className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl group p-0 flex items-center justify-center hover:bg-transparent focus:outline-none focus:ring-0" 
+              <button
+                className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl group p-0 flex items-center justify-center hover:bg-transparent focus:outline-none focus:ring-0"
                 onClick={openCart}
               >
                 <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 group-hover:scale-110 transition-transform duration-200" />
@@ -207,7 +206,7 @@ export function Header() {
 
       {/* Mobile Menu Backdrop */}
       {isMenuOpen && (
-        <div 
+        <div
           className="lg:hidden fixed inset-0 bg-black/50 z-30"
           onClick={() => setIsMenuOpen(false)}
         />
@@ -242,7 +241,7 @@ export function Header() {
                     href={item.href}
                     className={`flex items-center justify-between px-4 py-4 text-base font-medium text-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-200 group border border-transparent hover:border-primary/10 ${isMenuOpen ? 'animate-fadeInUp' : ''}`}
                     onClick={() => setIsMenuOpen(false)}
-                    style={{ 
+                    style={{
                       animationDelay: isMenuOpen ? `${index * 100}ms` : '0ms'
                     }}
                   >
@@ -281,7 +280,7 @@ export function Header() {
                       <p className="text-xs text-muted-foreground truncate">{user.phone || user.email}</p>
                     </div>
                   </div>
-                  
+
                   {/* User Menu Items */}
                   <div className="space-y-2">
                     <Link
@@ -323,7 +322,7 @@ export function Header() {
                       </div>
                       <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </Link>
-                    
+
                     {/* Logout Button */}
                     <div className="pt-2 mt-2 border-t border-border">
                       <button
